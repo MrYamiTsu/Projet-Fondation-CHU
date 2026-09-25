@@ -4,9 +4,7 @@
   >
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3">
       <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        <!-- GAUCHE : Logo, Titre & Sous-titres -->
         <div class="flex items-center gap-6 shrink-0">
-          <!-- Logo CHU de Québec -->
           <div class="flex items-center gap-3">
             <div class="relative flex items-center justify-center w-12 h-12 text-teal-400">
               <span class="w-full h-full">Logo</span>
@@ -17,11 +15,7 @@
               <span class="text-[9px] text-slate-300 tracking-wider">Université Laval</span>
             </div>
           </div>
-
-          <!-- Séparateur vertical -->
           <div class="hidden sm:block h-14 w-px bg-slate-700/80"></div>
-
-          <!-- Titre principal & Description -->
           <div class="flex flex-col justify-center">
             <h1
               class="text-2xl lg:text-3xl font-black tracking-tight text-white uppercase leading-none"
@@ -40,8 +34,6 @@
             </p>
           </div>
         </div>
-
-        <!-- DROITE : Galerie droite des hôpitaux (Ajustée pour ne plus couper les bordures) -->
         <div class="flex items-center justify-end gap-2.5 h-28 lg:h-32 py-2 p-1">
           <button
             v-for="hospital in hospitals"
@@ -54,20 +46,16 @@
                 : 'border-slate-700/80 hover:border-teal-400/50 opacity-75 hover:opacity-100',
             ]"
           >
-            <!-- Image de fond droite -->
             <div class="absolute inset-0 w-full h-full">
               <img
                 :src="hospital.image || getHospitalImage(hospital.code)"
                 :alt="hospital.name"
                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
-              <!-- Ombrage sombre au bas pour la lisibilité du texte -->
               <div
                 class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
               ></div>
             </div>
-
-            <!-- Code de l'hôpital -->
             <div class="absolute bottom-2.5 inset-x-0 text-center px-1">
               <span
                 class="block text-xs sm:text-sm md:text-base font-black text-white tracking-wider drop-shadow-md"

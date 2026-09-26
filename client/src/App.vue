@@ -1,46 +1,51 @@
 <template>
-  <div class="main-layout">
-    <Navbar />
+  <div
+    class="min-h-screen flex flex-col justify-between bg-slate-100 text-slate-800 selection:bg-blue-500 selection:text-white"
+  >
+    <div>
+      <Header
+        :hospitals="hospitals"
+        :selected-hospital="selectedHospital"
+        @select-hospital="handleHospitalSelect"
+      />
+      <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+          <Map
+            :pins="hospitalPins"
+            :active-hospital="selectedHospital"
+            @select-pin="handleHospitalSelect"
+          />
 
-    <main class="main-content">
-      <aside class="sidebar">
-        <HospitalSelector />
-        <FilterSection />
-      </aside>
-
-      <MapViewer />
-    </main>
+          <Valuation />
+        </div>
+        <div>
+          <PlotList :plots="filteredPlots" @open-modal="selectedPlot = $event" />
+        </div>
+      </main>
+    </div>
+    <PlotDetail v-if="selectedPlot" :plot="selectedPlot" @close="selectedPlot = null" />
   </div>
 </template>
 
 <script setup>
-import Navbar from '@/components/Navbar.vue'
-import HospitalSelector from '@/components/HospitalSelector.vue'
-import FilterSection from '@/components/FilterSection.vue'
-import MapViewer from '@/components/MapViewer.vue'
+import { ref, computed } from 'vue'
+import Header from './components/Header.vue'
+import Map from './components/Map.vue'
+import Valuation from './components/Valuation.vue'
+import PlotList from './components/PlotList.vue'
+import PlotDetail from './components/PlotDetail.vue'
+
+import { hospitals, hospitalPins, mockPlots } from './data/mockData.js'
+
+const selectedHospital = ref('')
+const selectedPlot = ref(null)
+
+const filteredPlots = computed(() => {
+  if (!selectedHospital.value) return mockPlots
+  return mockPlots.filter((plot) => plot.hospital === selectedHospital.value)
+})
+
+function handleHospitalSelect(code) {
+  selectedHospital.value = selectedHospital.value === code ? '' : code
+}
 </script>
-
-<style scoped>
-.main-layout {
-  display: flex;
-  flex-direction: column;
-  width: 100vw;
-  min-height: 100vh;
-}
-
-.main-content {
-  display: flex;
-  gap: 24px;
-  padding: 24px;
-  flex: 1;
-  width: 100%;
-  background: var(--color-background-soft);
-}
-
-.sidebar {
-  width: 320px;
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-</style>

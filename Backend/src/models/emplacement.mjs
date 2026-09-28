@@ -1,0 +1,25 @@
+import pool from '../db.mjs';
+
+export async function rechercherEmplacementsParLieu(lieu) {
+  const requete = `
+    SELECT *
+    FROM emplacement
+    WHERE lieu_specifique ILIKE $1
+  `;
+
+  const resultat = await pool.query(requete, ['%' + lieu + '%']);
+
+  return resultat.rows;
+}
+
+export async function rechercherEmplacementsParDescription(mot) {
+  const requete = `
+    SELECT *
+    FROM emplacement
+    WHERE  description ILIKE $1
+  `;
+
+  const resultat = await pool.query(requete, ['%' + mot + '%']);
+
+  return resultat.rows;
+}

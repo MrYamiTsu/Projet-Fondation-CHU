@@ -23,3 +23,18 @@ export async function rechercherEmplacementsParDescription(mot) {
 
   return resultat.rows;
 }
+export async function rechercherEmplacementParId(id) {
+  const requete = `
+    SELECT *
+    FROM emplacement
+    WHERE id = $1
+  `;
+
+  const resultat = await pool.query(requete, [id]);
+
+  if (resultat.rows.length === 0) {
+    return null;
+  }
+
+  return resultat.rows[0];
+}

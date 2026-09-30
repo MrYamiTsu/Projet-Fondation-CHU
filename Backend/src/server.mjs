@@ -1,6 +1,5 @@
-import app from './app.js';
+import app from './app.mjs';
 
-// Les scripts npm chargent .env si ce fichier existe.
 const port = Number(process.env.PORT ?? 3000);
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {

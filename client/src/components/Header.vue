@@ -1,11 +1,9 @@
 <template>
-  <header
-    class="bg-[#0a1526] text-white shadow-2xl relative z-20 border-b border-slate-800 overflow-hidden"
-  >
+  <header class="bg-[#0a1526] text-white shadow-2xl relative z-20 border-b border-slate-800">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3">
       <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div class="flex items-center gap-6 shrink-0">
-          <div class="flex items-center gap-3">
+          <a class="flex items-center gap-3" href="/">
             <div class="relative flex items-center justify-center w-12 h-12 text-teal-400">
               <span class="w-full h-full">Logo</span>
             </div>
@@ -14,7 +12,7 @@
               <span class="text-[12px] font-bold tracking-wide text-white">de Québec</span>
               <span class="text-[9px] text-slate-300 tracking-wider">Université Laval</span>
             </div>
-          </div>
+          </a>
           <div class="hidden sm:block h-14 w-px bg-slate-700/80"></div>
           <div class="flex flex-col justify-center">
             <h1
@@ -34,36 +32,71 @@
             </p>
           </div>
         </div>
-        <div class="flex items-center justify-end gap-2.5 h-28 lg:h-32 py-2 p-1">
-          <button
-            v-for="hospital in hospitals"
-            :key="hospital.code"
-            @click="$emit('select-hospital', hospital.code)"
-            :class="[
-              'relative group h-full w-20 sm:w-24 xl:w-28 overflow-hidden rounded-xl border-2 transition-all duration-300 focus:outline-none cursor-pointer shrink-0',
-              selectedHospital === hospital.code
-                ? 'border-teal-400 ring-2 ring-teal-400/60 ring-inset shadow-[0_0_20px_rgba(45,212,191,0.4)] z-10 brightness-110'
-                : 'border-slate-700/80 hover:border-teal-400/50 opacity-75 hover:opacity-100',
-            ]"
-          >
-            <div class="absolute inset-0 w-full h-full">
-              <img
-                :src="hospital.image || getHospitalImage(hospital.code)"
-                :alt="hospital.name"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
+        <div class="flex items-center justify-between xl:justify-end gap-4">
+          <div class="flex items-center justify-end gap-2.5 h-28 lg:h-32 py-2 p-1 overflow-x-auto">
+            <button
+              v-for="hospital in hospitals"
+              :key="hospital.code"
+              @click="$emit('select-hospital', hospital.code)"
+              :class="[
+                'relative group h-full w-20 sm:w-24 xl:w-28 overflow-hidden rounded-xl border-2 transition-all duration-300 focus:outline-none cursor-pointer shrink-0',
+                selectedHospital === hospital.code
+                  ? 'border-teal-400 ring-2 ring-teal-400/60 ring-inset shadow-[0_0_20px_rgba(45,212,191,0.4)] z-10 brightness-110'
+                  : 'border-slate-700/80 hover:border-teal-400/50 opacity-75 hover:opacity-100',
+              ]"
+            >
+              <div class="absolute inset-0 w-full h-full">
+                <img
+                  :src="hospital.image || getHospitalImage(hospital.code)"
+                  :alt="hospital.name"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
+                ></div>
+              </div>
+              <div class="absolute bottom-2.5 inset-x-0 text-center px-1">
+                <span
+                  class="block text-xs sm:text-sm md:text-base font-black text-white tracking-wider drop-shadow-md"
+                >
+                  {{ hospital.code }}
+                </span>
+              </div>
+            </button>
+          </div>
+          <div class="hidden sm:block h-16 w-px bg-slate-700/80 shrink-0"></div>
+          <div class="shrink-0 flex items-center relative">
+            <template v-if="currentUser">
               <div
-                class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
-              ></div>
-            </div>
-            <div class="absolute bottom-2.5 inset-x-0 text-center px-1">
-              <span
-                class="block text-xs sm:text-sm md:text-base font-black text-white tracking-wider drop-shadow-md"
+                class="flex flex-col items-end gap-1 bg-slate-900/80 border border-slate-700/80 p-2.5 rounded-xl"
               >
-                {{ hospital.code }}
-              </span>
-            </div>
-          </button>
+                <div class="text-right">
+                  <span class="block text-xs font-bold text-white leading-none">{{
+                    currentUser.name
+                  }}</span>
+                  <span class="block text-[10px] text-teal-400 mt-0.5">{{
+                    currentUser.email
+                  }}</span>
+                </div>
+                <button
+                  @click="$emit('logout')"
+                  class="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider mt-1"
+                >
+                  Déconnexion
+                </button>
+              </div>
+            </template>
+            <template v-else>
+              <button
+                @click.stop="$emit('open-auth')"
+                class="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-3 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 flex items-center gap-2 border border-teal-300/40"
+              >
+                <i class="fa-solid fa-user text-xs"></i>
+                <span>Connexion</span>
+              </button>
+              <slot name="auth" />
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -74,9 +107,10 @@
 defineProps({
   hospitals: { type: Array, required: true },
   selectedHospital: { type: String, default: '' },
+  currentUser: { type: Object, default: null },
 })
 
-defineEmits(['select-hospital'])
+defineEmits(['select-hospital', 'open-auth', 'logout'])
 
 const getHospitalImage = (code) => {
   const images = {

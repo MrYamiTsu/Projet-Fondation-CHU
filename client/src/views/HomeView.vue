@@ -18,12 +18,7 @@
           />
         </template>
       </Header>
-
-      <!-- Message d'alerte si tentative d'accès non autorisé à /admin -->
-      <div
-        v-if="accessAlert"
-        class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6"
-      >
+      <div v-if="accessAlert" class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6">
         <div
           class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg"
           :class="
@@ -35,9 +30,15 @@
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-              :class="accessAlert.type === 'danger' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'"
+              :class="
+                accessAlert.type === 'danger'
+                  ? 'bg-red-500/20 text-red-400'
+                  : 'bg-amber-500/20 text-amber-400'
+              "
             >
-              <i :class="accessAlert.type === 'danger' ? 'fa-solid fa-ban' : 'fa-solid fa-lock'"></i>
+              <i
+                :class="accessAlert.type === 'danger' ? 'fa-solid fa-ban' : 'fa-solid fa-lock'"
+              ></i>
             </div>
             <div>
               <p class="font-bold text-sm">{{ accessAlert.title }}</p>
@@ -62,7 +63,6 @@
           </div>
         </div>
       </div>
-
       <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
         <!-- Section Carte Interactive & Cartes d'Hôpitaux + Valorisation -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
@@ -76,13 +76,16 @@
             @select-hospital="handleHospitalSelect"
           />
 
-          <Valuation
-            class="xl:col-span-4"
-            :selected-hospital="selectedHospital"
-          />
+          <Valuation class="xl:col-span-4" :selected-hospital="selectedHospital" />
         </div>
 
-        <!-- Section des Emplacements -->
+        <PlotFilters
+          v-model="filters"
+          :plots="mockPlots"
+          :result-count="filteredPlots.length"
+          @reset="resetFilters"
+        />
+
         <div>
           <PlotList :plots="filteredPlots" @open-modal="openPlotDetail" />
         </div>
@@ -98,8 +101,10 @@ import Header from '../components/Header.vue'
 import Map from '../components/Map.vue'
 import Valuation from '../components/Valuation.vue'
 import PlotList from '../components/PlotList.vue'
+import PlotFilters from '../components/PlotFilter.vue'
 import Auth from '../components/Auth.vue'
 
+// Importation des données fixes et des stores Pinia
 import { hospitals, hospitalPins } from '../data/mockData.js'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
@@ -109,27 +114,49 @@ const route = useRoute()
 const authStore = useAuthStore()
 const plotsStore = usePlotsStore()
 
-const selectedHospital = ref('')
-const searchQuery = ref('')
 const isAuthModalOpen = ref(false)
 const accessAlert = ref(null)
 
-const filteredPlots = computed(() => {
-  return plotsStore.plots.filter((plot) => {
-    if (selectedHospital.value && plot.hospital !== selectedHospital.value) {
-      return false
-    }
-    if (searchQuery.value) {
-      const q = searchQuery.value.toLowerCase().trim()
-      const matchName = plot.name?.toLowerCase().includes(q)
-      const matchSector = plot.sector?.toLowerCase().includes(q)
-      const matchHospital = plot.hospital?.toLowerCase().includes(q)
-      if (!matchName && !matchSector && !matchHospital) return false
-    }
-    return true
-  })
+const defaultFilters = {
+  sector: '',
+  availability: '',
+  maxPrice: 500000,
+}
+
+// Initialisation depuis l'URL
+const selectedHospital = ref(route.query.hospital || '')
+
+const filters = ref({
+  sector: route.query.sector || defaultFilters.sector,
+  availability: route.query.availability || defaultFilters.availability,
+  maxPrice: route.query.maxPrice ? Number(route.query.maxPrice) : defaultFilters.maxPrice,
 })
 
+// 1. Écoute des filtres pour mettre à jour l'URL (en conservant les alertes existantes)
+watch(
+  [selectedHospital, filters],
+  () => {
+    // Copie des paramètres actuels (ex: reason=login_required) pour ne pas les écraser
+    const query = { ...route.query }
+
+    if (selectedHospital.value) query.hospital = selectedHospital.value
+    else delete query.hospital
+
+    if (filters.value.sector) query.sector = filters.value.sector
+    else delete query.sector
+
+    if (filters.value.availability) query.availability = filters.value.availability
+    else delete query.availability
+
+    if (filters.value.maxPrice !== defaultFilters.maxPrice) query.maxPrice = filters.value.maxPrice
+    else delete query.maxPrice
+
+    router.replace({ query })
+  },
+  { deep: true },
+)
+
+// 2. Gestion des alertes d'accès selon l'URL
 function checkRouteAlerts() {
   if (route.query.reason === 'admin_forbidden') {
     accessAlert.value = {
@@ -142,7 +169,8 @@ function checkRouteAlerts() {
     accessAlert.value = {
       type: 'warning',
       title: 'Authentification requise',
-      message: 'Veuillez vous connecter avec un compte administrateur pour accéder au panneau de gestion.',
+      message:
+        'Veuillez vous connecter avec un compte administrateur pour accéder au panneau de gestion.',
     }
     isAuthModalOpen.value = true
   }
@@ -159,8 +187,25 @@ watch(
   },
 )
 
+// 3. Logique de filtrage basée sur le store Pinia (plotsStore.plots)
+const filteredPlots = computed(() => {
+  return plotsStore.plots.filter((plot) => {
+    if (selectedHospital.value && plot.hospital !== selectedHospital.value) return false
+    if (filters.value.sector && plot.sector !== filters.value.sector) return false
+    if (filters.value.availability === 'available' && !plot.available) return false
+    if (filters.value.availability === 'reserved' && plot.available) return false
+    if (plot.price && plot.price > filters.value.maxPrice) return false
+
+    return true
+  })
+})
+
 function handleHospitalSelect(code) {
   selectedHospital.value = selectedHospital.value === code ? '' : code
+}
+
+function resetFilters() {
+  filters.value = { ...defaultFilters }
 }
 
 function openPlotDetail(plot) {

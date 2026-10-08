@@ -1,10 +1,51 @@
 export const hospitals = [
-  { code: 'CHUL', name: 'Centre hospitalier de l\'Université Laval', icon: 'fa-solid fa-child' },
-  { code: 'HEJ', name: 'Hôpital de l\'Enfant-Jésus', icon: 'fa-solid fa-brain' },
-  { code: 'HDQ', name: 'L\'Hôtel-Dieu de Québec', icon: 'fa-solid fa-dna' },
-  { code: 'HSFA', name: 'Hôpital Saint-François d\'Assise', icon: 'fa-solid fa-baby' },
-  { code: 'HSS', name: 'Hôpital du Sacré-Cœur de Saint-Sulpice', icon: 'fa-solid fa-heart' }
-];
+  {
+    code: 'CHUL',
+    name: "Centre hospitalier de l'Université Laval",
+    shortName: 'CHUL',
+    specialty: 'Pédiatrie & Mère-Enfant',
+    city: 'Sainte-Foy',
+    icon: 'fa-solid fa-child-reaching',
+    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=800&auto=format&fit=crop',
+  },
+  {
+    code: 'HEJ',
+    name: "Hôpital de l'Enfant-Jésus",
+    shortName: 'Enfant-Jésus',
+    specialty: 'Traumatologie & Neurologie',
+    city: 'Limoilou',
+    icon: 'fa-solid fa-brain',
+    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&auto=format&fit=crop',
+  },
+  {
+    code: 'HDQ',
+    name: "L'Hôtel-Dieu de Québec",
+    shortName: 'Hôtel-Dieu',
+    specialty: 'Oncologie & Néphrologie',
+    city: 'Vieux-Québec',
+    icon: 'fa-solid fa-dna',
+    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&auto=format&fit=crop',
+  },
+  {
+    code: 'HSFA',
+    name: "Hôpital Saint-François d'Assise",
+    shortName: 'Saint-François',
+    specialty: 'Obstétrique & Santé vasculaire',
+    city: 'La Cité-Limoilou',
+    icon: 'fa-solid fa-baby',
+    image: 'https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=800&auto=format&fit=crop',
+  },
+  {
+    code: 'HSS',
+    name: 'Hôpital du Sacré-Cœur de Saint-Sulpice',
+    shortName: 'Sacré-Cœur',
+    specialty: 'Ophtalmologie & Chirurgie',
+    city: 'Québec',
+    icon: 'fa-solid fa-heart-pulse',
+    image: 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=800&auto=format&fit=crop',
+  },
+]
+
 
 export const hospitalPins = [
   { code: 'CHUL', top: '35%', left: '25%' },

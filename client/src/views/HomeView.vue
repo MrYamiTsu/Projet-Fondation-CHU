@@ -4,33 +4,85 @@
   >
     <div>
       <Header
-        :hospitals="hospitals"
-        :selected-hospital="selectedHospital"
-        :current-user="currentUser"
-        @select-hospital="handleHospitalSelect"
+        :current-user="authStore.currentUser"
         @open-auth="isAuthModalOpen = true"
         @logout="handleLogout"
       >
         <template #auth>
           <Auth
             :is-open="isAuthModalOpen"
-            :users="sessionUsers"
+            :users="authStore.users"
             @close="isAuthModalOpen = false"
             @login="handleLoginSuccess"
             @signup="handleSignUpSuccess"
           />
         </template>
       </Header>
+
+      <!-- Message d'alerte si tentative d'accès non autorisé à /admin -->
+      <div
+        v-if="accessAlert"
+        class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6"
+      >
+        <div
+          class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg"
+          :class="
+            accessAlert.type === 'danger'
+              ? 'bg-red-950/90 text-red-100 border-red-500/50'
+              : 'bg-amber-950/90 text-amber-100 border-amber-500/50'
+          "
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
+              :class="accessAlert.type === 'danger' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'"
+            >
+              <i :class="accessAlert.type === 'danger' ? 'fa-solid fa-ban' : 'fa-solid fa-lock'"></i>
+            </div>
+            <div>
+              <p class="font-bold text-sm">{{ accessAlert.title }}</p>
+              <p class="text-xs opacity-90 mt-0.5">{{ accessAlert.message }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              v-if="!authStore.isAuthenticated"
+              @click="isAuthModalOpen = true"
+              class="px-3 py-1.5 bg-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg cursor-pointer hover:bg-teal-400 transition-colors"
+            >
+              Se connecter
+            </button>
+            <button
+              @click="accessAlert = null"
+              class="text-xs opacity-75 hover:opacity-100 p-1 cursor-pointer"
+              title="Fermer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+
       <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <!-- Section Carte Interactive & Cartes d'Hôpitaux + Valorisation -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           <Map
+            class="xl:col-span-8"
+            :hospitals="hospitals"
             :pins="hospitalPins"
             :active-hospital="selectedHospital"
-            @select-pin="handleHospitalSelect"
+            :search-query="searchQuery"
+            @update:search-query="searchQuery = $event"
+            @select-hospital="handleHospitalSelect"
           />
 
-          <Valuation />
+          <Valuation
+            class="xl:col-span-4"
+            :selected-hospital="selectedHospital"
+          />
         </div>
+
+        <!-- Section des Emplacements -->
         <div>
           <PlotList :plots="filteredPlots" @open-modal="openPlotDetail" />
         </div>
@@ -40,31 +92,72 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import Header from '../components/Header.vue'
 import Map from '../components/Map.vue'
 import Valuation from '../components/Valuation.vue'
 import PlotList from '../components/PlotList.vue'
 import Auth from '../components/Auth.vue'
 
-import { hospitals, hospitalPins, mockPlots } from '../data/mockData.js'
+import { hospitals, hospitalPins } from '../data/mockData.js'
+import { useAuthStore } from '../stores/auth.js'
+import { usePlotsStore } from '../stores/plots.js'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const plotsStore = usePlotsStore()
 
 const selectedHospital = ref('')
+const searchQuery = ref('')
 const isAuthModalOpen = ref(false)
-
-const currentUser = ref(null)
-const sessionUsers = ref([
-  { name: 'Admin', email: 'admin@admin.ca', password: '123', admin: true },
-  { name: 'User', email: 'user@user.ca', password: '123', admin: false },
-])
+const accessAlert = ref(null)
 
 const filteredPlots = computed(() => {
-  if (!selectedHospital.value) return mockPlots
-  return mockPlots.filter((plot) => plot.hospital === selectedHospital.value)
+  return plotsStore.plots.filter((plot) => {
+    if (selectedHospital.value && plot.hospital !== selectedHospital.value) {
+      return false
+    }
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase().trim()
+      const matchName = plot.name?.toLowerCase().includes(q)
+      const matchSector = plot.sector?.toLowerCase().includes(q)
+      const matchHospital = plot.hospital?.toLowerCase().includes(q)
+      if (!matchName && !matchSector && !matchHospital) return false
+    }
+    return true
+  })
 })
+
+function checkRouteAlerts() {
+  if (route.query.reason === 'admin_forbidden') {
+    accessAlert.value = {
+      type: 'danger',
+      title: 'Accès administrateur requis',
+      message:
+        'Votre compte actuel ne dispose pas des privilèges administrateur pour accéder à cette vue.',
+    }
+  } else if (route.query.reason === 'login_required' || route.query.authModal === '1') {
+    accessAlert.value = {
+      type: 'warning',
+      title: 'Authentification requise',
+      message: 'Veuillez vous connecter avec un compte administrateur pour accéder au panneau de gestion.',
+    }
+    isAuthModalOpen.value = true
+  }
+}
+
+onMounted(() => {
+  checkRouteAlerts()
+})
+
+watch(
+  () => route.query,
+  () => {
+    checkRouteAlerts()
+  },
+)
 
 function handleHospitalSelect(code) {
   selectedHospital.value = selectedHospital.value === code ? '' : code
@@ -75,15 +168,19 @@ function openPlotDetail(plot) {
 }
 
 function handleLoginSuccess(user) {
-  currentUser.value = { name: user.name, email: user.email }
+  isAuthModalOpen.value = false
+  accessAlert.value = null
+  if (user?.admin && route.query.reason) {
+    router.push('/admin')
+  }
 }
 
-function handleSignUpSuccess(newUser) {
-  sessionUsers.value.push(newUser)
-  currentUser.value = { name: newUser.name, email: newUser.email }
+function handleSignUpSuccess() {
+  isAuthModalOpen.value = false
+  accessAlert.value = null
 }
 
 function handleLogout() {
-  currentUser.value = null
+  authStore.logout()
 }
 </script>

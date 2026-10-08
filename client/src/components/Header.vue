@@ -1,102 +1,93 @@
 <template>
   <header class="bg-[#0a1526] text-white shadow-2xl relative z-20 border-b border-slate-800">
-    <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3">
-      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+    <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3.5">
+      <div class="flex items-center justify-between gap-6">
+        <!-- Logo & Titres CHU -->
         <div class="flex items-center gap-6 shrink-0">
-          <a class="flex items-center gap-3" href="/">
-            <div class="relative flex items-center justify-center w-12 h-12 text-teal-400">
-              <span class="w-full h-full">Logo</span>
+          <router-link class="flex items-center gap-3 group" to="/">
+            <div
+              class="relative flex items-center justify-center w-12 h-12 text-teal-400 bg-teal-500/10 border border-teal-500/30 rounded-xl group-hover:bg-teal-500/20 transition-all shadow-inner"
+            >
+              <i class="fa-solid fa-hospital text-xl"></i>
             </div>
             <div class="flex flex-col leading-tight border-l border-slate-700/80 pl-3">
               <span class="font-black text-2xl tracking-tight text-white">CHU</span>
               <span class="text-[12px] font-bold tracking-wide text-white">de Québec</span>
               <span class="text-[9px] text-slate-300 tracking-wider">Université Laval</span>
             </div>
-          </a>
-          <div class="hidden sm:block h-14 w-px bg-slate-700/80"></div>
-          <div class="flex flex-col justify-center">
+          </router-link>
+
+          <div class="hidden md:block h-12 w-px bg-slate-700/80"></div>
+
+          <div class="hidden sm:flex flex-col justify-center">
             <h1
-              class="text-2xl lg:text-3xl font-black tracking-tight text-white uppercase leading-none"
+              class="text-xl lg:text-2xl font-black tracking-tight text-white uppercase leading-none"
             >
               PLAN DE PROJET
             </h1>
             <h2
-              class="text-teal-300 text-xs lg:text-sm font-bold uppercase tracking-wider mt-1 leading-tight"
+              class="text-teal-300 text-[11px] lg:text-xs font-bold uppercase tracking-wider mt-1 leading-tight"
             >
-              PLATEFORME DE VALORISATION DES ESPACES<br />
+              PLATEFORME DE VALORISATION DES ESPACES &bull;
               <span class="text-teal-400">TOPONYMIE & VISIBILITÉ</span>
             </h2>
-            <p class="text-[11px] lg:text-xs text-slate-300 mt-1 max-w-md font-light leading-snug">
-              Transformer nos espaces en opportunités durables pour la santé, la recherche et la
-              communauté.
+            <p class="text-[11px] text-slate-400 mt-0.5 max-w-md font-light leading-snug hidden lg:block">
+              Transformer nos espaces en opportunités durables pour la santé, la recherche et la communauté.
             </p>
           </div>
         </div>
-        <div class="flex items-center justify-between xl:justify-end gap-4">
-          <div class="flex items-center justify-end gap-2.5 h-28 lg:h-32 py-2 p-1 overflow-x-auto">
-            <button
-              v-for="hospital in hospitals"
-              :key="hospital.code"
-              @click="$emit('select-hospital', hospital.code)"
-              :class="[
-                'relative group h-full w-20 sm:w-24 xl:w-28 overflow-hidden rounded-xl border-2 transition-all duration-300 focus:outline-none cursor-pointer shrink-0',
-                selectedHospital === hospital.code
-                  ? 'border-teal-400 ring-2 ring-teal-400/60 ring-inset shadow-[0_0_20px_rgba(45,212,191,0.4)] z-10 brightness-110'
-                  : 'border-slate-700/80 hover:border-teal-400/50 opacity-75 hover:opacity-100',
-              ]"
+
+        <!-- Section Droite : Utilisateur / Espace Admin / Connexion -->
+        <div class="shrink-0 flex items-center gap-3 relative">
+          <template v-if="currentUser">
+            <!-- Bouton d'accès Admin pour les administrateurs -->
+            <router-link
+              v-if="currentUser.admin"
+              to="/admin"
+              class="flex items-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all border border-teal-300/40"
+              title="Accéder au panneau d'administration"
             >
-              <div class="absolute inset-0 w-full h-full">
-                <img
-                  :src="hospital.image || getHospitalImage(hospital.code)"
-                  :alt="hospital.name"
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
-                ></div>
-              </div>
-              <div class="absolute bottom-2.5 inset-x-0 text-center px-1">
+              <i class="fa-solid fa-gauge-high"></i>
+              <span class="hidden sm:inline">Espace Admin</span>
+            </router-link>
+
+            <div
+              class="flex flex-col items-end gap-1 bg-slate-900/90 border border-slate-700/80 p-2.5 rounded-xl shadow-inner"
+            >
+              <div class="flex items-center gap-2">
                 <span
-                  class="block text-xs sm:text-sm md:text-base font-black text-white tracking-wider drop-shadow-md"
+                  v-if="currentUser.admin"
+                  class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider"
                 >
-                  {{ hospital.code }}
+                  Admin
+                </span>
+                <span class="block text-xs font-bold text-white leading-none">
+                  {{ currentUser.name }}
                 </span>
               </div>
-            </button>
-          </div>
-          <div class="hidden sm:block h-16 w-px bg-slate-700/80 shrink-0"></div>
-          <div class="shrink-0 flex items-center relative">
-            <template v-if="currentUser">
-              <div
-                class="flex flex-col items-end gap-1 bg-slate-900/80 border border-slate-700/80 p-2.5 rounded-xl"
-              >
-                <div class="text-right">
-                  <span class="block text-xs font-bold text-white leading-none">{{
-                    currentUser.name
-                  }}</span>
-                  <span class="block text-[10px] text-teal-400 mt-0.5">{{
-                    currentUser.email
-                  }}</span>
-                </div>
-                <button
-                  @click="$emit('logout')"
-                  class="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider mt-1"
-                >
-                  Déconnexion
-                </button>
-              </div>
-            </template>
-            <template v-else>
+              <span class="block text-[10px] text-teal-400 font-mono">
+                {{ currentUser.email }}
+              </span>
               <button
-                @click.stop="$emit('open-auth')"
-                class="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-3 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 flex items-center gap-2 border border-teal-300/40"
+                @click="$emit('logout')"
+                class="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider mt-0.5 cursor-pointer flex items-center gap-1"
               >
-                <i class="fa-solid fa-user text-xs"></i>
-                <span>Connexion</span>
+                <i class="fa-solid fa-arrow-right-from-bracket text-[9px]"></i>
+                <span>Déconnexion</span>
               </button>
-              <slot name="auth" />
-            </template>
-          </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <button
+              @click.stop="$emit('open-auth')"
+              class="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-3 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 flex items-center gap-2 border border-teal-300/40 cursor-pointer"
+            >
+              <i class="fa-solid fa-user text-xs"></i>
+              <span>Connexion</span>
+            </button>
+            <slot name="auth" />
+          </template>
         </div>
       </div>
     </div>
@@ -105,24 +96,8 @@
 
 <script setup>
 defineProps({
-  hospitals: { type: Array, required: true },
-  selectedHospital: { type: String, default: '' },
   currentUser: { type: Object, default: null },
 })
 
-defineEmits(['select-hospital', 'open-auth', 'logout'])
-
-const getHospitalImage = (code) => {
-  const images = {
-    CHUL: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=500&auto=format&fit=crop',
-    HEJ: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=500&auto=format&fit=crop',
-    HDQ: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=500&auto=format&fit=crop',
-    HSFA: 'https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=500&auto=format&fit=crop',
-    HSS: 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=500&auto=format&fit=crop',
-  }
-  return (
-    images[code] ||
-    'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=500&auto=format&fit=crop'
-  )
-}
+defineEmits(['open-auth', 'logout'])
 </script>

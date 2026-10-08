@@ -1,0 +1,1961 @@
+{
+  "info": {
+    "name": "PROJET-INTEGRATEUR",
+    "description": "Tests des routes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Emplacement",
+      "item": [
+        {
+          "name": "/emplacements",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(10);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?statut=Disponible",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(5);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 3, 4, 6, 8]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?statut=Disponible",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "Disponible"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?statut=Réservé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([2, 9]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?statut=Réservé",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "Réservé"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?statut=Occupé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([5, 7]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?statut=Occupé",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "Occupé"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?statut=Inactif",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([10]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?statut=Inactif",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "Inactif"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?composante_id=1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(3);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 2, 3]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?composante_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "composante_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (composante inexistante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?composante_id=999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "composante_id",
+                  "value": "999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?type_lieu=Espace public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(4);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 4, 7, 9]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?type_lieu=Espace public",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "type_lieu",
+                  "value": "Espace public"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?type_lieu=Salle d'attente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([2, 5]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?type_lieu=Salle d'attente",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "type_lieu",
+                  "value": "Salle d'attente"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?categorie=Intérieur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(10);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?categorie=Intérieur",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "categorie",
+                  "value": "Intérieur"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?superficie_min=100",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(6);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 2, 4, 5, 7, 9]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_min=100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_min",
+                  "value": "100"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?superficie_max=50",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(3);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([3, 8, 10]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_max=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_max",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (superficie min + max)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(4);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([2, 5, 7, 9]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_min=100&superficie_max=200",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_min",
+                  "value": "100"
+                },
+                {
+                  "key": "superficie_max",
+                  "value": "200"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?valeur_toponymique_min=30000",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(4);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 4, 5, 7]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?valeur_toponymique_min=30000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "valeur_toponymique_min",
+                  "value": "30000"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?poid_relatif_min=8",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(3);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 4, 5]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?poid_relatif_min=8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "poid_relatif_min",
+                  "value": "8"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?q=hall",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(3);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 7, 9]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?q=hall",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "hall"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements?q=atrium",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([4]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?q=atrium",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "atrium"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (q sur no local)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(3);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 2, 3]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?q=CHUL",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "CHUL"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (q sans résultat)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?q=introuvable",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "introuvable"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (statut + composante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 3]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?statut=Disponible&composante_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "Disponible"
+                },
+                {
+                  "key": "composante_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (type_lieu + statut)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 4]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?type_lieu=Espace public&statut=Disponible",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "type_lieu",
+                  "value": "Espace public"
+                },
+                {
+                  "key": "statut",
+                  "value": "Disponible"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (q + statut)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([9]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?q=hall&statut=Réservé",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "hall"
+                },
+                {
+                  "key": "statut",
+                  "value": "Réservé"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (composante + statut inactif)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([10]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?composante_id=4&statut=Inactif",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "composante_id",
+                  "value": "4"
+                },
+                {
+                  "key": "statut",
+                  "value": "Inactif"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (superficie min + statut)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement array matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Number of emplacements found is correct\", function () {",
+                  "    pm.expect(jsonData.data.length).to.eql(2);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
+                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
+                  "    pm.expect(found).to.eql([1, 4]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_min=100&statut=Disponible",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_min",
+                  "value": "100"
+                },
+                {
+                  "key": "statut",
+                  "value": "Disponible"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (statut invalide)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?statut=invalide",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "invalide"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (composante_id invalide)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?composante_id=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "composante_id",
+                  "value": "abc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (superficie_min invalide)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_min=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_min",
+                  "value": "abc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (superficie_min négative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_min=-5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_min",
+                  "value": "-5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements (superficie min > max)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements?superficie_min=200&superficie_max=100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements"
+              ],
+              "query": [
+                {
+                  "key": "superficie_min",
+                  "value": "200"
+                },
+                {
+                  "key": "superficie_max",
+                  "value": "100"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements/:id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const jsonSchemaSuccessResponse = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
+                  "pm.test(\"Succes response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(jsonSchemaSuccessResponse);",
+                  "});",
+                  "",
+                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaEmplacement\"));",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Emplacement matches schema\", function () {",
+                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
+                  "});",
+                  "",
+                  "pm.test(\"Emplacement is the expected one (seed)\", function () {",
+                  "    const e = jsonData.data;",
+                  "    pm.expect(e.id).to.eql(parseInt(pm.collectionVariables.get(\"emplacement_existing_id\")));",
+                  "    pm.expect(e.no_local_pavillon || e.No_local_pavillon).to.eql(\"CHUL-RC-001\");",
+                  "    pm.expect(e.statut).to.eql(\"Disponible\");",
+                  "    pm.expect(e.composante_id).to.eql(1);",
+                  "    pm.expect(Number(e.superficie_ajuste)).to.eql(875);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements/{{emplacement_existing_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements",
+                "{{emplacement_existing_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements/:id (not found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements/{{emplacement_fake_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements",
+                "{{emplacement_fake_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "/emplacements/:id (invalid id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
+                  "",
+                  "pm.test(\"Error response format is valid\", function () {",
+                  "    pm.response.to.have.jsonSchema(errorSchema);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/emplacements/{{emplacement_invalid_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "emplacements",
+                "{{emplacement_invalid_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "jsonSchemaSuccessResponse",
+      "value": "{\"type\":\"object\",\"required\":[\"status\",\"message\",\"data\",\"path\",\"timestamp\"],\"properties\":{\"status\":{\"type\":\"number\",\"enum\":[200,201]},\"message\":{\"type\":\"string\",\"minLength\":1},\"data\":{\"type\":[\"object\",\"array\",\"null\"]},\"path\":{\"type\":\"string\",\"pattern\":\"^/.*\"},\"timestamp\":{\"type\":\"string\",\"format\":\"date-time\"}},\"additionalProperties\":false}",
+      "type": "string"
+    },
+    {
+      "key": "jsonSchemaErrorResponse",
+      "value": "{\"type\":\"object\",\"required\":[\"status\",\"error\",\"message\",\"path\",\"timestamp\"],\"properties\":{\"status\":{\"type\":\"number\",\"minimum\":400,\"maximum\":599},\"error\":{\"type\":\"string\",\"minLength\":1},\"message\":{\"type\":\"string\",\"minLength\":1},\"path\":{\"type\":\"string\",\"pattern\":\"^/.*\"},\"timestamp\":{\"type\":\"string\",\"format\":\"date-time\"}},\"additionalProperties\":false}",
+      "type": "string"
+    },
+    {
+      "key": "jsonSchemaEmplacement",
+      "value": "{\"type\":\"object\",\"required\":[\"id\",\"composante_id\",\"categorie\",\"type_lieu\",\"superficie\",\"superficie_ajuste\",\"statut\"],\"properties\":{\"id\":{\"type\":\"integer\",\"minimum\":1},\"composante_id\":{\"type\":\"integer\",\"minimum\":1},\"no_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"No_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"categorie\":{\"type\":\"string\",\"minLength\":1},\"type_lieu\":{\"type\":\"string\",\"minLength\":1},\"lieu_specifique\":{\"type\":[\"string\",\"null\"]},\"description\":{\"type\":[\"string\",\"null\"]},\"superficie\":{\"type\":[\"number\",\"string\"]},\"fl_id\":{\"type\":[\"integer\",\"null\"]},\"ff_id\":{\"type\":[\"integer\",\"null\"]},\"superficie_ajuste\":{\"type\":[\"number\",\"string\"]},\"poid_relatif\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique_ancien\":{\"type\":[\"number\",\"string\",\"null\"]},\"commentaire\":{\"type\":[\"string\",\"null\"]},\"statut\":{\"type\":\"string\",\"enum\":[\"Disponible\",\"Réservé\",\"Occupé\",\"Inactif\"]}}}",
+      "type": "string"
+    },
+    {
+      "key": "jsonSchemaArrayEmplacement",
+      "value": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"composante_id\",\"categorie\",\"type_lieu\",\"superficie\",\"superficie_ajuste\",\"statut\"],\"properties\":{\"id\":{\"type\":\"integer\",\"minimum\":1},\"composante_id\":{\"type\":\"integer\",\"minimum\":1},\"no_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"No_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"categorie\":{\"type\":\"string\",\"minLength\":1},\"type_lieu\":{\"type\":\"string\",\"minLength\":1},\"lieu_specifique\":{\"type\":[\"string\",\"null\"]},\"description\":{\"type\":[\"string\",\"null\"]},\"superficie\":{\"type\":[\"number\",\"string\"]},\"fl_id\":{\"type\":[\"integer\",\"null\"]},\"ff_id\":{\"type\":[\"integer\",\"null\"]},\"superficie_ajuste\":{\"type\":[\"number\",\"string\"]},\"poid_relatif\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique_ancien\":{\"type\":[\"number\",\"string\",\"null\"]},\"commentaire\":{\"type\":[\"string\",\"null\"]},\"statut\":{\"type\":\"string\",\"enum\":[\"Disponible\",\"Réservé\",\"Occupé\",\"Inactif\"]}}}}",
+      "type": "string"
+    },
+    {
+      "key": "emplacement_existing_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "emplacement_fake_id",
+      "value": "999999",
+      "type": "string"
+    },
+    {
+      "key": "emplacement_invalid_id",
+      "value": "abc",
+      "type": "string"
+    }
+  ]
+}

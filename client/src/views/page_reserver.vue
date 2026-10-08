@@ -5,7 +5,7 @@
   </div>
 
   <main class="bg-white min-h-screen max-w-7xl mx-auto px-4 md:px-8 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-6xl mx-auto">
 
       <aside class="lg:sticky lg:top-8">
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -26,7 +26,7 @@
         </div>
       </aside>
 
-      <form class="max-w-lg bg-white p-8 rounded-2xl shadow-lg border border-gray-100 space-y-6"
+      <form class="w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100 space-y-6"
         @submit.prevent="onSubmit">
         <div class="space-y-1">
           <h2 class="text-xl font-semibold text-gray-900">Aperçu d'un emplacament</h2>
@@ -74,8 +74,39 @@
             class="mt-3 max-h-40 rounded-lg border border-gray-200 object-contain" />
         </div>
 
+        <div>
+          <p class="text-lg text-gray-600">Prix de l'emplacement</p>
+          <p class="text-xl">{{ plot?.formattedPrice || "Prix indisponible" }}</p>
+        </div>
+
+
+        <div>
+          <span class="block mb-2 text-sm font-medium text-gray-900">
+            Période de réservation <span class="text-red-500">*</span>
+          </span>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="date-start" class="block mb-1.5 text-xs text-gray-500">Début</label>
+              <input id="date-start" name="start" type="date" v-model="form.start" :min="today"
+                :max="form.end || undefined" required
+                class="block w-full px-3.5 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg transition focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500" />
+            </div>
+
+            <div>
+              <label for="date-end" class="block mb-1.5 text-xs text-gray-500">Fin</label>
+              <input id="date-end" name="end" type="date" v-model="form.end" :min="form.start || today" required
+                class="block w-full px-3.5 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg transition focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500" />
+            </div>
+          </div>
+
+          <p v-if="nbJours" class="mt-2 text-xs text-gray-500">
+            Durée : {{ nbJours }} jour{{ nbJours > 1 ? 's' : '' }}
+          </p>
+        </div>
+
         <button type="submit"
-          class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium rounded-lg text-sm px-5 py-2.5 shadow-sm transition focus:outline-none">
+          class="w-full text-white bg-[#0A1526] hover:bg-[#132238] hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium rounded-lg text-sm px-5 py-2.5 shadow-sm transition focus:outline-none">
           Confirmer réservation
         </button>
       </form>
@@ -86,14 +117,14 @@
 </template>
 
 <script setup>
-import { reactive, ref, onBeforeUnmount, onMounted } from 'vue'
+import { reactive, ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { mockPlots } from '../data/mockData.js'
 import Header from '../components/Header.vue'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 Mo
-
-const form = reactive({ nom: '', type: '', image: null })
+const form = reactive({ nom: '', type: '', image: null, start: '', end: '' })
+const today = new Date().toLocaleDateString('en-CA')
 const fileError = ref('')
 const previewUrl = ref('')
 
@@ -128,6 +159,7 @@ function onSubmit() {
 
 onBeforeUnmount(() => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+
 })
 
 const route = useRoute()
@@ -138,5 +170,14 @@ const plot = ref(null)
 onMounted(() => {
   const id = Number(route.params.id)
   plot.value = mockPlots.find((p) => p.id === id) || null
+})
+watch(() => form.start, (start) => {
+  if (form.end && start && form.end < start) form.end = ''
+})
+
+const nbJours = computed(() => {
+  if (!form.start || !form.end) return 0
+  const diff = new Date(form.end) - new Date(form.start)
+  return Math.round(diff / 86_400_000) + 1
 })
 </script>

@@ -2,7 +2,7 @@
 -- Seed de la base projet_integrateur
 -- ============================================================
 
-TRUNCATE Reservation, Achalandage, Sommaire, Emplacement, FL, FF, Hopital
+TRUNCATE Reservation, Utilisateur, Achalandage, Sommaire, Emplacement, FL, FF, Hopital
 RESTART IDENTITY CASCADE;
 
 -- 1. Hopital
@@ -80,20 +80,13 @@ INSERT INTO Sommaire
 (3,     0, 28000,  8000, 36000,     0, 30000, 10000,  40000),
 (4,  5000, 22000,  6000, 33000,  5000, 25000,  7000,  37000);
 
--- 7. Reservation
-INSERT INTO Reservation (emplacement_id, statut, date_debut, date_fin) VALUES
-(2, 'confirmed', '2026-01-15 08:00', '2026-12-31 17:00'),
-(5, 'confirmed', '2025-09-01 08:00', '2026-08-31 17:00'),
-(4, 'pending',   '2026-06-01 08:00', '2027-05-31 17:00'),
-(9, 'confirmed', '2025-04-01 08:00', '2026-03-31 17:00'),
-(1, 'cancelled', '2026-02-01 08:00', '2026-07-31 17:00'),
-(7, 'confirmed', '2025-06-01 08:00', '2026-05-31 17:00');
 
--- Vérification rapide
-SELECT 'Hopital' AS t, COUNT(*) FROM Hopital
-UNION ALL SELECT 'FL', COUNT(*) FROM FL
-UNION ALL SELECT 'FF', COUNT(*) FROM FF
-UNION ALL SELECT 'Emplacement', COUNT(*) FROM Emplacement
-UNION ALL SELECT 'Achalandage', COUNT(*) FROM Achalandage
-UNION ALL SELECT 'Sommaire', COUNT(*) FROM Sommaire
-UNION ALL SELECT 'Reservation', COUNT(*) FROM Reservation;
+-- 6. Reservation
+INSERT INTO Reservation (emplacement_id, utilisateur_id, statut, date_debut, date_fin) VALUES
+(2, 1, 'confirmed', '2026-01-15 08:00', '2026-12-31 17:00'),
+(5, 2, 'confirmed', '2025-09-01 08:00', '2026-08-31 17:00'),
+(4, 3, 'pending',   '2026-06-01 08:00', '2027-05-31 17:00'),
+(9, 1, 'confirmed', '2025-04-01 08:00', '2026-03-31 17:00'),
+(1, 2, 'cancelled', '2026-02-01 08:00', '2026-07-31 17:00'),
+(7, 3, 'confirmed', '2025-06-01 08:00', '2026-05-31 17:00');
+

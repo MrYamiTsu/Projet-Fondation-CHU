@@ -2,7 +2,6 @@
   <section
     class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col gap-6"
   >
-    <!-- En-tête de la section Carte -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2">
@@ -15,21 +14,20 @@
             <h3 class="text-lg font-black text-slate-900 tracking-tight">
               CARTE DES SITES HOSPITALIERS
             </h3>
-            <p class="text-xs text-slate-500">
-              Réseau du CHU de Québec &bull; Université Laval
-            </p>
+            <p class="text-xs text-slate-500">Réseau du CHU de Québec &bull; Université Laval</p>
           </div>
         </div>
       </div>
-
-      <!-- Contrôle du filtre actif -->
       <div class="flex items-center gap-2">
         <template v-if="activeHospital">
           <div
             class="flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-900 px-3 py-1.5 rounded-xl text-xs font-semibold"
           >
             <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-            <span>Hôpital filtré : <strong class="text-teal-950 font-black">{{ activeHospital }}</strong></span>
+            <span
+              >Hôpital filtré :
+              <strong class="text-teal-950 font-black">{{ activeHospital }}</strong></span
+            >
             <button
               @click="$emit('select-hospital', '')"
               class="ml-1 text-teal-700 hover:text-teal-950 hover:bg-teal-100 p-1 rounded-md transition-colors cursor-pointer text-xs"
@@ -54,12 +52,9 @@
         </template>
       </div>
     </div>
-
-    <!-- Carte interactive avec pins -->
     <div
       class="bg-gradient-to-b from-slate-100 to-slate-200/70 rounded-2xl relative map-grid flex flex-col justify-between p-4 min-h-[300px] border border-slate-200/80 shadow-inner overflow-hidden"
     >
-      <!-- Barre de recherche au-dessus de la carte -->
       <div class="flex flex-col sm:flex-row gap-2 z-10">
         <div
           class="bg-white/95 backdrop-blur shadow-sm border border-slate-200 rounded-xl p-2.5 flex items-center gap-2 flex-1 max-w-md"
@@ -81,8 +76,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Zone de la carte avec les marqueurs -->
       <div class="relative flex-1 my-6 min-h-[190px]">
         <div
           v-for="pin in pins"
@@ -95,7 +88,6 @@
           ]"
         >
           <div class="relative">
-            <!-- Halo lumineux pour le pin actif -->
             <span
               v-if="activeHospital === pin.code"
               class="absolute -inset-1 rounded-full bg-teal-400/50 animate-ping"
@@ -111,7 +103,6 @@
               <i class="fa-solid fa-hospital text-[9px]"></i>
             </div>
           </div>
-
           <span
             :class="[
               'text-[11px] font-black px-2.5 py-0.5 rounded-lg shadow-md transition-all border',
@@ -124,27 +115,26 @@
           </span>
         </div>
       </div>
-
-      <!-- Pied de carte avec aide -->
       <div
         class="text-[11px] text-slate-600 font-medium bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-200 self-start z-10 flex items-center gap-2 shadow-xs"
       >
         <i class="fa-solid fa-arrow-pointer text-teal-600 text-xs"></i>
-        <span>Cliquez sur un marqueur ou sur l'une des cartes d'hôpitaux ci-dessous pour filtrer</span>
+        <span
+          >Cliquez sur un marqueur ou sur l'une des cartes d'hôpitaux ci-dessous pour filtrer</span
+        >
       </div>
     </div>
-
-    <!-- NOUVELLE SECTION DES CARTES D'HÔPITAUX REHAUSSÉES -->
     <div>
       <div class="flex items-center justify-between mb-3.5">
         <div class="flex items-center gap-2">
-          <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+          <span
+            class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
+          >
             <i class="fa-solid fa-square-h text-teal-600 text-sm"></i>
             <span>Établissements hospitaliers</span>
           </span>
           <span class="text-[11px] text-slate-400 font-medium">({{ hospitals.length }} sites)</span>
         </div>
-
         <button
           v-if="activeHospital"
           @click="$emit('select-hospital', '')"
@@ -154,8 +144,6 @@
           <span>Réinitialiser la sélection</span>
         </button>
       </div>
-
-      <!-- Grille des superbes cartes d'hôpitaux -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
         <button
           v-for="hospital in hospitals"
@@ -170,7 +158,6 @@
                 : 'border-slate-200/80 hover:border-teal-400/60 hover:-translate-y-1 hover:shadow-xl',
           ]"
         >
-          <!-- Image de fond avec transition et dégradé -->
           <div class="absolute inset-0 w-full h-full">
             <img
               :src="hospital.image"
@@ -181,8 +168,6 @@
               class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/65 to-black/35 group-hover:via-slate-950/45 transition-colors"
             ></div>
           </div>
-
-          <!-- Haut de la carte : Code + Icône + Badge sélectionné -->
           <div class="relative z-10 flex items-center justify-between gap-2 w-full">
             <div class="flex items-center gap-1.5">
               <span
@@ -195,7 +180,6 @@
               >
                 {{ hospital.code }}
               </span>
-
               <div
                 class="w-6 h-6 rounded-md bg-white/20 backdrop-blur-md text-teal-300 flex items-center justify-center text-[10px] border border-white/20"
                 :title="hospital.specialty"
@@ -203,18 +187,7 @@
                 <i :class="hospital.icon"></i>
               </div>
             </div>
-
-            <!-- Badge Actif -->
-            <span
-              v-if="activeHospital === hospital.code"
-              class="bg-teal-400 text-slate-950 font-black text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md animate-pulse"
-            >
-              <i class="fa-solid fa-check text-[8px]"></i>
-              <span>Sélectionné</span>
-            </span>
           </div>
-
-          <!-- Bas de la carte : Nom + Spécialité + Compteur d'espaces -->
           <div class="relative z-10 space-y-1">
             <h4
               class="text-xs sm:text-sm font-black text-white leading-tight drop-shadow-md group-hover:text-teal-200 transition-colors line-clamp-2"
@@ -243,7 +216,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { usePlotsStore } from '../stores/plots.js'
 
 const props = defineProps({

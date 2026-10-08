@@ -114,7 +114,7 @@ export const mockPlots = [
     price: 220000, 
     formattedPrice: '220 000 $ CAD', 
     available: true, 
-    image: 'https://images.unsplash.com/photo-1519494080410-f9ab7d1970b2?w=600&auto=format&fit=crop' 
+    image: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&auto=format&fit=crop' 
   },
   { 
     id: 7, 

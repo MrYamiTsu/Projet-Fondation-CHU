@@ -64,7 +64,6 @@
         </div>
       </div>
       <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
-        <!-- Section Carte Interactive & Cartes d'Hôpitaux + Valorisation -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           <Map
             class="xl:col-span-8"
@@ -75,17 +74,14 @@
             @update:search-query="searchQuery = $event"
             @select-hospital="handleHospitalSelect"
           />
-
           <Valuation class="xl:col-span-4" :selected-hospital="selectedHospital" />
         </div>
-
         <PlotFilters
           v-model="filters"
-          :plots="mockPlots"
+          :plots="plotsStore.plots"
           :result-count="filteredPlots.length"
           @reset="resetFilters"
         />
-
         <div>
           <PlotList :plots="filteredPlots" @open-modal="openPlotDetail" />
         </div>
@@ -104,8 +100,7 @@ import PlotList from '../components/PlotList.vue'
 import PlotFilters from '../components/PlotFilter.vue'
 import Auth from '../components/Auth.vue'
 
-// Importation des données fixes et des stores Pinia
-import { hospitals, hospitalPins } from '../data/mockData.js'
+import { hospitals, hospitalPins, mockPlots } from '../data/mockData.js'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
 
@@ -116,6 +111,7 @@ const plotsStore = usePlotsStore()
 
 const isAuthModalOpen = ref(false)
 const accessAlert = ref(null)
+const searchQuery = ref('')
 
 const defaultFilters = {
   sector: '',
@@ -123,7 +119,6 @@ const defaultFilters = {
   maxPrice: 500000,
 }
 
-// Initialisation depuis l'URL
 const selectedHospital = ref(route.query.hospital || '')
 
 const filters = ref({
@@ -132,31 +127,35 @@ const filters = ref({
   maxPrice: route.query.maxPrice ? Number(route.query.maxPrice) : defaultFilters.maxPrice,
 })
 
-// 1. Écoute des filtres pour mettre à jour l'URL (en conservant les alertes existantes)
 watch(
   [selectedHospital, filters],
   () => {
-    // Copie des paramètres actuels (ex: reason=login_required) pour ne pas les écraser
     const query = { ...route.query }
-
-    if (selectedHospital.value) query.hospital = selectedHospital.value
-    else delete query.hospital
-
-    if (filters.value.sector) query.sector = filters.value.sector
-    else delete query.sector
-
-    if (filters.value.availability) query.availability = filters.value.availability
-    else delete query.availability
-
-    if (filters.value.maxPrice !== defaultFilters.maxPrice) query.maxPrice = filters.value.maxPrice
-    else delete query.maxPrice
-
+    if (selectedHospital.value) {
+      query.hospital = selectedHospital.value
+    } else {
+      delete query.hospital
+    }
+    if (filters.value.sector) {
+      query.sector = filters.value.sector
+    } else {
+      delete query.sector
+    }
+    if (filters.value.availability) {
+      query.availability = filters.value.availability
+    } else {
+      delete query.availability
+    }
+    if (filters.value.maxPrice !== defaultFilters.maxPrice) {
+      query.maxPrice = filters.value.maxPrice
+    } else {
+      delete query.maxPrice
+    }
     router.replace({ query })
   },
   { deep: true },
 )
 
-// 2. Gestion des alertes d'accès selon l'URL
 function checkRouteAlerts() {
   if (route.query.reason === 'admin_forbidden') {
     accessAlert.value = {
@@ -187,14 +186,41 @@ watch(
   },
 )
 
-// 3. Logique de filtrage basée sur le store Pinia (plotsStore.plots)
 const filteredPlots = computed(() => {
   return plotsStore.plots.filter((plot) => {
-    if (selectedHospital.value && plot.hospital !== selectedHospital.value) return false
-    if (filters.value.sector && plot.sector !== filters.value.sector) return false
-    if (filters.value.availability === 'available' && !plot.available) return false
-    if (filters.value.availability === 'reserved' && plot.available) return false
-    if (plot.price && plot.price > filters.value.maxPrice) return false
+    // 1. Filtre par Hôpital
+    if (selectedHospital.value && plot.hospital !== selectedHospital.value) {
+      return false
+    }
+
+    // 2. Filtre par Secteur
+    if (filters.value.sector) {
+      const targetSector = filters.value.sector.trim().toLowerCase()
+      const plotSector = (plot.sector || '').trim().toLowerCase()
+      if (plotSector !== targetSector) return false
+    }
+
+    // 3. Filtre par Disponibilité
+    if (filters.value.availability === 'available' && !plot.available) {
+      return false
+    }
+    if (filters.value.availability === 'reserved' && plot.available) {
+      return false
+    }
+
+    // 4. Filtre par Prix maximum
+    if (plot.price && plot.price > filters.value.maxPrice) {
+      return false
+    }
+
+    // 5. Recherche textuelle (nom, hôpital ou secteur)
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase().trim()
+      const matchName = plot.name?.toLowerCase().includes(q)
+      const matchSector = plot.sector?.toLowerCase().includes(q)
+      const matchHospital = plot.hospital?.toLowerCase().includes(q)
+      if (!matchName && !matchSector && !matchHospital) return false
+    }
 
     return true
   })
@@ -206,6 +232,7 @@ function handleHospitalSelect(code) {
 
 function resetFilters() {
   filters.value = { ...defaultFilters }
+  searchQuery.value = ''
 }
 
 function openPlotDetail(plot) {

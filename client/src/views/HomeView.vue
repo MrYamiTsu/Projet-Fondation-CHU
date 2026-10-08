@@ -186,6 +186,35 @@ watch(
   },
 )
 
+const defaultFilters = {
+  sector: '',
+  availability: '',
+  maxPrice: 500000,
+}
+
+const selectedHospital = ref(route.query.hospital || '')
+
+const filters = ref({
+  sector: route.query.sector || defaultFilters.sector,
+  availability: route.query.availability || defaultFilters.availability,
+  maxPrice: route.query.maxPrice ? Number(route.query.maxPrice) : defaultFilters.maxPrice,
+})
+
+watch(
+  [selectedHospital, filters],
+  () => {
+    const query = {}
+
+    if (selectedHospital.value) query.hospital = selectedHospital.value
+    if (filters.value.sector) query.sector = filters.value.sector
+    if (filters.value.availability) query.availability = filters.value.availability
+    if (filters.value.maxPrice !== defaultFilters.maxPrice) query.maxPrice = filters.value.maxPrice
+
+    router.replace({ query })
+  },
+  { deep: true },
+)
+
 const filteredPlots = computed(() => {
   return plotsStore.plots.filter((plot) => {
     // 1. Filtre par Hôpital

@@ -2,39 +2,54 @@ import pool from '../db.mjs';
 
 export async function rechercherEmplacementsParLieu(lieu) {
   const requete = `
-    SELECT *
+    SELECT emplacement.*, hopital.acronyme
     FROM emplacement
-    WHERE lieu_specifique ILIKE $1
+    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
+    WHERE emplacement.lieu_specifique ILIKE $1
   `;
 
-  const resultat = await pool.query(requete, ['%' + lieu + '%']);
+  const result = await pool.query(requete, ['%' + lieu + '%']);
 
-  return resultat.rows;
+  return result.rows;
 }
 
 export async function rechercherEmplacementsParDescription(mot) {
   const requete = `
-    SELECT *
+    SELECT emplacement.*, hopital.acronyme
     FROM emplacement
-    WHERE  description ILIKE $1
+    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
+    WHERE emplacement.description ILIKE $1
   `;
 
-  const resultat = await pool.query(requete, ['%' + mot + '%']);
+  const result = await pool.query(requete, ['%' + mot + '%']);
 
-  return resultat.rows;
+  return result.rows;
 }
+
 export async function rechercherEmplacementParId(id) {
   const requete = `
-    SELECT *
+    SELECT emplacement.*, hopital.acronyme
     FROM emplacement
-    WHERE id = $1
+    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
+    WHERE emplacement.id = $1
   `;
 
-  const resultat = await pool.query(requete, [id]);
+  const result = await pool.query(requete, [id]);
 
-  if (resultat.rows.length === 0) {
+  if (result.rows.length === 0) {
     return null;
   }
 
-  return resultat.rows[0];
+  return result.rows[0];
+}
+
+export async function findAllPlots(){
+  const request=`
+    SELECT emplacement.*, hopital.acronyme
+    FROM emplacement
+    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
+  `;
+    const result = await pool.query(request,);
+    return result.rows;
+
 }

@@ -35,3 +35,18 @@ export function validateReservation(req, res, next) {
 
   next();
 }
+export function validateReservationId(req, res, next) {
+  const { id } = req.params;
+
+  if (
+    !id ||
+    !Number.isSafeInteger(Number(id)) ||
+    Number(id) <= 0
+  ) {
+    return res.status(400).json({
+      message: "Identifiant de réservation invalide"
+    });
+  }
+
+  next();
+}

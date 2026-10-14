@@ -53,3 +53,70 @@ export async function findAllPlots(){
     return result.rows;
 
 }
+
+export async function createPlot(emplacement) {
+  const {
+    composante_id,
+    no_local_pavillon,
+    categorie,
+    type_lieu,
+    lieu_specifique,
+    description,
+    superficie,
+    fl_id,
+    ff_id,
+    superficie_ajuste,
+    poid_relatif,
+    valeur_toponymique,
+    valeur_toponymique_ancien,
+    commentaire,
+    statut
+  } = emplacement;
+
+  const requete = `
+    INSERT INTO emplacement (
+      composante_id,
+      no_local_pavillon,
+      categorie,
+      type_lieu,
+      lieu_specifique,
+      description,
+      superficie,
+      fl_id,
+      ff_id,
+      superficie_ajuste,
+      poid_relatif,
+      valeur_toponymique,
+      valeur_toponymique_ancien,
+      commentaire,
+      statut
+    )
+    VALUES (
+      $1, $2, $3, $4, $5,
+      $6, $7, $8, $9, $10,
+      $11, $12, $13, $14, $15
+    )
+    RETURNING *
+  `;
+
+  const result = await pool.query(requete, [
+    composante_id,
+    no_local_pavillon,
+    categorie,
+    type_lieu,
+    lieu_specifique,
+    description,
+    superficie,
+    fl_id,
+    ff_id,
+    superficie_ajuste,
+    poid_relatif,
+    valeur_toponymique,
+    valeur_toponymique_ancien,
+    commentaire,
+    statut
+  ]);
+
+  return result.rows[0];
+}
+

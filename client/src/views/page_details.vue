@@ -1,10 +1,14 @@
 <template>
   <div>
     <Header
-      :hospitals="hospitals"
-      :selected-hospital="selectedHospital"
-      @select-hospital="handleHospitalSelect"
-    />
+        :hospitals="hospitals"
+        :selected-hospital="selectedHospital"
+        :current-user="currentUser"
+        @select-hospital="handleHospitalSelect"
+        @open-auth="isAuthModalOpen = true"
+        @logout="handleLogout"
+      >
+      </Header>
   </div>
 
   <div v-if="plot" class="bg-white min-h-screen">
@@ -16,7 +20,7 @@
           <div class="relative rounded-2xl overflow-hidden h-[380px]">
             <img
               :src="plot.image"
-              :alt="plot.name"
+              :alt="plot?.name || 'Image de l\'emplacement non disponible'"
               class="w-full h-full object-cover"
             />
             <span
@@ -35,10 +39,10 @@
 
           <div>
             <p class="text-sm font-semibold text-blue-600 uppercase tracking-wide">
-              {{ plot.hospital }}
+              {{ plot?.hospital || 'Hôpital non disponible' }}
             </p>
             <h1 class="text-3xl font-bold text-slate-900 mt-1">
-              {{ plot.name }}
+              {{ plot?.name || 'Nom de l\'emplacement non disponible' }}
             </h1>
           </div>
 
@@ -46,7 +50,7 @@
             <div>
               <p class="text-sm text-slate-500">Secteur de soins</p>
               <p class="text-base font-medium text-slate-800">
-                {{ plot.sector }}
+                {{ plot?.sector || 'Secteur non disponible' }}
               </p>
             </div>
           </div>
@@ -90,11 +94,11 @@
             <div>
               <p class="text-sm text-slate-500">Valeur de l'espace</p>
               <p class="text-3xl font-bold text-slate-900">
-                {{ plot.formattedPrice }}
+                {{ plot?.formattedPrice || 'Prix non disponible' }}
               </p>
             </div>
 
-           <button
+           <button @click="openPlotReserver"
                 class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
                 <i class="fa-solid fa-calendar-check"></i>
                 Réserver l'emplacement
@@ -125,4 +129,9 @@ onMounted(() => {
   const id = Number(route.params.id)
   plot.value = mockPlots.find((p) => p.id === id) || null
 })
+
+function openPlotReserver(id) {
+  id = route.params.id
+  router.push(`/reservation/${id}`)
+}
 </script>

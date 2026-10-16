@@ -1,14 +1,15 @@
 import app from './app.mjs';
 
 const port = Number(process.env.PORT ?? 3000);
+const host = process.env.HOST || '0.0.0.0';
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   console.error('PORT doit être un nombre entier entre 1 et 65535.');
   process.exit(1);
 }
 
-const server = app.listen(port, () => {
-  console.log(`Serveur démarré : http://localhost:${port}`);
+const server = app.listen(port, host, () => {
+  console.log(`Serveur démarré : http://${host}:${port}`);
 });
 
 server.on('error', (error) => {

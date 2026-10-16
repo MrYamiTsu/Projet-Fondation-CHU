@@ -24,10 +24,11 @@ const router = createRouter({
       component: AdminView,
       meta: { requiresAdmin: true },
     },
+    {
       path: '/reservation/:id',
       name: 'reservation',
       component: pageReservation,
-    }
+    },
   ],
 })
 

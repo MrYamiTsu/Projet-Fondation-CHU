@@ -1,7 +1,18 @@
 <template>
   <div>
-    <Header :hospitals="hospitals" :selected-hospital="selectedHospital" :current-user="currentUser"
-      @select-hospital="handleHospitalSelect" @open-auth="isAuthModalOpen = true" @logout="handleLogout" />
+    <Header
+      :current-user="authStore.currentUser"
+      @open-auth="isAuthModalOpen = true"
+      @logout="authStore.logout"
+    >
+      <template #auth>
+        <Auth
+          :is-open="isAuthModalOpen"
+          :users="authStore.users"
+          @close="isAuthModalOpen = false"
+        />
+      </template>
+    </Header>
   </div>
 
   <main class="bg-white min-h-screen max-w-7xl mx-auto px-4 md:px-8 py-8">
@@ -121,6 +132,16 @@ import { reactive, ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { mockPlots } from '../data/mockData.js'
 import Header from '../components/Header.vue'
+import Auth from '../components/Auth.vue'
+import { useAuthStore } from '../stores/auth.js'
+import { usePlotsStore } from '../stores/plots.js'
+
+const authStore = useAuthStore()
+const plotsStore = usePlotsStore()
+const isAuthModalOpen = ref(false)
+
+const route = useRoute()
+const router = useRouter()
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 Mo
 const form = reactive({ nom: '', type: '', image: null, start: '', end: '' })
@@ -159,18 +180,13 @@ function onSubmit() {
 
 onBeforeUnmount(() => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-
 })
 
-const route = useRoute()
-const router = useRouter()
-
-const plot = ref(null)
-
-onMounted(() => {
+const plot = computed(() => {
   const id = Number(route.params.id)
-  plot.value = mockPlots.find((p) => p.id === id) || null
+  return plotsStore.getPlotById(id) || mockPlots.find((p) => p.id === id) || null
 })
+
 watch(() => form.start, (start) => {
   if (form.end && start && form.end < start) form.end = ''
 })

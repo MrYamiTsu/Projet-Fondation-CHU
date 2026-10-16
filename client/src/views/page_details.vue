@@ -13,14 +13,6 @@
         />
       </template>
     </Header>
-        :hospitals="hospitals"
-        :selected-hospital="selectedHospital"
-        :current-user="currentUser"
-        @select-hospital="handleHospitalSelect"
-        @open-auth="isAuthModalOpen = true"
-        @logout="handleLogout"
-      >
-      </Header>
   </div>
 
   <div v-if="plot" class="bg-white min-h-screen">
@@ -120,14 +112,11 @@
             </div>
 
             <button
+              @click="openPlotReserver"
               class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
             >
               <i class="fa-solid fa-calendar-check"></i>
               Réserver l'emplacement
-           <button @click="openPlotReserver"
-                class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
-                <i class="fa-solid fa-calendar-check"></i>
-                Réserver l'emplacement
             </button>
           </div>
         </div>
@@ -165,9 +154,10 @@ const plot = computed(() => {
 function handleHospitalSelect(code) {
   selectedHospital.value = selectedHospital.value === code ? '' : code
   router.push('/')
-  
-function openPlotReserver(id) {
-  id = route.params.id
+}
+
+function openPlotReserver() {
+  const id = route.params.id
   router.push(`/reservation/${id}`)
 }
 </script>

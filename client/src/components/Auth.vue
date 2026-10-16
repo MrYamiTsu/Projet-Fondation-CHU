@@ -12,7 +12,7 @@
       ref="panel"
       role="dialog"
       aria-label="Connexion"
-      class="absolute right-0 top-full mt-3 z-50 w-80 max-w-[calc(100vw-2rem)] origin-top-right bg-[#0a1526] text-white border border-slate-700/80 rounded-xl shadow-2xl shadow-black/40 p-4"
+      class="absolute right-0 top-full mt-3 z-50 w-84 max-w-[calc(100vw-2rem)] origin-top-right bg-[#0a1526] text-white border border-slate-700/80 rounded-xl shadow-2xl shadow-black/50 p-4"
     >
       <span
         class="absolute -top-1.5 right-12 w-3 h-3 rotate-45 bg-[#0a1526] border-l border-t border-slate-700/80"
@@ -21,15 +21,16 @@
       <button
         @click="close"
         aria-label="Fermer"
-        class="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-full text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+        class="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-full text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
       >
         ✕
       </button>
+
       <div class="flex gap-4 border-b border-slate-700/80 mb-4 pr-6">
         <button
           @click="switchTab(false)"
           :class="[
-            'pb-2 text-[11px] font-black uppercase tracking-wider transition-colors border-b-2 -mb-px',
+            'pb-2 text-[11px] font-black uppercase tracking-wider transition-colors border-b-2 -mb-px cursor-pointer',
             !isSignUp
               ? 'border-teal-400 text-teal-400'
               : 'border-transparent text-slate-400 hover:text-slate-200',
@@ -40,7 +41,7 @@
         <button
           @click="switchTab(true)"
           :class="[
-            'pb-2 text-[11px] font-black uppercase tracking-wider transition-colors border-b-2 -mb-px',
+            'pb-2 text-[11px] font-black uppercase tracking-wider transition-colors border-b-2 -mb-px cursor-pointer',
             isSignUp
               ? 'border-teal-400 text-teal-400'
               : 'border-transparent text-slate-400 hover:text-slate-200',
@@ -52,16 +53,17 @@
 
       <div
         v-if="errorMessage"
-        class="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-lg font-medium"
+        class="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-lg font-medium flex items-center gap-2"
       >
-        {{ errorMessage }}
+        <i class="fa-solid fa-circle-exclamation text-red-400 text-xs"></i>
+        <span>{{ errorMessage }}</span>
       </div>
 
       <form @submit.prevent="submit" class="space-y-3">
         <div v-if="isSignUp">
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1"
-            >Nom complet</label
-          >
+          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Nom complet
+          </label>
           <input
             v-model="form.name"
             type="text"
@@ -71,9 +73,9 @@
           />
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1"
-            >Email</label
-          >
+          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Email
+          </label>
           <input
             v-model="form.email"
             type="email"
@@ -83,9 +85,9 @@
           />
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1"
-            >Mot de passe</label
-          >
+          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Mot de passe
+          </label>
           <input
             v-model="form.password"
             type="password"
@@ -94,19 +96,53 @@
             class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
           />
         </div>
+
         <button
           type="submit"
-          class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 border border-teal-300/40"
+          class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 border border-teal-300/40 cursor-pointer"
         >
           {{ isSignUp ? 'Créer mon compte' : 'Se connecter' }}
         </button>
       </form>
+
+      <!-- Comptes de test rapides -->
+      <div v-if="!isSignUp" class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+        <p class="font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-teal-400 text-[10px]"></i>
+          <span>Comptes pré-configurés :</span>
+        </p>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            @click="fillTestAccount('admin@admin.ca', '123')"
+            class="px-2 py-1 bg-slate-800/80 hover:bg-teal-500/20 border border-slate-700 hover:border-teal-400/60 rounded text-left transition-colors cursor-pointer group"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-[10px]">Admin</span>
+              <span class="text-[9px] bg-teal-500/20 text-teal-300 px-1 rounded font-semibold">Accès admin</span>
+            </div>
+            <span class="text-[9px] text-slate-400 group-hover:text-slate-300 font-mono">admin@admin.ca</span>
+          </button>
+          <button
+            type="button"
+            @click="fillTestAccount('user@user.ca', '123')"
+            class="px-2 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded text-left transition-colors cursor-pointer group"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white text-[10px]">Utilisateur</span>
+              <span class="text-[9px] bg-slate-700 text-slate-300 px-1 rounded font-semibold">Standard</span>
+            </div>
+            <span class="text-[9px] text-slate-400 group-hover:text-slate-300 font-mono">user@user.ca</span>
+          </button>
+        </div>
+      </div>
     </div>
   </Transition>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -114,6 +150,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'login', 'signup'])
+
+const authStore = useAuthStore()
 
 const panel = ref(null)
 const isSignUp = ref(false)
@@ -125,6 +163,12 @@ function resetForm() {
   form.name = ''
   form.email = ''
   form.password = ''
+}
+
+function fillTestAccount(email, password) {
+  form.email = email
+  form.password = password
+  errorMessage.value = ''
 }
 
 function switchTab(toSignUp) {
@@ -144,28 +188,32 @@ function submit() {
 
 function handleLogin() {
   errorMessage.value = ''
-  const user = props.users.find((u) => u.email === form.email && u.password === form.password)
+  const result = authStore.login(form.email, form.password)
 
-  if (!user) {
-    errorMessage.value = 'Email ou mot de passe incorrect.'
+  if (!result.success) {
+    errorMessage.value = result.message || 'Email ou mot de passe incorrect.'
     return
   }
 
-  emit('login', user)
+  emit('login', result.user)
   resetForm()
   close()
 }
 
 function handleSignUp() {
   errorMessage.value = ''
-  const exists = props.users.some((u) => u.email === form.email)
+  const result = authStore.signup({
+    name: form.name,
+    email: form.email,
+    password: form.password,
+  })
 
-  if (exists) {
-    errorMessage.value = 'Un compte existe déjà avec cet email.'
+  if (!result.success) {
+    errorMessage.value = result.message || 'Erreur lors de la création du compte.'
     return
   }
 
-  emit('signup', { name: form.name, email: form.email, password: form.password })
+  emit('signup', result.user)
   resetForm()
   close()
 }

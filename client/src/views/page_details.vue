@@ -1,18 +1,31 @@
 <template>
   <div>
     <Header
-        :hospitals="hospitals"
-        :selected-hospital="selectedHospital"
-        :current-user="currentUser"
-        @select-hospital="handleHospitalSelect"
-        @open-auth="isAuthModalOpen = true"
-        @logout="handleLogout"
-      >
-      </Header>
+      :current-user="authStore.currentUser"
+      @open-auth="isAuthModalOpen = true"
+      @logout="authStore.logout"
+    >
+      <template #auth>
+        <Auth
+          :is-open="isAuthModalOpen"
+          :users="authStore.users"
+          @close="isAuthModalOpen = false"
+        />
+      </template>
+    </Header>
   </div>
 
   <div v-if="plot" class="bg-white min-h-screen">
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <div class="mb-4">
+        <router-link
+          to="/"
+          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Retour aux emplacements</span>
+        </router-link>
+      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <!-- Colonne principale -->
@@ -98,10 +111,12 @@
               </p>
             </div>
 
-           <button @click="openPlotReserver"
-                class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
-                <i class="fa-solid fa-calendar-check"></i>
-                Réserver l'emplacement
+            <button
+              @click="openPlotReserver"
+              class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-calendar-check"></i>
+              Réserver l'emplacement
             </button>
           </div>
         </div>
@@ -115,23 +130,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { mockPlots } from '../data/mockData.js'
+import { hospitals } from '../data/mockData.js'
 import Header from '../components/Header.vue'
+import Auth from '../components/Auth.vue'
+import { usePlotsStore } from '../stores/plots.js'
+import { useAuthStore } from '../stores/auth.js'
 
 const route = useRoute()
 const router = useRouter()
+const plotsStore = usePlotsStore()
+const authStore = useAuthStore()
 
-const plot = ref(null)
+const selectedHospital = ref('')
+const isAuthModalOpen = ref(false)
 
-onMounted(() => {
+const plot = computed(() => {
   const id = Number(route.params.id)
-  plot.value = mockPlots.find((p) => p.id === id) || null
+  return plotsStore.getPlotById(id) || null
 })
 
-function openPlotReserver(id) {
-  id = route.params.id
+function handleHospitalSelect(code) {
+  selectedHospital.value = selectedHospital.value === code ? '' : code
+  router.push('/')
+}
+
+function openPlotReserver() {
+  const id = route.params.id
   router.push(`/reservation/${id}`)
 }
 </script>

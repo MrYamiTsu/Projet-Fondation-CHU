@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import PageDetail from '../views/page_details.vue'
 import AdminView from '../views/AdminView.vue'
 import { useAuthStore } from '../stores/auth.js'
+import pageReservation from '../views/page_reserver.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +24,10 @@ const router = createRouter({
       component: AdminView,
       meta: { requiresAdmin: true },
     },
+      path: '/reservation/:id',
+      name: 'reservation',
+      component: pageReservation,
+    }
   ],
 })
 

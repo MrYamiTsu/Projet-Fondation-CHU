@@ -14,7 +14,7 @@ export async function getAllReservations() {
 export async function createReservation(emplacementId, dateDebut, dateFin) {
   const requete = `
     INSERT INTO reservation (emplacement_id, statut, date_debut, date_fin)
-    VALUES ($1, 'en attente', $2, $3)
+    VALUES ($1, 'pending', $2, $3)
     RETURNING *
   `;
 
@@ -83,9 +83,9 @@ export async function getReservationsByStatus(status) {
 export async function confirmReservation(id) {
   const requete = `
     UPDATE reservation
-    SET statut = 'confirmé'
+    SET statut = 'confirmed'
     WHERE id = $1
-    AND statut = 'en attente'
+    AND statut = 'pending'
     RETURNING *
   `;
 

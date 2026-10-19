@@ -1,1898 +1,3017 @@
 {
   "info": {
+    "_postman_id": "bdfe55d3-df8c-4ea8-8e3b-8638f1f4f25a",
     "name": "PROJET-INTEGRATEUR",
-    "description": "Tests des routes",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "description": "Tests Emplacement + Réservation, pilotés par des variables de collection (onglet Variables). emp_* / res_* / create*_ / upd_* / conflict_*. Chaque requête déclare son attente dans son pre-request (variable t = type|code|valeurs). Le dossier 'Règles métier pas encore dans le code' échoue tant que ces règles ne sont pas implémentées.\n\nRéinitialisation automatique : la première requête remet la variable de collection `created_id` à vide avant le lancement des tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52980275",
+    "_collection_link": "https://go.postman.co/collection/52980275-bdfe55d3-df8c-4ea8-8e3b-8638f1f4f25a?source=collection_link"
   },
   "item": [
     {
       "name": "Emplacement",
       "item": [
         {
-          "name": "/emplacements",
-          "event": [
+          "name": "Liste",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(10);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?statut=Disponible",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(5);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 3, 4, 6, 8]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?statut=Disponible",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "GET /emplacements (tous)",
+              "event": [
                 {
-                  "key": "statut",
-                  "value": "Disponible"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set(\"created_id\", \"\"); // Réinitialise l’identifiant créé lors d’une exécution précédente.",
+                      "pm.variables.set(\"t\",\"elist|200|1,2,3,4,5,6,7,8,9,10\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?statut=Réservé",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(2);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([2, 9]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?statut=Réservé",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "statut",
-                  "value": "Réservé"
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements"
+                  ]
                 }
-              ]
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements?statut=Occupé",
-          "event": [
+          "name": "Recherche par lieu",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(2);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([5, 7]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?statut=Occupé",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "lieu 1 (emp_lieu_1)",
+              "event": [
                 {
-                  "key": "statut",
-                  "value": "Occupé"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"elist|200|{{emp_lieu_1_ids}}\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?statut=Inactif",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(1);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([10]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?statut=Inactif",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "statut",
-                  "value": "Inactif"
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu={{emp_lieu_1}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "{{emp_lieu_1}}"
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?composante_id=1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(3);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 2, 3]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?composante_id=1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "lieu 2 (emp_lieu_2)",
+              "event": [
                 {
-                  "key": "composante_id",
-                  "value": "1"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"elist|200|4\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (composante inexistante)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(0);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?composante_id=999",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "composante_id",
-                  "value": "999"
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu={{emp_lieu_2}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "{{emp_lieu_2}}"
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?type_lieu=Espace public",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(4);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 4, 7, 9]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?type_lieu=Espace public",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "lieu 1 en MAJUSCULES (insensible à la casse)",
+              "event": [
                 {
-                  "key": "type_lieu",
-                  "value": "Espace public"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"elist|200|{{emp_lieu_1_ids}}\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?type_lieu=Salle d'attente",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(2);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([2, 5]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?type_lieu=Salle d'attente",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "type_lieu",
-                  "value": "Salle d'attente"
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu={{emp_lieu_1_maj}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "{{emp_lieu_1_maj}}"
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?categorie=Intérieur",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(10);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?categorie=Intérieur",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "lieu 1 avec espaces autour (trim)",
+              "event": [
                 {
-                  "key": "categorie",
-                  "value": "Intérieur"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"elist|200|{{emp_lieu_1_ids}}\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?superficie_min=100",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(6);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 2, 4, 5, 7, 9]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_min=100",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "superficie_min",
-                  "value": "100"
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu=%20%20{{emp_lieu_1}}%20%20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "%20%20{{emp_lieu_1}}%20%20"
+                    }
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements?superficie_max=50",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(3);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([3, 8, 10]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_max=50",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "lieu sans résultat (tableau vide)",
+              "event": [
                 {
-                  "key": "superficie_max",
-                  "value": "50"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"elist|200|\");"
+                    ]
+                  }
                 }
-              ]
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu={{valeur_inconnue}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "{{valeur_inconnue}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "lieu absent (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un lieu à rechercher\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "lieu vide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un lieu à rechercher\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu=",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "lieu espaces seulement (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un lieu à rechercher\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu=%20%20%20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "%20%20%20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "lieu en double -> tableau (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un lieu à rechercher\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/recherche?lieu={{emp_lieu_1}}&lieu={{emp_lieu_2}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "recherche"
+                  ],
+                  "query": [
+                    {
+                      "key": "lieu",
+                      "value": "{{emp_lieu_1}}"
+                    },
+                    {
+                      "key": "lieu",
+                      "value": "{{emp_lieu_2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements (superficie min + max)",
-          "event": [
+          "name": "Par id",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(4);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([2, 5, 7, 9]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_min=100&superficie_max=200",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "GET /emplacements/:id (emp_id)",
+              "event": [
                 {
-                  "key": "superficie_min",
-                  "value": "100"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"eone|200|{{emp_id}},{{emp_no_local}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/{{emp_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "{{emp_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id inexistant (404)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|404|Aucun emplacement trouvé avec cet id\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/{{id_inexistant}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "{{id_inexistant}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id non numérique (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un id entier positif valide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/abc",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "abc"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 0 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un id entier positif valide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/0",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id négatif (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un id entier positif valide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/-1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "-1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id décimal (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Veuillez fournir un id entier positif valide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/emplacements/1.5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "emplacements",
+                    "1.5"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reservation",
+      "item": [
+        {
+          "name": "Liste",
+          "item": [
+            {
+              "name": "GET /reservations (toutes)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|1,2,3,4,5,6\");"
+                    ]
+                  }
                 },
                 {
-                  "key": "superficie_max",
-                  "value": "200"
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      ""
+                    ]
+                  }
                 }
-              ]
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements?valeur_toponymique_min=30000",
-          "event": [
+          "name": "Recherche par id",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(4);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 4, 5, 7]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?valeur_toponymique_min=30000",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "GET /reservations/:id - réservation A",
+              "event": [
                 {
-                  "key": "valeur_toponymique_min",
-                  "value": "30000"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rone|200|{{res_a_id}},{{res_emp_a}},{{res_statut_1}}\");"
+                    ]
+                  }
                 }
-              ]
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{res_a_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{res_a_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET /reservations/:id - réservation B",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rone|200|{{res_b_id}},{{res_b_emp_id}},{{res_statut_2}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{res_b_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{res_b_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GET /reservations/:id - réservation C",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rone|200|{{res_c_id}},{{res_emp_b}},{{res_statut_3}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{res_c_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{res_c_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id inexistant (404)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|404|Réservation introuvable\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{id_inexistant}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{id_inexistant}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = abc (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant de réservation invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/abc",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "abc"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 0 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant de réservation invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/0",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = -1 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant de réservation invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/-1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "-1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 1.5 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant de réservation invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/1.5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "1.5"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id espaces (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant de réservation invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/%20%20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "%20%20"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id trop grand, hors entier sûr (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant de réservation invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/99999999999999999999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "99999999999999999999"
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements?poid_relatif_min=8",
-          "event": [
+          "name": "Recherche par statut",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(3);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 4, 5]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?poid_relatif_min=8",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "statut 1 (res_statut_1)",
+              "event": [
                 {
-                  "key": "poid_relatif_min",
-                  "value": "8"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_statut_1_ids}}\");"
+                    ]
+                  }
                 }
-              ]
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status={{res_statut_1}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{res_statut_1}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "statut 2 (res_statut_2)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_statut_2_ids}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status={{res_statut_2}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{res_statut_2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "statut 3 (res_statut_3)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_c_id}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status={{res_statut_3}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{res_statut_3}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "statut 2 en MAJUSCULES (ILIKE insensible à la casse)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_statut_2_ids}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status={{res_statut_2_maj}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{res_statut_2_maj}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "statut 2 avec espaces autour (trim)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_statut_2_ids}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status=%20%20{{res_statut_2}}%20%20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "%20%20{{res_statut_2}}%20%20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "statut inconnu (liste vide)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status={{valeur_inconnue}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{valeur_inconnue}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "status absent (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Statut invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "status vide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Statut invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status=",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "status espaces seulement (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Statut invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status=%20%20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "%20%20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "status en double -> tableau (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Statut invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/status?status={{res_statut_1}}&status={{res_statut_2}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{res_statut_1}}"
+                    },
+                    {
+                      "key": "status",
+                      "value": "{{res_statut_2}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements?q=hall",
-          "event": [
+          "name": "Recherche par emplacement",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(3);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 7, 9]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?q=hall",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "emplacement A (res_emp_a)",
+              "event": [
                 {
-                  "key": "q",
-                  "value": "hall"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_a_id}}\");"
+                    ]
+                  }
                 }
-              ]
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/{{res_emp_a}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "{{res_emp_a}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement B (res_emp_b)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|{{res_c_id}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/{{res_emp_b}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "{{res_emp_b}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement sans réservation (res_emp_libre)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/{{res_emp_libre}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "{{res_emp_libre}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement inexistant (liste vide)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rlist|200|\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/{{id_inexistant}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "{{id_inexistant}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement = abc (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant d'emplacement invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/abc",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "abc"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement = 0 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant d'emplacement invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/0",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement = -1 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant d'emplacement invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/-1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "-1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement = 1.5 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant d'emplacement invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/1.5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "1.5"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacement espaces (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400|Identifiant d'emplacement invalide\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/emplacement/%20%20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "emplacement",
+                    "%20%20"
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements?q=atrium",
-          "event": [
+          "name": "Creation d'une réservation",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(1);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([4]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?q=atrium",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+              "name": "Création 1 (create1_*)",
+              "event": [
                 {
-                  "key": "q",
-                  "value": "atrium"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rcreate|201|{{create1_emp_id}},{{res_statut_2}}\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (q sur no local)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(3);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 2, 3]);",
-                  "});"
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?q=CHUL",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "CHUL"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (q sans résultat)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(0);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?q=introuvable",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "introuvable"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (statut + composante)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(2);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 3]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?statut=Disponible&composante_id=1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "statut",
-                  "value": "Disponible"
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "composante_id",
-                  "value": "1"
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (type_lieu + statut)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(2);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 4]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?type_lieu=Espace public&statut=Disponible",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "Création 2 (create2_*)",
+              "event": [
                 {
-                  "key": "type_lieu",
-                  "value": "Espace public"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rcreate|201|{{create2_emp_id}},{{res_statut_2}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create2_emp_id}}, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "statut",
-                  "value": "Disponible"
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (q + statut)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(1);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([9]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?q=hall&statut=Réservé",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "Création 3 (create3_*)",
+              "event": [
                 {
-                  "key": "q",
-                  "value": "hall"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rcreate|201|{{create3_emp_id}},{{res_statut_2}}\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create3_emp_id}}, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "statut",
-                  "value": "Réservé"
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (composante + statut inactif)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(1);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([10]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?composante_id=4&statut=Inactif",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "Corps vide (400)",
+              "event": [
                 {
-                  "key": "composante_id",
-                  "value": "4"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "statut",
-                  "value": "Inactif"
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (superficie min + statut)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(schema);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaArrayEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement array matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Number of emplacements found is correct\", function () {",
-                  "    pm.expect(jsonData.data.length).to.eql(2);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacements returned are the expected ones\", function () {",
-                  "    const found = jsonData.data.map(e => e.id).sort((a, b) => a - b);",
-                  "    pm.expect(found).to.eql([1, 4]);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_min=100&statut=Disponible",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "JSON malformé (400)",
+              "event": [
                 {
-                  "key": "superficie_min",
-                  "value": "100"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": 3,",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "statut",
-                  "value": "Disponible"
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (statut invalide)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
+              },
+              "response": []
             },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?statut=invalide",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
+            {
+              "name": "emplacementId manquant (400)",
+              "event": [
                 {
-                  "key": "statut",
-                  "value": "invalide"
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
                 }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (composante_id invalide)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?composante_id=abc",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "composante_id",
-                  "value": "abc"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (superficie_min invalide)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_min=abc",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "superficie_min",
-                  "value": "abc"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (superficie_min négative)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_min=-5",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "superficie_min",
-                  "value": "-5"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements (superficie min > max)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements?superficie_min=200&superficie_max=100",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "emplacements"
-              ],
-              "query": [
-                {
-                  "key": "superficie_min",
-                  "value": "200"
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "superficie_max",
-                  "value": "100"
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
                 }
-              ]
+              },
+              "response": []
+            },
+            {
+              "name": "dateDebut manquant (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateFin manquant (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{create_debut}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacementId texte (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": \"abc\", \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacementId = 0 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": 0, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacementId négatif (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": -1, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacementId décimal (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": 1.5, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacementId null (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": null, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateDebut format invalide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"pas-une-date\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateDebut numérique (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": 12345, \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateFin format invalide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"31/12/2027\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateFin vide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateFin avant dateDebut (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{create_fin}}\", \"dateFin\": \"{{create_debut}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateFin = dateDebut (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_debut}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements/:id",
-          "event": [
+          "name": "Modification (PUT)",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const jsonSchemaSuccessResponse = JSON.parse(pm.collectionVariables.get(\"jsonSchemaSuccessResponse\"));",
-                  "pm.test(\"Succes response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(jsonSchemaSuccessResponse);",
-                  "});",
-                  "",
-                  "const jsonSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaEmplacement\"));",
-                  "var jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Emplacement matches schema\", function () {",
-                  "    pm.expect(jsonData.data).to.have.jsonSchema(jsonSchema);",
-                  "});",
-                  "",
-                  "pm.test(\"Emplacement is the expected one (seed)\", function () {",
-                  "    const e = jsonData.data;",
-                  "    pm.expect(e.id).to.eql(parseInt(pm.collectionVariables.get(\"emplacement_existing_id\")));",
-                  "    pm.expect(e.no_local_pavillon || e.No_local_pavillon).to.eql(\"CHUL-RC-001\");",
-                  "    pm.expect(e.statut).to.eql(\"Disponible\");",
-                  "    pm.expect(e.composante_id).to.eql(1);",
-                  "    pm.expect(Number(e.superficie_ajuste)).to.eql(875);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements/{{emplacement_existing_id}}",
-              "host": [
-                "{{base_url}}"
+              "name": "Modification valide (réservation créée)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rone|200|{{created_id}},{{create1_emp_id}},{{res_statut_2}}\");"
+                    ]
+                  }
+                }
               ],
-              "path": [
-                "emplacements",
-                "{{emplacement_existing_id}}"
-              ]
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_debut}}\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Réservation inexistante (404)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|404|Réservation introuvable\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_debut}}\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{id_inexistant}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{id_inexistant}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = abc (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_debut}}\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/abc",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "abc"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 0 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_debut}}\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/0",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = -1 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_debut}}\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/-1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "-1"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 1.5 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_debut}}\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/1.5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "1.5"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Corps vide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "emplacementId texte (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": \"abc\", \"dateDebut\": \"{{create_debut}}\", \"dateFin\": \"{{create_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateDebut invalide (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"pas-une-date\", \"dateFin\": \"{{upd_fin}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "dateFin avant dateDebut (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"emplacementId\": {{create1_emp_id}}, \"dateDebut\": \"{{upd_fin}}\", \"dateFin\": \"{{upd_debut}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}"
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "/emplacements/:id (not found)",
-          "event": [
+          "name": "Confirmation (PATCH)",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 404\", function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements/{{emplacement_fake_id}}",
-              "host": [
-                "{{base_url}}"
+              "name": "Confirmation valide (réservation créée)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"rone|200|{{created_id}},{{create1_emp_id}},{{res_statut_1}}\");"
+                    ]
+                  }
+                }
               ],
-              "path": [
-                "emplacements",
-                "{{emplacement_fake_id}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "/emplacements/:id (invalid id)",
-          "event": [
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            },
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 400\", function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "",
-                  "const errorSchema = JSON.parse(pm.collectionVariables.get(\"jsonSchemaErrorResponse\"));",
-                  "",
-                  "pm.test(\"Error response format is valid\", function () {",
-                  "    pm.response.to.have.jsonSchema(errorSchema);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/emplacements/{{emplacement_invalid_id}}",
-              "host": [
-                "{{base_url}}"
+              "name": "Déjà confirmée (409)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|409|Cette réservation n'est pas en attente\");"
+                    ]
+                  }
+                }
               ],
-              "path": [
-                "emplacements",
-                "{{emplacement_invalid_id}}"
-              ]
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{created_id}}/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{created_id}}",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Réservation inexistante (404)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|404|Réservation introuvable\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/{{id_inexistant}}/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "{{id_inexistant}}",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = abc (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/abc/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "abc",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 0 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/0/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "0",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = -1 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/-1/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "-1",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "id = 1.5 (400)",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.variables.set(\"t\",\"err|400\");"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reservations/1.5/confirm",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "1.5",
+                    "confirm"
+                  ]
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         }
       ]
     }
@@ -1902,10 +3021,10 @@
       "listen": "prerequest",
       "script": {
         "type": "text/javascript",
-        "packages": {},
-        "requests": {},
         "exec": [
-          ""
+          "const cv=pm.collectionVariables;",
+          "pm.variables.set(\"emp_lieu_1_maj\",(cv.get(\"emp_lieu_1\")||\"\").toUpperCase());",
+          "pm.variables.set(\"res_statut_2_maj\",(cv.get(\"res_statut_2\")||\"\").toUpperCase());"
         ]
       }
     },
@@ -1913,49 +3032,150 @@
       "listen": "test",
       "script": {
         "type": "text/javascript",
-        "packages": {},
-        "requests": {},
         "exec": [
-          ""
+          "const p=pm.variables.replaceIn(pm.variables.get(\"t\")||\"\").split(\"|\"),kind=p[0],code=Number(p[1]),arg=p.slice(2).join(\"|\");",
+          "if(kind){",
+          "const cv=k=>pm.collectionVariables.get(k),sch=k=>JSON.parse(cv(k));",
+          "pm.test(\"Status \"+code,()=>pm.response.to.have.status(code));",
+          "pm.test(\"Réponse JSON\",()=>pm.response.to.be.json);",
+          "const b=pm.response.json(),a=arg.split(\",\"),ids=arg?a.map(Number):[],env=(b&&b.data)||{};",
+          "const sorted=x=>x.slice().sort((m,n)=>m-n),idsOf=l=>sorted(l.map(r=>r.id));",
+          "const same=(l,name)=>{pm.test(\"Tableau conforme au schéma\",()=>{pm.expect(l).to.be.an(\"array\");l.forEach(r=>pm.expect(r).to.have.jsonSchema(sch(name)));});",
+          "pm.test(\"Ids = [\"+ids+\"]\",()=>pm.expect(idsOf(l)).to.eql(sorted(ids)));};",
+          "const envelope=()=>pm.test(\"Enveloppe de succès (success, statusCode, message)\",()=>{pm.expect(b.success).to.eql(true);pm.expect(b.statusCode).to.eql(code);pm.expect(b.message).to.be.a(\"string\");});",
+          "if(kind===\"err\"){pm.test(\"Corps d'erreur présent\",()=>pm.expect(b).to.be.an(\"object\"));",
+          "if(arg)pm.test(\"Message d'erreur attendu\",()=>pm.expect(JSON.stringify(b)).to.include(arg));}",
+          "if(kind===\"elist\")same(Array.isArray(b)?b:(b.data||[]),\"jsonSchemaEmplacement\");",
+          "if(kind===\"eone\"){pm.test(\"L'emplacement respecte le schéma\",()=>pm.expect(b).to.have.jsonSchema(sch(\"jsonSchemaEmplacement\")));",
+          "pm.test(\"L'emplacement correspond au seed\",()=>{pm.expect(b.id).to.eql(+a[0]);pm.expect(b.no_local_pavillon).to.eql(a[1]);});}",
+          "if(kind===\"rlist\"){envelope();same(env.reservations||[],\"jsonSchemaReservation\");",
+          "pm.test(\"count = nombre de réservations\",()=>pm.expect(env.count).to.eql((env.reservations||[]).length));}",
+          "if([\"rone\",\"rcreate\"].includes(kind)){const r=env.reservation||{};envelope();",
+          "pm.test(\"Réservation conforme au schéma\",()=>pm.expect(r).to.have.jsonSchema(sch(\"jsonSchemaReservation\")));",
+          "if(kind===\"rone\")pm.test(\"Réservation conforme au seed\",()=>{pm.expect(r.id).to.eql(+a[0]);pm.expect(r.emplacement_id).to.eql(+a[1]);pm.expect(r.statut).to.eql(a[2]);});",
+          "if(kind===\"rcreate\"){pm.test(\"Champs créés corrects (statut \"+a[1]+\")\",()=>{pm.expect(r.emplacement_id).to.eql(+a[0]);pm.expect(r.statut).to.eql(a[1]);});",
+          "if(r.id&&pm.collectionVariables.get(\"created_id\")===\"\")pm.collectionVariables.set(\"created_id\",String(r.id));}}",
+          "}"
         ]
       }
     }
   ],
   "variable": [
     {
-      "key": "jsonSchemaSuccessResponse",
-      "value": "{\"type\":\"object\",\"required\":[\"status\",\"message\",\"data\",\"path\",\"timestamp\"],\"properties\":{\"status\":{\"type\":\"number\",\"enum\":[200,201]},\"message\":{\"type\":\"string\",\"minLength\":1},\"data\":{\"type\":[\"object\",\"array\",\"null\"]},\"path\":{\"type\":\"string\",\"pattern\":\"^/.*\"},\"timestamp\":{\"type\":\"string\",\"format\":\"date-time\"}},\"additionalProperties\":false}",
-      "type": "string"
-    },
-    {
-      "key": "jsonSchemaErrorResponse",
-      "value": "{\"type\":\"object\",\"required\":[\"status\",\"error\",\"message\",\"path\",\"timestamp\"],\"properties\":{\"status\":{\"type\":\"number\",\"minimum\":400,\"maximum\":599},\"error\":{\"type\":\"string\",\"minLength\":1},\"message\":{\"type\":\"string\",\"minLength\":1},\"path\":{\"type\":\"string\",\"pattern\":\"^/.*\"},\"timestamp\":{\"type\":\"string\",\"format\":\"date-time\"}},\"additionalProperties\":false}",
-      "type": "string"
-    },
-    {
       "key": "jsonSchemaEmplacement",
-      "value": "{\"type\":\"object\",\"required\":[\"id\",\"composante_id\",\"categorie\",\"type_lieu\",\"superficie\",\"superficie_ajuste\",\"statut\"],\"properties\":{\"id\":{\"type\":\"integer\",\"minimum\":1},\"composante_id\":{\"type\":\"integer\",\"minimum\":1},\"no_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"No_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"categorie\":{\"type\":\"string\",\"minLength\":1},\"type_lieu\":{\"type\":\"string\",\"minLength\":1},\"lieu_specifique\":{\"type\":[\"string\",\"null\"]},\"description\":{\"type\":[\"string\",\"null\"]},\"superficie\":{\"type\":[\"number\",\"string\"]},\"fl_id\":{\"type\":[\"integer\",\"null\"]},\"ff_id\":{\"type\":[\"integer\",\"null\"]},\"superficie_ajuste\":{\"type\":[\"number\",\"string\"]},\"poid_relatif\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique_ancien\":{\"type\":[\"number\",\"string\",\"null\"]},\"commentaire\":{\"type\":[\"string\",\"null\"]},\"statut\":{\"type\":\"string\",\"enum\":[\"Disponible\",\"Réservé\",\"Occupé\",\"Inactif\"]}}}",
-      "type": "string"
+      "value": "{\"type\":\"object\",\"required\":[\"id\",\"no_local_pavillon\",\"categorie\",\"statut\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"no_local_pavillon\":{\"type\":\"string\"},\"categorie\":{\"type\":\"string\"},\"statut\":{\"type\":\"string\"}}}"
     },
     {
-      "key": "jsonSchemaArrayEmplacement",
-      "value": "{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"composante_id\",\"categorie\",\"type_lieu\",\"superficie\",\"superficie_ajuste\",\"statut\"],\"properties\":{\"id\":{\"type\":\"integer\",\"minimum\":1},\"composante_id\":{\"type\":\"integer\",\"minimum\":1},\"no_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"No_local_pavillon\":{\"type\":\"string\",\"minLength\":1},\"categorie\":{\"type\":\"string\",\"minLength\":1},\"type_lieu\":{\"type\":\"string\",\"minLength\":1},\"lieu_specifique\":{\"type\":[\"string\",\"null\"]},\"description\":{\"type\":[\"string\",\"null\"]},\"superficie\":{\"type\":[\"number\",\"string\"]},\"fl_id\":{\"type\":[\"integer\",\"null\"]},\"ff_id\":{\"type\":[\"integer\",\"null\"]},\"superficie_ajuste\":{\"type\":[\"number\",\"string\"]},\"poid_relatif\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique\":{\"type\":[\"number\",\"string\",\"null\"]},\"valeur_toponymique_ancien\":{\"type\":[\"number\",\"string\",\"null\"]},\"commentaire\":{\"type\":[\"string\",\"null\"]},\"statut\":{\"type\":\"string\",\"enum\":[\"Disponible\",\"Réservé\",\"Occupé\",\"Inactif\"]}}}}",
-      "type": "string"
+      "key": "emp_lieu_1",
+      "value": "hall"
     },
     {
-      "key": "emplacement_existing_id",
-      "value": "1",
-      "type": "string"
+      "key": "emp_lieu_1_ids",
+      "value": "1,7,9"
     },
     {
-      "key": "emplacement_fake_id",
-      "value": "999999",
-      "type": "string"
+      "key": "emp_lieu_2",
+      "value": "atrium"
     },
     {
-      "key": "emplacement_invalid_id",
-      "value": "abc",
-      "type": "string"
+      "key": "emp_id",
+      "value": "1"
+    },
+    {
+      "key": "emp_no_local",
+      "value": "CHUL-RC-001"
+    },
+    {
+      "key": "jsonSchemaReservation",
+      "value": "{\"type\":\"object\",\"required\":[\"id\",\"emplacement_id\",\"statut\",\"date_debut\",\"date_fin\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"emplacement_id\":{\"type\":\"integer\"},\"statut\":{\"type\":\"string\"},\"date_debut\":{\"type\":\"string\"},\"date_fin\":{\"type\":\"string\"}}}"
+    },
+    {
+      "key": "res_a_id",
+      "value": "1"
+    },
+    {
+      "key": "res_b_id",
+      "value": "3"
+    },
+    {
+      "key": "res_b_emp_id",
+      "value": "4"
+    },
+    {
+      "key": "res_c_id",
+      "value": "5"
+    },
+    {
+      "key": "res_statut_1",
+      "value": "confirmed"
+    },
+    {
+      "key": "res_statut_1_ids",
+      "value": "1,2,4,6"
+    },
+    {
+      "key": "res_statut_2",
+      "value": "pending"
+    },
+    {
+      "key": "res_statut_3",
+      "value": "cancelled"
+    },
+    {
+      "key": "res_emp_a",
+      "value": "2"
+    },
+    {
+      "key": "res_emp_b",
+      "value": "1"
+    },
+    {
+      "key": "res_emp_libre",
+      "value": "5"
+    },
+    {
+      "key": "create1_emp_id",
+      "value": "5"
+    },
+    {
+      "key": "create2_emp_id",
+      "value": "7"
+    },
+    {
+      "key": "create3_emp_id",
+      "value": "8"
+    },
+    {
+      "key": "upd_debut",
+      "value": "2027-02-01T08:00:00"
+    },
+    {
+      "key": "upd_fin",
+      "value": "2027-06-01T08:00:00"
+    },
+    {
+      "key": "created_id",
+      "value": "22"
+    },
+    {
+      "key": "create_debut",
+      "value": "2027-01-01T08:00:00"
+    },
+    {
+      "key": "create_fin",
+      "value": "2027-07-01T08:00:00"
+    },
+    {
+      "key": "id_inexistant",
+      "value": "999999"
+    },
+    {
+      "key": "valeur_inconnue",
+      "value": "introuvable"
+    },
+    {
+      "key": "res_statut_2_ids",
+      "value": "3"
     }
   ]
 }

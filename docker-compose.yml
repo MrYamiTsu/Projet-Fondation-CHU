@@ -28,5 +28,15 @@ services:
       interval: 5s
       retries: 5
 
+  client:
+    build: ./client
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
 volumes:
   db_data:

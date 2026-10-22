@@ -1,11 +1,11 @@
 import {
-  rechercherEmplacementsParLieu,
-  rechercherEmplacementsParDescription,
-  rechercherEmplacementParId,
+  findPlotByLieu,
+  findPlotByDescription,
+  findPlotById,
   findAllPlots
 } from '../models/emplacement.mjs';
 
-export async function obtenirEmplacementsParLieu(req, res, next) {
+export async function getPlotByLieu(req, res, next) {
   const lieu = req.query.lieu;
 
   if (typeof lieu !== 'string' || lieu.trim() === '') {
@@ -16,10 +16,10 @@ export async function obtenirEmplacementsParLieu(req, res, next) {
   }
 
   try {
-    const emplacements = await rechercherEmplacementsParLieu(lieu.trim());
+    const emplacements = await findPlotByLieu(lieu.trim());
 
     if (emplacements.length === 0) {
-      const suggestions = await rechercherEmplacementsParDescription(
+      const suggestions = await findPlotByDescription(
         lieu.trim()
       );
 
@@ -32,7 +32,7 @@ export async function obtenirEmplacementsParLieu(req, res, next) {
   }
 }
 
-export async function obtenirEmplacementParId(req, res, next) {
+export async function getPlotById(req, res, next) {
   const id = req.params.id;
 
   if (
@@ -48,7 +48,7 @@ export async function obtenirEmplacementParId(req, res, next) {
   }
 
   try {
-    const emplacement = await rechercherEmplacementParId(Number(id));
+    const emplacement = await findPlotById(Number(id));
 
     if (!emplacement) {
       const erreur = new Error('Aucun emplacement trouvé avec cet id');

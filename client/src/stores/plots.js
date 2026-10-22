@@ -1,121 +1,167 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { mockPlots as initialMockPlots } from '../data/mockData.js'
+import { defineStore, acceptHMRUpdate } from "pinia";
+import { ref, computed } from "vue";
 
-export const usePlotsStore = defineStore('plots', () => {
-  const loadPlots = () => {
-    try {
-      const saved = localStorage.getItem('chu_plots')
-      if (saved) return JSON.parse(saved)
-    } catch (e) {
-      console.error('Erreur lors du chargement des emplacements:', e)
-    }
-    return initialMockPlots
-  }
+const API_URL = `http://0.0.0.0:3000/emplacements`;
 
-  const plots = ref(loadPlots())
+export const usePlotsStore = defineStore("plots", () => {
+  const plots = ref([]);
+  const plot = ref();
+  const isLoading = ref(false);
+  const errorMessage = ref("");
 
-  function persist() {
-    try {
-      localStorage.setItem('chu_plots', JSON.stringify(plots.value))
-    } catch (e) {
-      console.error('Erreur de sauvegarde des emplacements:', e)
-    }
-  }
-
-  const totalPlots = computed(() => plots.value.length)
-  const availablePlots = computed(() => plots.value.filter((p) => p.available).length)
-  const reservedPlots = computed(() => plots.value.filter((p) => !p.available).length)
+  const totalPlots = computed(() => plots.value.length);
+  const availablePlots = computed(
+    () => plots.value.filter((p) => p.available).length,
+  );
+  const reservedPlots = computed(
+    () => plots.value.filter((p) => !p.available).length,
+  );
   const totalValuation = computed(() =>
     plots.value.reduce((acc, p) => acc + (Number(p.price) || 0), 0),
-  )
+  );
 
   function formatPrice(amount) {
-    return `${new Intl.NumberFormat('fr-CA').format(amount)} $ CAD`
+    return `${new Intl.NumberFormat("fr-CA").format(amount)} $ CAD`;
   }
 
-  function getPlotById(id) {
-    return plots.value.find((p) => p.id === Number(id))
-  }
-
-  function addPlot(plotData) {
-    const nextId = plots.value.length > 0 ? Math.max(...plots.value.map((p) => p.id)) + 1 : 1
-    const priceNum = Number(plotData.price) || 0
-    const newPlot = {
-      id: nextId,
-      name: plotData.name,
-      hospital: plotData.hospital,
-      sector: plotData.sector || 'Général',
-      price: priceNum,
-      formattedPrice: formatPrice(priceNum),
-      available: plotData.available !== undefined ? plotData.available : true,
-      image:
-        plotData.image ||
-        'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop',
-      description: plotData.description || '',
-      dimensions: plotData.dimensions || '25 m²',
-      valeur15ans: plotData.valeur15ans || formatPrice(priceNum * 1.5),
-      achalandage: plotData.achalandage || 'Élevé (~1 200 passages/jour)',
+  async function getPlots() {
+    isLoading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      plots.value = data;
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
     }
-    plots.value.unshift(newPlot)
-    persist()
-    return newPlot
   }
 
-  function updatePlot(id, updatedData) {
-    const index = plots.value.findIndex((p) => p.id === Number(id))
-    if (index === -1) return null
-
-    const priceNum = Number(updatedData.price) || plots.value[index].price
-    plots.value[index] = {
-      ...plots.value[index],
-      ...updatedData,
-      id: Number(id),
-      price: priceNum,
-      formattedPrice: formatPrice(priceNum),
+  async function getPlotById(id) {
+    isLoading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await fetch(`${API_URL}/${id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      plot.value = data;
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
     }
-    persist()
-    return plots.value[index]
   }
 
-  function toggleAvailability(id) {
-    const item = plots.value.find((p) => p.id === Number(id))
-    if (item) {
-      item.available = !item.available
-      persist()
-      return item.available
+  async function RechercherPlots(lieu) {
+    isLoading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await fetch(
+        `${API_URL}/recherche?lieu=${lieu}`,
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      plots.value = data;
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
     }
-    return null
   }
 
-  function deletePlot(id) {
-    const beforeCount = plots.value.length
-    plots.value = plots.value.filter((p) => p.id !== Number(id))
-    if (plots.value.length !== beforeCount) {
-      persist()
-      return true
+  async function addPlot(plotData) {
+    isLoading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(plotData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      plots.value.unshift(data.data.emplacement);
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
     }
-    return false
   }
 
-  function resetToDefault() {
-    plots.value = [...initialMockPlots]
-    persist()
+  async function updatePlot(id, plotData) {
+    isLoading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(plotData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      const index = plots.value.findIndex((p) => p.id === Number(id));
+      if (index !== -1) plots.value[index] = data.data.emplacement;
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  async function toggleAvailability(id) {
+    const item = plots.value.find((p) => p.id === Number(id));
+    if (!item) return;
+    await updatePlot(id, { ...item, available: !item.available });
+  }
+
+  async function deletePlot(id) {
+    isLoading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      plots.value = plots.value.filter((p) => p.id !== Number(id));
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  if (import.meta.hot) {
+    import.meta.hot.accept(acceptHMRUpdate(usePlotsStore, import.meta.hot));
   }
 
   return {
     plots,
+    plot,
+    isLoading,
+    errorMessage,
     totalPlots,
     availablePlots,
     reservedPlots,
     totalValuation,
     formatPrice,
+    getPlots,
     getPlotById,
+    RechercherPlots,
     addPlot,
     updatePlot,
     toggleAvailability,
     deletePlot,
-    resetToDefault,
-  }
-})
-
+  };
+});

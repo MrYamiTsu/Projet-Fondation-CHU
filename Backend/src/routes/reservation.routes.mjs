@@ -5,26 +5,35 @@ import {
   addReservation,
   obtenirReservationParId,
   obtenirReservationsParEmplacement,
-  obtenirReservationsParStatut,modifyReservation,
+  obtenirReservationsParStatut,
+  modifyReservation,
   approveReservation
 } from '../controllers/reservation.controller.mjs';
 
-import {validateReservation, validateReservationId } from '../middlewares/reservation.middleware.mjs';
+import {
+  validateReservation,
+  validateReservationId
+} from '../middlewares/reservation.middleware.mjs';
+
+import {
+  verifyToken,
+  requireAdmin
+} from '../middlewares/auth.middleware.mjs';
 
 const router = express.Router();
 
-router.get('/', obtenirToutesLesReservations);
+router.get('/', verifyToken, requireAdmin, obtenirToutesLesReservations);
 
-router.get('/status', obtenirReservationsParStatut);
+router.get('/status', verifyToken, requireAdmin, obtenirReservationsParStatut);
 
-router.get('/emplacement/:emplacementId', obtenirReservationsParEmplacement);
+router.get('/emplacement/:emplacementId', verifyToken, requireAdmin, obtenirReservationsParEmplacement);
 
-router.get('/:id', obtenirReservationParId);
+router.get('/:id', verifyToken, requireAdmin, validateReservationId, obtenirReservationParId);
 
-router.post('/', validateReservation, addReservation);
+router.post('/', verifyToken, validateReservation, addReservation);
 
-router.put('/:id', validateReservationId,validateReservation, modifyReservation);
+router.put('/:id', verifyToken, requireAdmin, validateReservationId, validateReservation, modifyReservation);
 
-router.patch('/:id/confirm', validateReservationId, approveReservation)
+router.patch('/:id/confirm', verifyToken, requireAdmin, validateReservationId, approveReservation);
 
 export default router;

@@ -1,6 +1,16 @@
 import express from 'express';
-import { obtenirEmplacementsParLieu, obtenirEmplacementParId, getAllPlots, addPlot, modifyPlot} from '../controllers/emplacement.controller.mjs';
-import {validatePlot, validatePlotId} from '../middlewares/emplacement.middleware.mjs';
+
+import {
+  obtenirEmplacementsParLieu,
+  obtenirEmplacementParId,
+  getAllPlots,
+  addPlot,
+  modifyPlot
+} from '../controllers/emplacement.controller.mjs';
+
+import { validatePlot, validatePlotId} from '../middlewares/emplacement.middleware.mjs';
+
+import { verifyToken,requireAdmin} from '../middlewares/auth.middleware.mjs';
 
 const router = express.Router();
 
@@ -10,8 +20,8 @@ router.get('/recherche', obtenirEmplacementsParLieu);
 
 router.get('/:id', validatePlotId, obtenirEmplacementParId);
 
-router.post('/', validatePlot, addPlot);
+router.post('/', verifyToken, requireAdmin, validatePlot, addPlot);
 
-router.put('/:id', validatePlotId, validatePlot, modifyPlot);
+router.put('/:id', verifyToken, requireAdmin, validatePlotId, validatePlot, modifyPlot);
 
 export default router;

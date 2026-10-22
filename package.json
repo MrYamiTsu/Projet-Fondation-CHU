@@ -1,0 +1,14 @@
+{
+  "name": "projet-fondation-chu",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix client run build",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "server:dev": "npm --prefix Backend run dev",
+    "server:start": "npm --prefix Backend start",
+    "start": "npm --prefix Backend start"
+  }
+}
+

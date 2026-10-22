@@ -1,6 +1,6 @@
 <template>
   <section
-    class="xl:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col justify-between"
+    class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col justify-between h-full"
   >
     <div>
       <div class="flex items-center justify-between mb-6">

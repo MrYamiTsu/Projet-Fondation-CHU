@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
-    <!-- Barre de navigation Admin -->
-    <header class="bg-[#070f1e] border-b border-slate-800 sticky top-0 z-30 shadow-xl">
+  <div class="min-h-screen bg-slate-100/90 text-slate-800 flex flex-col font-sans">
+    <!-- Barre de navigation Institutionnelle Admin -->
+    <header class="bg-[#0a1526] text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
       <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3.5">
         <div class="flex items-center justify-between gap-4">
           <!-- Logo & Titre Admin -->
@@ -10,25 +10,26 @@
               <div
                 class="w-10 h-10 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:bg-teal-500/25 transition-all"
               >
-                <i class="fa-solid fa-hospital text-lg"></i>
+                <i class="fa-solid fa-hospital text-base"></i>
               </div>
               <div class="leading-tight">
                 <span class="font-black text-xl text-white tracking-tight">CHU</span>
                 <span class="text-xs text-teal-300 ml-1 font-bold">de Québec</span>
+                <span class="block text-[9px] text-slate-400 font-light">Université Laval</span>
               </div>
             </router-link>
 
-            <span class="h-6 w-px bg-slate-800"></span>
+            <span class="h-6 w-px bg-slate-700/60 hidden sm:block"></span>
 
-            <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-2">
               <span
-                class="bg-amber-400/15 text-amber-300 border border-amber-400/40 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg tracking-wider flex items-center gap-1.5"
+                class="bg-teal-500/15 text-teal-300 border border-teal-500/30 text-[10px] font-bold uppercase px-2.5 py-1 rounded-md tracking-wider flex items-center gap-1.5"
               >
-                <i class="fa-solid fa-shield-halved text-[10px]"></i>
-                Console Admin
+                <i class="fa-solid fa-shield-halved text-[9px]"></i>
+                Administration
               </span>
-              <span class="hidden md:inline text-xs text-slate-400 font-medium">
-                Plateforme de Valorisation des Espaces
+              <span class="text-xs text-slate-300 font-medium">
+                Fondation du CHU de Québec
               </span>
             </div>
           </div>
@@ -37,27 +38,30 @@
           <div class="flex items-center gap-3">
             <router-link
               to="/"
-              class="flex items-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700/80 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition-all hover:text-white"
+              class="flex items-center gap-2 px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition-colors"
             >
-              <i class="fa-solid fa-arrow-left text-xs text-teal-400"></i>
+              <i class="fa-solid fa-arrow-left text-[11px] text-teal-400"></i>
               <span class="hidden sm:inline">Portail public</span>
             </router-link>
 
             <div
               v-if="authStore.currentUser"
-              class="flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl"
+              class="flex items-center gap-3 bg-slate-900/90 border border-slate-700/80 px-3 py-1.5 rounded-lg"
             >
-              <div class="text-right">
+              <div class="w-7 h-7 rounded-full bg-teal-600/30 border border-teal-500/40 text-teal-300 flex items-center justify-center font-bold text-xs">
+                {{ authStore.currentUser.name.charAt(0).toUpperCase() }}
+              </div>
+              <div class="text-left hidden md:block">
                 <span class="block text-xs font-bold text-white leading-none">
                   {{ authStore.currentUser.name }}
                 </span>
-                <span class="block text-[10px] text-teal-400 font-mono">
+                <span class="block text-[10px] text-slate-400 mt-0.5">
                   {{ authStore.currentUser.email }}
                 </span>
               </div>
               <button
                 @click="handleLogout"
-                class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 hover:text-red-300 flex items-center justify-center text-xs transition-colors cursor-pointer"
+                class="ml-1 text-slate-400 hover:text-red-400 p-1 text-xs transition-colors cursor-pointer"
                 title="Déconnexion"
               >
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -79,18 +83,18 @@
     >
       <div
         v-if="toastMessage"
-        class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl border text-sm font-semibold"
+        class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border text-xs font-semibold"
         :class="
           toastType === 'success'
-            ? 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200'
-            : 'bg-red-950/90 border-red-500/40 text-red-200'
+            ? 'bg-emerald-900 text-emerald-100 border-emerald-600/50'
+            : 'bg-red-900 text-red-100 border-red-600/50'
         "
       >
         <i
           :class="
             toastType === 'success'
-              ? 'fa-solid fa-circle-check text-emerald-400'
-              : 'fa-solid fa-circle-exclamation text-red-400'
+              ? 'fa-solid fa-circle-check text-emerald-300 text-sm'
+              : 'fa-solid fa-circle-exclamation text-red-300 text-sm'
           "
         ></i>
         <span>{{ toastMessage }}</span>
@@ -98,150 +102,155 @@
     </Transition>
 
     <!-- Contenu Principal -->
-    <main class="flex-1 max-w-[1700px] w-full mx-auto px-4 lg:px-8 py-8 space-y-8">
-      <!-- En-tête d'accueil -->
-      <div
-        class="bg-gradient-to-r from-[#0a1526] via-slate-800/80 to-[#0a1526] border border-slate-800 rounded-2xl p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xl"
-      >
+    <main class="flex-1 max-w-[1700px] w-full mx-auto px-4 lg:px-8 py-8 space-y-6">
+      <!-- En-tête de page -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 text-teal-400 text-xs font-bold uppercase tracking-wider mb-2">
-            <i class="fa-solid fa-user-shield"></i>
-            <span>Session Administrateur active</span>
-          </div>
-          <h1 class="text-2xl lg:text-3xl font-black text-white tracking-tight">
-            Tableau de bord de gestion des espaces
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">
+            Gestion du parc d'espaces et des accès
           </h1>
-          <p class="text-sm text-slate-400 mt-1.5 max-w-2xl">
-            Supervisez les emplacements de toponymie et de visibilité de l'ensemble des 5 hôpitaux du CHU de Québec, mettez à jour leur disponibilité en temps réel et gérez les accès.
+          <p class="text-xs text-slate-500 mt-1">
+            Supervisez les opportunités de toponymie des 5 hôpitaux, gérez la disponibilité en temps réel et les accès autorisés.
           </p>
         </div>
 
-        <div class="flex items-center gap-3 shrink-0">
+        <div class="flex items-center gap-2.5">
           <button
             @click="openAddModal"
-            class="px-4 py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 flex items-center gap-2 cursor-pointer border border-teal-300/40"
+            class="px-4 py-2.5 bg-[#0a1526] hover:bg-[#132238] text-white font-bold text-xs rounded-xl transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
           >
-            <i class="fa-solid fa-plus text-xs"></i>
-            <span>Nouvel emplacement</span>
+            <i class="fa-solid fa-plus text-xs text-teal-400"></i>
+            <span>Ajouter un emplacement</span>
           </button>
         </div>
       </div>
 
-      <!-- KPI Cards (Indicateurs clés) -->
+      <!-- KPI Cards (Indicateurs clés - style épuré institutionnel) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total -->
-        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total des espaces</span>
-            <div class="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
-              <i class="fa-solid fa-layer-group text-sm"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total des espaces</span>
+            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-layer-group"></i>
             </div>
           </div>
-          <div class="mt-3 flex items-baseline gap-2">
-            <span class="text-3xl font-black text-white">{{ plotsStore.totalPlots }}</span>
-            <span class="text-xs text-slate-400">référencés</span>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-slate-900">{{ plotsStore.totalPlots }}</span>
+            <span class="text-xs text-slate-500">référencés</span>
           </div>
+          <p class="text-[11px] text-slate-400 mt-1">Sur l'ensemble des 5 sites hospitaliers</p>
         </div>
 
         <!-- Disponibles -->
-        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Disponibles</span>
-            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <i class="fa-solid fa-check-circle text-sm"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disponibles</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-circle-check"></i>
             </div>
           </div>
-          <div class="mt-3 flex items-baseline gap-2">
-            <span class="text-3xl font-black text-emerald-400">{{ plotsStore.availablePlots }}</span>
-            <span class="text-xs text-slate-400">
-              ({{ plotsStore.totalPlots ? Math.round((plotsStore.availablePlots / plotsStore.totalPlots) * 100) : 0 }}%)
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-emerald-700">{{ plotsStore.availablePlots }}</span>
+            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+              {{ plotsStore.totalPlots ? Math.round((plotsStore.availablePlots / plotsStore.totalPlots) * 100) : 0 }}% libre
             </span>
           </div>
+          <p class="text-[11px] text-slate-400 mt-1">Prêts pour attribution nominative</p>
         </div>
 
         <!-- Réservés -->
-        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Réservés / Valorises</span>
-            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <i class="fa-solid fa-lock text-sm"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Attribués / Réservés</span>
+            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-handshake"></i>
             </div>
           </div>
-          <div class="mt-3 flex items-baseline gap-2">
-            <span class="text-3xl font-black text-amber-400">{{ plotsStore.reservedPlots }}</span>
-            <span class="text-xs text-slate-400">attribués</span>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-slate-800">{{ plotsStore.reservedPlots }}</span>
+            <span class="text-xs text-slate-500">engagements actifs</span>
           </div>
+          <p class="text-[11px] text-slate-400 mt-1">Toponymie durable en cours</p>
         </div>
 
         <!-- Valeur totale -->
-        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Valeur du parc</span>
-            <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
-              <i class="fa-solid fa-coins text-sm"></i>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Potentiel philanthropique</span>
+            <div class="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-chart-line"></i>
             </div>
           </div>
-          <div class="mt-3 flex items-baseline gap-2">
-            <span class="text-2xl font-black text-white">
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-slate-900">
               {{ formatShortPrice(plotsStore.totalValuation) }}
             </span>
-            <span class="text-xs text-slate-400">CAD</span>
+            <span class="text-xs font-medium text-slate-500">CAD</span>
           </div>
+          <p class="text-[11px] text-slate-400 mt-1">Valeur totale cumulée du réseau</p>
         </div>
       </div>
 
-      <!-- Onglets de la vue admin -->
-      <div class="flex border-b border-slate-800 gap-6">
+      <!-- Barre d'onglets épurée -->
+      <div class="flex border-b border-slate-200 gap-8">
         <button
           @click="activeTab = 'plots'"
           :class="[
-            'pb-3 text-xs font-black uppercase tracking-wider border-b-2 -mb-px transition-colors flex items-center gap-2 cursor-pointer',
+            'pb-3 text-xs font-bold transition-all border-b-2 -mb-px flex items-center gap-2 cursor-pointer',
             activeTab === 'plots'
-              ? 'border-teal-400 text-teal-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200',
+              ? 'border-[#0a1526] text-[#0a1526]'
+              : 'border-transparent text-slate-400 hover:text-slate-700',
           ]"
         >
-          <i class="fa-solid fa-map-location-dot"></i>
-          <span>Emplacements ({{ plotsStore.totalPlots }})</span>
+          <i class="fa-solid fa-list text-xs"></i>
+          <span>Emplacements de valorisation ({{ plotsStore.totalPlots }})</span>
         </button>
         <button
           @click="activeTab = 'users'"
           :class="[
-            'pb-3 text-xs font-black uppercase tracking-wider border-b-2 -mb-px transition-colors flex items-center gap-2 cursor-pointer',
+            'pb-3 text-xs font-bold transition-all border-b-2 -mb-px flex items-center gap-2 cursor-pointer',
             activeTab === 'users'
-              ? 'border-teal-400 text-teal-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200',
+              ? 'border-[#0a1526] text-[#0a1526]'
+              : 'border-transparent text-slate-400 hover:text-slate-700',
           ]"
         >
-          <i class="fa-solid fa-users"></i>
-          <span>Comptes utilisateurs ({{ authStore.users.length }})</span>
+          <i class="fa-solid fa-users text-xs"></i>
+          <span>Gestion des utilisateurs ({{ authStore.users.length }})</span>
         </button>
       </div>
 
       <!-- ONGLET 1: GESTION DES EMPLACEMENTS -->
       <div v-if="activeTab === 'plots'" class="space-y-4">
-        <!-- Filtres & Recherche -->
-        <div class="bg-slate-800/50 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <!-- Barre de filtres & recherche -->
+        <div class="bg-white border border-slate-200/90 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
           <!-- Recherche texte -->
           <div class="relative w-full md:w-80">
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Rechercher un espace, secteur..."
-              class="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 transition-colors"
+              placeholder="Rechercher par nom, secteur..."
+              class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-teal-600 transition-colors"
             />
+            <button
+              v-if="searchQuery"
+              @click="searchQuery = ''"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </button>
           </div>
 
-          <!-- Filtres boutons -->
+          <!-- Filtres déroulants -->
           <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <!-- Filtre Hôpital -->
             <select
               v-model="filterHospital"
-              class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400 cursor-pointer"
+              class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-none focus:border-teal-600 cursor-pointer"
             >
               <option value="">Tous les hôpitaux</option>
-              <option value="CHUL">CHUL</option>
+              <option value="CHUL">CHUL (Univ. Laval)</option>
               <option value="HEJ">Hôpital de l'Enfant-Jésus (HEJ)</option>
               <option value="HDQ">L'Hôtel-Dieu de Québec (HDQ)</option>
               <option value="HSFA">Saint-François d'Assise (HSFA)</option>
@@ -252,117 +261,124 @@
             <!-- Filtre Statut -->
             <select
               v-model="filterStatus"
-              class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400 cursor-pointer"
+              class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-none focus:border-teal-600 cursor-pointer"
             >
               <option value="">Tous les statuts</option>
               <option value="available">Disponibles uniquement</option>
               <option value="reserved">Réservés uniquement</option>
             </select>
 
+            <span class="text-xs font-semibold text-slate-500 ml-2 hidden lg:inline">
+              {{ filteredPlots.length }} résultat{{ filteredPlots.length > 1 ? 's' : '' }}
+            </span>
+
             <button
               @click="resetPlotsData"
-              class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 rounded-xl text-xs transition-colors cursor-pointer"
-              title="Réinitialiser les données d'origine"
+              class="ml-auto text-xs text-slate-400 hover:text-slate-600 p-2 transition-colors cursor-pointer"
+              title="Restaurer les données initiales de démo"
             >
-              <i class="fa-solid fa-rotate-right mr-1"></i>
-              Reset démo
+              <i class="fa-solid fa-rotate text-xs"></i>
             </button>
           </div>
         </div>
 
         <!-- Tableau des emplacements -->
-        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-950/60 border-b border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <thead class="bg-slate-50/90 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 <tr>
                   <th class="py-3.5 px-4">Emplacement</th>
-                  <th class="py-3.5 px-4">Hôpital</th>
-                  <th class="py-3.5 px-4">Secteur</th>
-                  <th class="py-3.5 px-4">Valeur</th>
-                  <th class="py-3.5 px-4 text-center">Disponibilité</th>
+                  <th class="py-3.5 px-4">Site hospitalier</th>
+                  <th class="py-3.5 px-4">Secteur de soins</th>
+                  <th class="py-3.5 px-4">Valeur nominale</th>
+                  <th class="py-3.5 px-4 text-center">Statut d'attribution</th>
                   <th class="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/60">
+              <tbody class="divide-y divide-slate-100">
                 <tr
                   v-for="plot in filteredPlots"
                   :key="plot.id"
-                  class="hover:bg-slate-800/60 transition-colors"
+                  class="hover:bg-slate-50/70 transition-colors"
                 >
                   <!-- Nom et visuel -->
-                  <td class="py-3 px-4">
+                  <td class="py-3.5 px-4">
                     <div class="flex items-center gap-3">
                       <img
                         :src="plot.image"
                         :alt="plot.name"
-                        class="w-12 h-10 rounded-lg object-cover border border-slate-700 shrink-0"
+                        class="w-12 h-10 rounded-lg object-cover border border-slate-200 bg-slate-100 shrink-0"
                       />
                       <div>
-                        <span class="font-bold text-white block text-sm">{{ plot.name }}</span>
-                        <span class="text-[11px] text-slate-400 font-mono">ID: #{{ plot.id }}</span>
+                        <span class="font-bold text-slate-900 block text-sm">{{ plot.name }}</span>
+                        <span class="text-[11px] text-slate-400 font-mono">Ref: #{{ plot.id }}</span>
                       </div>
                     </div>
                   </td>
 
                   <!-- Hôpital -->
-                  <td class="py-3 px-4">
+                  <td class="py-3.5 px-4">
                     <span
-                      class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/10 border border-teal-500/30 text-teal-300"
+                      class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200"
                     >
                       {{ plot.hospital }}
                     </span>
                   </td>
 
                   <!-- Secteur -->
-                  <td class="py-3 px-4 text-slate-300 font-medium">
+                  <td class="py-3.5 px-4 text-slate-600 font-medium">
                     {{ plot.sector }}
                   </td>
 
                   <!-- Prix -->
-                  <td class="py-3 px-4 font-bold text-white">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">
                     {{ plot.formattedPrice }}
                   </td>
 
                   <!-- Toggle Disponibilité -->
-                  <td class="py-3 px-4 text-center">
+                  <td class="py-3.5 px-4 text-center">
                     <button
                       @click="toggleAvailability(plot)"
                       :class="[
-                        'px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 transition-all cursor-pointer border',
+                        'px-3 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer border',
                         plot.available
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30',
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200',
                       ]"
+                      :title="plot.available ? 'Cliquer pour marquer comme attribué' : 'Cliquer pour libérer'"
                     >
-                      <i :class="plot.available ? 'fa-solid fa-circle-check' : 'fa-solid fa-lock'"></i>
+                      <span
+                        class="w-1.5 h-1.5 rounded-full"
+                        :class="plot.available ? 'bg-emerald-500' : 'bg-slate-400'"
+                      ></span>
                       <span>{{ plot.available ? 'Disponible' : 'Réservé' }}</span>
                     </button>
                   </td>
 
                   <!-- Actions -->
-                  <td class="py-3 px-4 text-right">
+                  <td class="py-3.5 px-4 text-right">
                     <div class="flex items-center justify-end gap-1.5">
                       <router-link
                         :to="`/emplacement/${plot.id}`"
-                        class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors border border-slate-700"
+                        class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-colors border border-slate-200"
                         title="Voir la page publique"
                       >
-                        <i class="fa-solid fa-eye text-xs"></i>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                       </router-link>
                       <button
                         @click="openEditModal(plot)"
-                        class="w-8 h-8 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 hover:text-teal-300 border border-teal-500/30 flex items-center justify-center transition-colors cursor-pointer"
+                        class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-teal-50 text-slate-600 hover:text-teal-700 border border-slate-200 hover:border-teal-200 flex items-center justify-center transition-colors cursor-pointer"
                         title="Modifier cet emplacement"
                       >
-                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                        <i class="fa-solid fa-pen text-xs"></i>
                       </button>
                       <button
                         @click="confirmDeletePlot(plot)"
-                        class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/30 flex items-center justify-center transition-colors cursor-pointer"
+                        class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-200 flex items-center justify-center transition-colors cursor-pointer"
                         title="Supprimer cet emplacement"
                       >
-                        <i class="fa-solid fa-trash text-xs"></i>
+                        <i class="fa-solid fa-trash-can text-xs"></i>
                       </button>
                     </div>
                   </td>
@@ -370,8 +386,8 @@
 
                 <tr v-if="filteredPlots.length === 0">
                   <td colspan="6" class="py-12 text-center text-slate-400">
-                    <i class="fa-solid fa-folder-open text-2xl mb-2 text-slate-600 block"></i>
-                    Aucun emplacement ne correspond aux filtres appliqués.
+                    <i class="fa-solid fa-folder-open text-2xl mb-2 text-slate-300 block"></i>
+                    Aucun emplacement ne correspond aux critères de recherche.
                   </td>
                 </tr>
               </tbody>
@@ -384,71 +400,71 @@
       <div v-if="activeTab === 'users'" class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-white">Utilisateurs enregistrés</h2>
-            <p class="text-xs text-slate-400">Gérez les comptes autorisés et attribuez les droits administrateur.</p>
+            <h2 class="text-base font-bold text-slate-900">Comptes d'accès autorisés</h2>
+            <p class="text-xs text-slate-500">Supervisez les accès administratifs et les gestionnaires de la plateforme.</p>
           </div>
           <button
             @click="isNewUserModalOpen = true"
-            class="px-3.5 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all border border-teal-300/40 flex items-center gap-1.5 cursor-pointer"
+            class="px-3.5 py-2 bg-[#0a1526] hover:bg-[#132238] text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
-            <i class="fa-solid fa-user-plus text-xs"></i>
-            <span>Ajouter un utilisateur</span>
+            <i class="fa-solid fa-user-plus text-xs text-teal-400"></i>
+            <span>Inviter un utilisateur</span>
           </button>
         </div>
 
-        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs">
           <table class="w-full text-left text-xs">
-            <thead class="bg-slate-950/60 border-b border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <thead class="bg-slate-50/90 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th class="py-3.5 px-4">Utilisateur</th>
-                <th class="py-3.5 px-4">Email</th>
+                <th class="py-3.5 px-4">Courriel</th>
                 <th class="py-3.5 px-4">Rôle</th>
                 <th class="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800/60">
+            <tbody class="divide-y divide-slate-100">
               <tr
                 v-for="user in authStore.users"
                 :key="user.email"
-                class="hover:bg-slate-800/60 transition-colors"
+                class="hover:bg-slate-50/70 transition-colors"
               >
-                <td class="py-3 px-4">
+                <td class="py-3.5 px-4">
                   <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white text-xs border border-slate-600">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs border border-slate-200">
                       {{ user.name.charAt(0).toUpperCase() }}
                     </div>
                     <div>
-                      <span class="font-bold text-white">{{ user.name }}</span>
+                      <span class="font-bold text-slate-900">{{ user.name }}</span>
                       <span
                         v-if="authStore.currentUser?.email === user.email"
-                        class="ml-2 text-[9px] bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded font-mono font-semibold"
+                        class="ml-2 text-[10px] bg-teal-50 text-teal-700 border border-teal-200 px-1.5 py-0.5 rounded font-semibold"
                       >
-                        Vous
+                        Votre session
                       </span>
                     </div>
                   </div>
                 </td>
-                <td class="py-3 px-4 font-mono text-slate-300">{{ user.email }}</td>
-                <td class="py-3 px-4">
+                <td class="py-3.5 px-4 text-slate-600 font-mono text-[11px]">{{ user.email }}</td>
+                <td class="py-3.5 px-4">
                   <span
                     :class="[
-                      'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1',
+                      'px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5',
                       user.admin
-                        ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                        : 'bg-slate-700/80 text-slate-300 border border-slate-600',
+                        ? 'bg-[#0a1526] text-teal-300'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200',
                     ]"
                   >
                     <i :class="user.admin ? 'fa-solid fa-shield-halved text-[9px]' : 'fa-solid fa-user text-[9px]'"></i>
                     <span>{{ user.admin ? 'Administrateur' : 'Utilisateur' }}</span>
                   </span>
                 </td>
-                <td class="py-3 px-4 text-right">
+                <td class="py-3.5 px-4 text-right">
                   <div class="flex items-center justify-end gap-2">
                     <button
                       @click="toggleAdminRole(user)"
-                      class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors cursor-pointer"
+                      class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
                     >
-                      {{ user.admin ? 'Rétrograder en utilisateur' : 'Promouvoir Admin' }}
+                      {{ user.admin ? 'Rétrograder en utilisateur' : 'Promouvoir Administrateur' }}
                     </button>
                     <button
                       @click="deleteUserAccount(user)"
@@ -456,12 +472,12 @@
                       :class="[
                         'w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-colors',
                         authStore.currentUser?.email === user.email
-                          ? 'opacity-30 cursor-not-allowed text-slate-600'
-                          : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 cursor-pointer',
+                          ? 'opacity-25 cursor-not-allowed text-slate-400'
+                          : 'bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 cursor-pointer',
                       ]"
                       title="Supprimer ce compte"
                     >
-                      <i class="fa-solid fa-trash"></i>
+                      <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </div>
                 </td>
@@ -472,169 +488,223 @@
       </div>
     </main>
 
-    <!-- MODAL AJOUT / MODIFICATION D'EMPLACEMENT -->
+    <!-- MODAL AJOUT (TEMPLATE) / MODIFICATION D'EMPLACEMENT -->
     <div
       v-if="isPlotModalOpen"
-      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
     >
       <div
-        class="bg-[#0b1629] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4"
+        class="bg-white border border-slate-200 rounded-2xl w-full p-6 shadow-2xl space-y-4 text-slate-800"
+        :class="editingPlotId ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : 'max-w-md'"
       >
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center text-sm">
-              <i :class="editingPlotId ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-plus'"></i>
-            </div>
-            <h3 class="text-lg font-black text-white">
-              {{ editingPlotId ? 'Modifier l\'emplacement' : 'Ajouter un nouvel emplacement' }}
+        <!-- CAS 1 : GABARIT / TEMPLATE D'AJOUT D'EMPLACEMENT (MINIMALISTE) -->
+        <template v-if="!editingPlotId">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 class="text-base font-bold text-slate-900">
+              Ajouter un emplacement
             </h3>
+            <button
+              @click="isPlotModalOpen = false"
+              class="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1 text-sm"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            @click="isPlotModalOpen = false"
-            class="text-slate-400 hover:text-white transition-colors cursor-pointer"
+
+          <!-- Placeholder template minimaliste -->
+          <div
+            class="py-12 px-6 flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 space-y-3"
           >
-            ✕
-          </button>
-        </div>
-
-        <form @submit.prevent="savePlot" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Nom -->
-            <div class="sm:col-span-2">
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Nom de l'espace *
-              </label>
-              <input
-                v-model="plotForm.name"
-                type="text"
-                required
-                placeholder="Ex: Hall Principal & Atrium"
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              />
+            <div
+              class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-xs"
+            >
+              <i class="fa-solid fa-shapes text-lg"></i>
             </div>
-
-            <!-- Hôpital -->
             <div>
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Hôpital *
-              </label>
-              <select
-                v-model="plotForm.hospital"
-                required
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              >
-                <option value="CHUL">CHUL (Univ. Laval)</option>
-                <option value="HEJ">HEJ (Enfant-Jésus)</option>
-                <option value="HDQ">HDQ (Hôtel-Dieu)</option>
-                <option value="HSFA">HSFA (St-François)</option>
-                <option value="HSS">HSS (Sacré-Cœur)</option>
-                <option value="CRCE">CRCE (Recherche)</option>
-              </select>
+              <p class="text-sm font-bold text-slate-700">Section formulaire (Template)</p>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Gabarit d'ajout d'emplacement
+              </p>
             </div>
-
-            <!-- Secteur de soins -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Secteur de soins *
-              </label>
-              <input
-                v-model="plotForm.sector"
-                type="text"
-                required
-                placeholder="Ex: Pédiatrie, Oncologie, Urgence"
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              />
-            </div>
-
-            <!-- Prix / Valeur -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Valeur / Prix ($ CAD) *
-              </label>
-              <input
-                v-model.number="plotForm.price"
-                type="number"
-                min="0"
-                step="5000"
-                required
-                placeholder="Ex: 250000"
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              />
-            </div>
-
-            <!-- Statut Disponibilité -->
-            <div>
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Statut
-              </label>
-              <select
-                v-model="plotForm.available"
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              >
-                <option :value="true">Disponible à la valorisation</option>
-                <option :value="false">Réservé / Occupé</option>
-              </select>
-            </div>
-
-            <!-- Image URL -->
-            <div class="sm:col-span-2">
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                URL de l'image
-              </label>
-              <input
-                v-model="plotForm.image"
-                type="url"
-                placeholder="https://images.unsplash.com/..."
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              />
-            </div>
-
-            <!-- Description -->
-            <div class="sm:col-span-2">
-              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Description
-              </label>
-              <textarea
-                v-model="plotForm.description"
-                rows="3"
-                placeholder="Description du lieu, opportunités de visibilité..."
-                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
-              ></textarea>
-            </div>
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"
+            >
+              Template
+            </span>
           </div>
 
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div class="flex items-center justify-end pt-2 border-t border-slate-100">
             <button
               type="button"
               @click="isPlotModalOpen = false"
-              class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
             >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              class="px-5 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all border border-teal-300/40 cursor-pointer shadow-lg shadow-teal-500/20"
-            >
-              {{ editingPlotId ? 'Enregistrer les modifications' : 'Créer l\'emplacement' }}
+              Fermer
             </button>
           </div>
-        </form>
+        </template>
+
+        <!-- CAS 2 : MODIFICATION D'UN EMPLACEMENT EXISTANT -->
+        <template v-else>
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">
+                Modifier l'emplacement
+              </h3>
+              <p class="text-xs text-slate-500">
+                Mise à jour des informations de l'espace sélectionné.
+              </p>
+            </div>
+            <button
+              @click="isPlotModalOpen = false"
+              class="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form @submit.prevent="savePlot" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Nom -->
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Nom de l'espace *
+                </label>
+                <input
+                  v-model="plotForm.name"
+                  type="text"
+                  required
+                  placeholder="Ex: Hall Principal & Atrium"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                />
+              </div>
+
+              <!-- Hôpital -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Site hospitalier *
+                </label>
+                <select
+                  v-model="plotForm.hospital"
+                  required
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                >
+                  <option value="CHUL">CHUL (Univ. Laval)</option>
+                  <option value="HEJ">HEJ (Enfant-Jésus)</option>
+                  <option value="HDQ">HDQ (Hôtel-Dieu)</option>
+                  <option value="HSFA">HSFA (St-François d'Assise)</option>
+                  <option value="HSS">HSS (Sacré-Cœur)</option>
+                  <option value="CRCE">CRCE (Centre de Recherche)</option>
+                </select>
+              </div>
+
+              <!-- Secteur de soins -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Secteur de soins *
+                </label>
+                <input
+                  v-model="plotForm.sector"
+                  type="text"
+                  required
+                  placeholder="Ex: Pédiatrie, Traumatologie, Urgence"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                />
+              </div>
+
+              <!-- Prix / Valeur -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Valeur philanthropique ($ CAD) *
+                </label>
+                <input
+                  v-model.number="plotForm.price"
+                  type="number"
+                  min="0"
+                  step="5000"
+                  required
+                  placeholder="Ex: 250000"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                />
+              </div>
+
+              <!-- Statut Disponibilité -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Statut
+                </label>
+                <select
+                  v-model="plotForm.available"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                >
+                  <option :value="true">Disponible à l'attribution</option>
+                  <option :value="false">Réservé / Attribué</option>
+                </select>
+              </div>
+
+              <!-- Image URL -->
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  URL de l'image
+                </label>
+                <input
+                  v-model="plotForm.image"
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                />
+              </div>
+
+              <!-- Description -->
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  v-model="plotForm.description"
+                  rows="3"
+                  placeholder="Description du lieu, visibilité offerte, flux de circulation..."
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                @click="isPlotModalOpen = false"
+                class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                class="px-5 py-2 bg-[#0a1526] hover:bg-[#132238] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Enregistrer les modifications
+              </button>
+            </div>
+          </form>
+        </template>
       </div>
     </div>
 
     <!-- MODAL AJOUT UTILISATEUR -->
     <div
       v-if="isNewUserModalOpen"
-      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
     >
       <div
-        class="bg-[#0b1629] border border-slate-700/80 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4"
+        class="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 text-slate-800"
       >
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-          <h3 class="text-base font-black text-white">Ajouter un utilisateur</h3>
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Inviter un utilisateur</h3>
+            <p class="text-xs text-slate-500">Ajoutez un accès à l'équipe de la Fondation.</p>
+          </div>
           <button
             @click="isNewUserModalOpen = false"
-            class="text-slate-400 hover:text-white cursor-pointer"
+            class="text-slate-400 hover:text-slate-600 cursor-pointer p-1"
           >
             ✕
           </button>
@@ -642,7 +712,7 @@
 
         <form @submit.prevent="createNewUser" class="space-y-3">
           <div>
-            <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+            <label class="block text-xs font-bold text-slate-700 mb-1">
               Nom complet
             </label>
             <input
@@ -650,31 +720,31 @@
               type="text"
               required
               placeholder="Dr. Sophie Martin"
-              class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
             />
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-              Email
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              Courriel professionnel
             </label>
             <input
               v-model="newUserForm.email"
               type="email"
               required
               placeholder="sophie.martin@chudequebec.ca"
-              class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
             />
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-              Mot de passe temporaire
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              Mot de passe initial
             </label>
             <input
               v-model="newUserForm.password"
               type="password"
               required
               placeholder="••••••••"
-              class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-teal-400"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600"
             />
           </div>
           <div class="flex items-center gap-2 pt-2">
@@ -682,24 +752,24 @@
               v-model="newUserForm.admin"
               id="isAdminCheckbox"
               type="checkbox"
-              class="rounded bg-slate-900 border-slate-700 text-teal-500 focus:ring-teal-400"
+              class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
             />
-            <label for="isAdminCheckbox" class="text-xs text-slate-300 font-bold cursor-pointer">
+            <label for="isAdminCheckbox" class="text-xs text-slate-700 font-semibold cursor-pointer">
               Accorder les droits d'administrateur
             </label>
           </div>
 
-          <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
             <button
               type="button"
               @click="isNewUserModalOpen = false"
-              class="px-4 py-2 bg-slate-800 text-slate-300 text-xs font-bold rounded-xl cursor-pointer"
+              class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition-colors"
             >
               Annuler
             </button>
             <button
               type="submit"
-              class="px-5 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer"
+              class="px-5 py-2 bg-[#0a1526] hover:bg-[#132238] text-white font-bold text-xs rounded-xl cursor-pointer transition-colors"
             >
               Créer le compte
             </button>
@@ -743,14 +813,14 @@ function showToast(msg, type = 'success') {
 }
 
 function formatShortPrice(val) {
-  if (val >= 1000000) return `${(val / 1000000).toFixed(1)} M$`
+  if (val >= 1000000) return `${(val / 1000000).toFixed(2).replace('.', ',')} M$`
   return `${new Intl.NumberFormat('fr-CA').format(val)} $`
 }
 
 const filteredPlots = computed(() => {
   return plotsStore.plots.filter((p) => {
     if (searchQuery.value) {
-      const q = searchQuery.value.toLowerCase()
+      const q = searchQuery.value.toLowerCase().trim()
       const matchName = p.name?.toLowerCase().includes(q)
       const matchSector = p.sector?.toLowerCase().includes(q)
       const matchHospital = p.hospital?.toLowerCase().includes(q)
@@ -789,13 +859,14 @@ const isPlotModalOpen = ref(false)
 const editingPlotId = ref(null)
 
 const defaultPlotForm = {
-  name: '',
-  hospital: 'CHUL',
-  sector: '',
-  price: 150000,
+  name: 'Atrium Philanthropique & Espace Famille (Template)',
+  hospital: 'HEJ',
+  sector: 'Traumatologie & Neurologie',
+  price: 250000,
   available: true,
   image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop',
-  description: '',
+  description:
+    'Espace stratégique à fort achalandage offrant une reconnaissance durable pour un donateur majeur au sein du CHU de Québec.',
 }
 
 const plotForm = reactive({ ...defaultPlotForm })
@@ -804,6 +875,11 @@ function openAddModal() {
   editingPlotId.value = null
   Object.assign(plotForm, defaultPlotForm)
   isPlotModalOpen.value = true
+}
+
+function saveTemplatePlot() {
+  showToast("Modèle d'emplacement validé en mode démonstration (Template).")
+  isPlotModalOpen.value = false
 }
 
 function openEditModal(plot) {

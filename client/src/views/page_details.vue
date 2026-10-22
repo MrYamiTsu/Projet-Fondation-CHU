@@ -17,14 +17,47 @@
 
   <div v-if="plot" class="bg-white min-h-screen">
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
-      <div class="mb-4">
-        <router-link
-          to="/"
-          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors"
+      <!-- Barre supérieure : Bouton Retour et Fil d'Ariane -->
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <button
+          @click="goBack"
+          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors cursor-pointer group"
         >
-          <i class="fa-solid fa-arrow-left"></i>
+          <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
           <span>Retour aux emplacements</span>
-        </router-link>
+        </button>
+
+        <!-- Fil d'Ariane -->
+        <nav class="flex items-center gap-2 text-xs text-slate-400" aria-label="Fil d'Ariane">
+          <router-link
+            to="/#recherche"
+            class="hover:text-teal-600 transition-colors hover:underline"
+          >
+            Accueil
+          </router-link>
+          <span>/</span>
+          <button
+            v-if="plot?.hospital"
+            @click="navigateToHospital(plot.hospital)"
+            class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
+            :title="`Filtrer par l'hôpital ${plot.hospital}`"
+          >
+            {{ plot.hospital }}
+          </button>
+          <span v-if="plot?.hospital && plot?.sector">/</span>
+          <button
+            v-if="plot?.sector"
+            @click="navigateToSector(plot.sector)"
+            class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
+            :title="`Filtrer par le secteur ${plot.sector}`"
+          >
+            {{ plot.sector }}
+          </button>
+          <span>/</span>
+          <span class="text-slate-600 font-semibold truncate max-w-[200px] sm:max-w-[320px]">
+            {{ plot?.name }}
+          </span>
+        </nav>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -33,7 +66,7 @@
           <div class="relative rounded-2xl overflow-hidden h-[380px]">
             <img
               :src="plot.image"
-              :alt="plot?.name || 'Image de l\'emplacement non disponible'"
+              :alt="plot?.name || 'Image de l\'emplacement'"
               class="w-full h-full object-cover"
             />
             <span
@@ -51,19 +84,27 @@
           </div>
 
           <div>
-            <p class="text-sm font-semibold text-blue-600 uppercase tracking-wide">
-              {{ plot?.hospital || 'Hôpital non disponible' }}
+            <p
+              @click="navigateToHospital(plot.hospital)"
+              class="text-sm font-semibold text-blue-600 uppercase tracking-wide cursor-pointer hover:underline inline-block"
+              :title="`Filtrer par l'hôpital ${plot.hospital} sur la page principale`"
+            >
+              {{ plot?.hospital }}
             </p>
             <h1 class="text-3xl font-bold text-slate-900 mt-1">
-              {{ plot?.name || 'Nom de l\'emplacement non disponible' }}
+              {{ plot?.name }}
             </h1>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
               <p class="text-sm text-slate-500">Secteur de soins</p>
-              <p class="text-base font-medium text-slate-800">
-                {{ plot?.sector || 'Secteur non disponible' }}
+              <p
+                @click="navigateToSector(plot.sector)"
+                class="text-base font-medium text-slate-800 cursor-pointer hover:underline inline-block hover:text-blue-600 transition-colors"
+                :title="`Filtrer par le secteur ${plot.sector} sur la page principale`"
+              >
+                {{ plot?.sector }}
               </p>
             </div>
           </div>
@@ -132,7 +173,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { hospitals } from '../data/mockData.js'
 import Header from '../components/Header.vue'
 import Auth from '../components/Auth.vue'
 import { usePlotsStore } from '../stores/plots.js'
@@ -143,7 +183,6 @@ const router = useRouter()
 const plotsStore = usePlotsStore()
 const authStore = useAuthStore()
 
-const selectedHospital = ref('')
 const isAuthModalOpen = ref(false)
 
 const plot = computed(() => {
@@ -151,13 +190,30 @@ const plot = computed(() => {
   return plotsStore.getPlotById(id) || null
 })
 
-function handleHospitalSelect(code) {
-  selectedHospital.value = selectedHospital.value === code ? '' : code
-  router.push('/')
+function goBack() {
+  router.push({ path: '/', query: route.query, hash: '#recherche' })
+}
+
+function navigateToHospital(code) {
+  if (!code) return
+  router.push({
+    path: '/',
+    query: { hospital: code },
+    hash: '#recherche',
+  })
+}
+
+function navigateToSector(sector) {
+  if (!sector) return
+  router.push({
+    path: '/',
+    query: { sector: sector },
+    hash: '#recherche',
+  })
 }
 
 function openPlotReserver() {
   const id = route.params.id
-  router.push(`/reservation/${id}`)
+  router.push({ path: `/reservation/${id}`, query: route.query })
 }
 </script>

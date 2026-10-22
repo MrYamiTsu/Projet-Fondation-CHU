@@ -7,6 +7,18 @@ import pageReservation from '../views/page_reserver.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        top: 80,
+      }
+    }
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  },
   routes: [
     {
       path: '/',

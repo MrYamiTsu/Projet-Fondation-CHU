@@ -81,6 +81,23 @@ INSERT INTO Sommaire
 (4,  5000, 22000,  6000, 33000,  5000, 25000,  7000,  37000);
 
 
+CREATE TABLE utilisateur (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
+    actif BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT check_user_role
+        CHECK (role IN ('user', 'admin'))
+);
+CREATE UNIQUE INDEX utilisateur_email_unique_lower
+ON utilisateur (LOWER(email));
+
 -- 6. Reservation
 INSERT INTO Reservation (emplacement_id, utilisateur_id, statut, date_debut, date_fin) VALUES
 (2, 1, 'confirmed', '2026-01-15 08:00', '2026-12-31 17:00'),

@@ -243,6 +243,7 @@ function scrollToTarget(isInstant = false) {
 
 onMounted(() => {
   checkRouteAlerts()
+  plotsStore.getPlots()
   scrollToTarget(true)
 })
 

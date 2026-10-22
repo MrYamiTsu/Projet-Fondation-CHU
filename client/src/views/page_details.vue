@@ -171,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from '../components/Header.vue'
 import Auth from '../components/Auth.vue'
@@ -184,6 +184,7 @@ const plotsStore = usePlotsStore()
 const authStore = useAuthStore()
 
 const isAuthModalOpen = ref(false)
+onMounted(() => { if (plotsStore.plots.length === 0) plotsStore.getPlots() })
 
 const plot = computed(() => {
   const id = Number(route.params.id)

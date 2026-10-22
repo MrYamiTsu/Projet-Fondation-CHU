@@ -794,6 +794,7 @@ onMounted(() => {
   if (!authStore.isAdmin) {
     router.replace({ path: '/', query: { reason: 'admin_forbidden' } })
   }
+  plotsStore.getPlots()
 })
 
 const activeTab = ref('plots')

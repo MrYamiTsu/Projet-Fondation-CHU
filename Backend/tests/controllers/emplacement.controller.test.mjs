@@ -46,6 +46,8 @@ describe('emplacement.controller', () => {
 
   // beforeEach s'exécute avant CHAQUE test (it) de ce groupe.
   beforeEach(() => {
+    // remet à zéro l'historique des appels de tous les mocks, utile pour le workflow GitHub Actions.
+    vi.clearAllMocks();
     //nouveau faux res à chaque fois.
     res = creerRes();
     //nouveau faux next à chaque fois.

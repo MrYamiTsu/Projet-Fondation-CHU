@@ -7,6 +7,18 @@ import pageReservation from '../views/page_reserver.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        top: 80,
+      }
+    }
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  },
   routes: [
     {
       path: '/',
@@ -32,20 +44,19 @@ const router = createRouter({
   ],
 })
 
-// Garde de navigation pour protéger la vue admin
-router.beforeEach((to, from, next) => {
+// Garde de navigation pour protéger la vue admin (syntaxe moderne Vue Router sans callback next())
+router.beforeEach((to) => {
   if (to.meta.requiresAdmin) {
     const authStore = useAuthStore()
     if (!authStore.isAuthenticated) {
       // Non connecté : redirection vers l'accueil avec ouverture de la modale de connexion
-      return next({ path: '/', query: { authModal: '1', reason: 'login_required' } })
+      return { path: '/', query: { authModal: '1', reason: 'login_required' } }
     }
     if (!authStore.isAdmin) {
       // Connecté mais non-admin : redirection vers l'accueil avec refus d'accès
-      return next({ path: '/', query: { reason: 'admin_forbidden' } })
+      return { path: '/', query: { reason: 'admin_forbidden' } }
     }
   }
-  next()
 })
 
 export default router

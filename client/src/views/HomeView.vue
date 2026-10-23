@@ -18,6 +18,7 @@
           />
         </template>
       </Header>
+
       <div v-if="accessAlert" class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6">
         <div
           class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg"
@@ -63,8 +64,10 @@
           </div>
         </div>
       </div>
+
       <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+        <!-- Section Carte Interactive & Cartes d'Hôpitaux + Valorisation -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch">
           <Map
             class="xl:col-span-8"
             :hospitals="hospitals"
@@ -76,14 +79,21 @@
           />
           <Valuation class="xl:col-span-4" :selected-hospital="selectedHospital" />
         </div>
-        <PlotFilters
-          v-model="filters"
-          :plots="plotsStore.plots"
-          :result-count="filteredPlots.length"
-          @reset="resetFilters"
-        />
-        <div>
-          <PlotList :plots="filteredPlots" @open-modal="openPlotDetail" />
+
+        <!-- Section des Filtres & Emplacements Recherchés -->
+        <div id="recherche" class="space-y-8 scroll-mt-24">
+          <!-- Section des Filtres (Secteur, Disponibilité, Budget) -->
+          <PlotFilters
+            v-model="filters"
+            :plots="plotsStore.plots"
+            :result-count="filteredPlots.length"
+            @reset="resetFilters"
+          />
+
+          <!-- Liste des Emplacements -->
+          <div id="emplacements" class="scroll-mt-24">
+            <PlotList :plots="filteredPlots" @open-modal="openPlotDetail" />
+          </div>
         </div>
       </main>
     </div>
@@ -91,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../components/Header.vue'
 import Map from '../components/Map.vue'
@@ -111,7 +121,6 @@ const plotsStore = usePlotsStore()
 
 const isAuthModalOpen = ref(false)
 const accessAlert = ref(null)
-const searchQuery = ref('')
 
 const defaultFilters = {
   sector: '',
@@ -120,6 +129,7 @@ const defaultFilters = {
 }
 
 const selectedHospital = ref(route.query.hospital || '')
+const searchQuery = ref(route.query.q || '')
 
 const filters = ref({
   sector: route.query.sector || defaultFilters.sector,
@@ -127,8 +137,9 @@ const filters = ref({
   maxPrice: route.query.maxPrice ? Number(route.query.maxPrice) : defaultFilters.maxPrice,
 })
 
+// Synchronisation des états vers les query parameters de l'URL
 watch(
-  [selectedHospital, filters],
+  [selectedHospital, filters, searchQuery],
   () => {
     const query = { ...route.query }
     if (selectedHospital.value) {
@@ -147,11 +158,26 @@ watch(
       delete query.availability
     }
     if (filters.value.maxPrice !== defaultFilters.maxPrice) {
-      query.maxPrice = filters.value.maxPrice
+      query.maxPrice = String(filters.value.maxPrice)
     } else {
       delete query.maxPrice
     }
-    router.replace({ query })
+    if (searchQuery.value && searchQuery.value.trim()) {
+      query.q = searchQuery.value.trim()
+    } else {
+      delete query.q
+    }
+
+    const hasChanged =
+      (query.hospital || '') !== (route.query.hospital || '') ||
+      (query.sector || '') !== (route.query.sector || '') ||
+      (query.availability || '') !== (route.query.availability || '') ||
+      String(query.maxPrice || '') !== String(route.query.maxPrice || '') ||
+      (query.q || '') !== (route.query.q || '')
+
+    if (hasChanged) {
+      router.replace({ query, hash: route.hash })
+    }
   },
   { deep: true },
 )
@@ -175,14 +201,73 @@ function checkRouteAlerts() {
   }
 }
 
+function scrollToTarget(isInstant = false) {
+  const hash = route.hash || (route.query.hospital || route.query.sector ? '#recherche' : '')
+  if (!hash) return
+
+  const cleanId = hash.replace('#', '')
+
+  const performScroll = (behavior = 'auto') => {
+    const el =
+      document.getElementById(cleanId) ||
+      document.getElementById('recherche') ||
+      document.getElementById('emplacements')
+    if (el) {
+      const headerOffset = 80
+      const rect = el.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const targetY = rect.top + scrollTop - headerOffset
+
+      window.scrollTo({
+        top: Math.max(0, targetY),
+        behavior: behavior,
+      })
+      return true
+    }
+    return false
+  }
+
+  // Application immédiate
+  performScroll(isInstant ? 'auto' : 'smooth')
+  nextTick(() => {
+    performScroll(isInstant ? 'auto' : 'smooth')
+  })
+  // Réajustement après montage du DOM et chargement des composants
+  setTimeout(() => {
+    performScroll(isInstant ? 'auto' : 'smooth')
+  }, 100)
+  setTimeout(() => {
+    performScroll(isInstant ? 'auto' : 'smooth')
+  }, 300)
+}
+
 onMounted(() => {
   checkRouteAlerts()
+  plotsStore.getPlots()
+  scrollToTarget(true)
 })
 
+// Quand l'utilisateur navigue avec l'historique ou un lien externe
 watch(
   () => route.query,
-  () => {
+  (newQuery) => {
     checkRouteAlerts()
+    selectedHospital.value = newQuery.hospital || ''
+    filters.value.sector = newQuery.sector || defaultFilters.sector
+    filters.value.availability = newQuery.availability || defaultFilters.availability
+    filters.value.maxPrice = newQuery.maxPrice ? Number(newQuery.maxPrice) : defaultFilters.maxPrice
+    searchQuery.value = newQuery.q || ''
+
+    if (route.hash || newQuery.hospital || newQuery.sector) {
+      scrollToTarget(false)
+    }
+  },
+)
+
+watch(
+  () => route.hash,
+  () => {
+    scrollToTarget(false)
   },
 )
 
@@ -233,10 +318,14 @@ function handleHospitalSelect(code) {
 function resetFilters() {
   filters.value = { ...defaultFilters }
   searchQuery.value = ''
+  selectedHospital.value = ''
 }
 
 function openPlotDetail(plot) {
-  router.push(`/emplacement/${plot.id}`)
+  router.push({
+    path: `/emplacement/${plot.id}`,
+    query: { ...route.query },
+  })
 }
 
 function handleLoginSuccess(user) {

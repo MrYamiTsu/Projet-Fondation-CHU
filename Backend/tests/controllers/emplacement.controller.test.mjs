@@ -10,8 +10,8 @@ import * as modele from '../../src/models/emplacement.mjs';
 
 // On importe les controllers à tester (les vraies fonctions, pas des mocks).
 import {
-  obtenirEmplacementsParLieu, // controller : recherche par lieu
-  obtenirEmplacementParId,    // controller : recherche par id
+  getPlotByLieu, // controller : recherche par lieu
+  getPlotById,    // controller : recherche par id
   getAllPlots,                // controller : liste de tous les emplacements
 } from '../../src/controllers/emplacement.controller.mjs';
 
@@ -20,9 +20,9 @@ import {
 vi.mock('../../src/models/emplacement.mjs', () => ({
   // Chaque vi.fn() est une fausse fonction : Donc on choisi se
   // qu'elle est sensé retourné pour chaque test.
-  rechercherEmplacementsParLieu: vi.fn(),
-  rechercherEmplacementsParDescription: vi.fn(),
-  rechercherEmplacementParId: vi.fn(),
+  findPlotByLieu: vi.fn(),
+  findPlotByDescription: vi.fn(),
+  findPlotById: vi.fn(),
   findAllPlots: vi.fn(),
 }));
 
@@ -55,9 +55,9 @@ describe('emplacement.controller', () => {
   });
 
 
-  // Test pour obtenirEmplacementsParLieu
+  // Test pour getPlotByLieu
   // entrée invalide / lieu trouvé / lieu non trouvé (suggestions) / erreur de la base
-  describe('obtenirEmplacementsParLieu', () => {
+  describe('getPlotByLieu', () => {
     // test 1 à 3 : entrée invalide -> tout les cas doivent renvoyer une erreur 400.
     it.each([
       // Chaque ligne = [nom du cas, valeur du lieu à tester]
@@ -70,7 +70,7 @@ describe('emplacement.controller', () => {
     ])('400 si le lieu est %s', async (_nom, lieu) => {
 
       // appelle le controller avec un faux req contenant ce lieu.
-      await obtenirEmplacementsParLieu({ query: { lieu } }, res, next);
+      await getPlotByLieu({ query: { lieu } }, res, next);
 
       // On récupère l'erreur passée à next :
       // next.mock.calls = liste des appels de next
@@ -83,7 +83,7 @@ describe('emplacement.controller', () => {
       expect(erreur.status).toBe(400);
 
       // vérifie qu'on n'est pas allé chercher dans la base (entrée invalide).
-      expect(modele.rechercherEmplacementsParLieu).not.toHaveBeenCalled();
+      expect(modele.findPlotByLieu).not.toHaveBeenCalled();
       // vérifie que le controller n'a envoyé aucune réponse lui-même.
       expect(res.json).not.toHaveBeenCalled();
     });
@@ -94,19 +94,19 @@ describe('emplacement.controller', () => {
       // Test 5 : Un emplacement est trouvé.
       const emplacements = [{ id: 1 }];
       // mockResolvedValue : la fausse fonction réussit et retourne ces données
-      modele.rechercherEmplacementsParLieu.mockResolvedValue(emplacements);
+      modele.findPlotByLieu.mockResolvedValue(emplacements);
 
       // Test 5: Vérification du trim 
-      await obtenirEmplacementsParLieu(
+      await getPlotByLieu(
         { query: { lieu: '  Aile A  ' } }, // faux req
         res,                               // faux res
         next                               // faux next
       );
 
       // vérifie que le modèle a été appelé avec le lieu sans les espaces.
-      expect(modele.rechercherEmplacementsParLieu).toHaveBeenCalledWith('Aile A');
+      expect(modele.findPlotByLieu).toHaveBeenCalledWith('Aile A');
       // vérifie que le controller n'a pas lancé de recherche par description (puisque lieu trouvé).
-      expect(modele.rechercherEmplacementsParDescription).not.toHaveBeenCalled();
+      expect(modele.findPlotByDescription).not.toHaveBeenCalled();
       // vérifie que le controller a répondu avec le code 200.
       expect(res.status).toHaveBeenCalledWith(200);
       // vérifie que le corps de la réponse est la liste des emplacements trouvé avec le lieu.
@@ -120,15 +120,15 @@ describe('emplacement.controller', () => {
       // les suggestions que la recherche par description va retourner.
       const suggestions = [{ id: 7, description: 'Près de l’aile A' }];
       // La recherche par lieu ne trouve rien : tableau vide.
-      modele.rechercherEmplacementsParLieu.mockResolvedValue([]);
+      modele.findPlotByLieu.mockResolvedValue([]);
       // La recherche par description trouve des suggestions.
-      modele.rechercherEmplacementsParDescription.mockResolvedValue(suggestions);
+      modele.findPlotByDescription.mockResolvedValue(suggestions);
 
       // on appelle le controller.
-      await obtenirEmplacementsParLieu({ query: { lieu: 'aile' } }, res, next);
+      await getPlotByLieu({ query: { lieu: 'aile' } }, res, next);
 
       // vérifie que le controller a bien lancé la recherche par description avec le même mot.
-      expect(modele.rechercherEmplacementsParDescription).toHaveBeenCalledWith(
+      expect(modele.findPlotByDescription).toHaveBeenCalledWith(
         'aile'
       );
       // vérifie que la réponse est 200.
@@ -142,10 +142,10 @@ describe('emplacement.controller', () => {
       // on crée une erreur qui simule une panne de la base.
       const erreur = new Error('DB down');
       // la fausse fonction échoue avec cette erreur
-      modele.rechercherEmplacementsParLieu.mockRejectedValue(erreur);
+      modele.findPlotByLieu.mockRejectedValue(erreur);
 
       // on appelle le controller.
-      await obtenirEmplacementsParLieu({ query: { lieu: 'aile' } }, res, next);
+      await getPlotByLieu({ query: { lieu: 'aile' } }, res, next);
 
       // le catch du controller a transmis l'erreur à next.
       expect(next).toHaveBeenCalledWith(erreur);
@@ -155,9 +155,9 @@ describe('emplacement.controller', () => {
   });
 
 
-  // Test pour obtenirEmplacementParId
+  // Test pour getPlotById
   // id invalide / id valide trouvé / introuvable (404) / erreur de la base
-  describe('obtenirEmplacementParId', () => {
+  describe('getPlotById', () => {
     // tests 8 à 13 : id invalide -> erreur 400
     it.each([
       ['une lettre', 'abc'], 
@@ -169,25 +169,25 @@ describe('emplacement.controller', () => {
     ])('400 si l’id est %s', async (_nom, id) => {
 
       // appelle le controller avec un faux req contenant cet id.
-      await obtenirEmplacementParId({ params: { id } }, res, next);
+      await getPlotById({ params: { id } }, res, next);
 
       // l'erreur passée à next a le status 400.
       expect(next.mock.calls[0][0].status).toBe(400);
       // VÉRIFIER : la base n'a pas été interrogée.
-      expect(modele.rechercherEmplacementParId).not.toHaveBeenCalled();
+      expect(modele.findPlotById).not.toHaveBeenCalled();
     });
 
     // test 14 : cas normal, l'emplacement existe
     it('200 et appelle le modèle avec un nombre', async () => {
       // le faux modèle retourne un emplacement.
-      modele.rechercherEmplacementParId.mockResolvedValue({ id: 5 });
+      modele.findPlotById.mockResolvedValue({ id: 5 });
 
       // appelle le controller avec un id valide.
-      await obtenirEmplacementParId({ params: { id: '5' } }, res, next);
+      await getPlotById({ params: { id: '5' } }, res, next);
 
       // vérifier que le modèle a reçu le NOMBRE 5 et non le texte '5'
       // (le controller fait Number(id)).
-      expect(modele.rechercherEmplacementParId).toHaveBeenCalledWith(5);
+      expect(modele.findPlotById).toHaveBeenCalledWith(5);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ id: 5 });
@@ -196,10 +196,10 @@ describe('emplacement.controller', () => {
     // test 15 : l'emplacement n'existe pas
     it('404 si l’emplacement n’existe pas', async () => {
       // le modèle retourne null quand rien n'est trouvé.
-      modele.rechercherEmplacementParId.mockResolvedValue(null);
+      modele.findPlotById.mockResolvedValue(null);
 
       // id valide mais inexistant.
-      await obtenirEmplacementParId({ params: { id: '99' } }, res, next);
+      await getPlotById({ params: { id: '99' } }, res, next);
     
       // erreur 404 transmise à next.
       expect(next.mock.calls[0][0].status).toBe(404);
@@ -210,10 +210,10 @@ describe('emplacement.controller', () => {
     // test 16 : la base de données plante (comme le test 7)
     it('transmet l’erreur à next si le modèle échoue', async () => {
       const erreur = new Error('DB down');
-      modele.rechercherEmplacementParId.mockRejectedValue(erreur);
+      modele.findPlotById.mockRejectedValue(erreur);
 
       // id valide, mais le modèle plante.
-      await obtenirEmplacementParId({ params: { id: '5' } }, res, next);
+      await getPlotById({ params: { id: '5' } }, res, next);
       // l'erreur a été transmise à next.
       expect(next).toHaveBeenCalledWith(erreur);
     });

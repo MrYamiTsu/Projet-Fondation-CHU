@@ -97,11 +97,22 @@ CREATE TABLE Sommaire (
 -- ------------------------------------------------------------
 -- 7. Table UTILISATEUR (table de référence, aucune dépendance)
 -- ------------------------------------------------------------
-CREATE TABLE Utilisateur (
-    id        SERIAL PRIMARY KEY,
-    courriel  VARCHAR(255) NOT NULL UNIQUE,
-    password  VARCHAR(255) NOT NULL
+CREATE TABLE utilisateur (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
+    actif BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT check_user_role
+        CHECK (role IN ('user', 'admin'))
 );
+CREATE UNIQUE INDEX utilisateur_email_unique_lower
+ON utilisateur (LOWER(email));
 
 -- ------------------------------------------------------------
 -- 8. Table RESERVATION (dépend de Emplacement et Utilisateur)

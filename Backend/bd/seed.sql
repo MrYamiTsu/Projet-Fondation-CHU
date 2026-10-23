@@ -81,6 +81,11 @@ INSERT INTO Sommaire
 (4,  5000, 22000,  6000, 33000,  5000, 25000,  7000,  37000);
 
 
+INSERT INTO Utilisateur (nom, prenom, email, password_hash, role) VALUES
+('Admin', 'Admin', 'admin@admin.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin'),
+('Dupond', 'Jean', 'jeandupond@courriel.com', '$2a$10$8.hz9qL0O9u5q0K1L1x8Z.w7Jm7nK0qK0qK0qK0qK0qK0qK0qK0qG', 'user'),
+('Martin', 'Sophie', 'sophiemartin@courriel.com', '$2a$10$8.hz9qL0O9u5q0K1L1x8Z.w7Jm7nK0qK0qK0qK0qK0qK0qK0qK0qG', 'user');
+
 -- 6. Reservation
 INSERT INTO Reservation (emplacement_id, utilisateur_id, statut, date_debut, date_fin) VALUES
 (2, 1, 'confirmed', '2026-01-15 08:00', '2026-12-31 17:00'),

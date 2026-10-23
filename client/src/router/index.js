@@ -4,6 +4,7 @@ import PageDetail from '../views/page_details.vue'
 import AdminView from '../views/AdminView.vue'
 import { useAuthStore } from '../stores/auth.js'
 import pageReservation from '../views/page_reserver.vue'
+import pageProfil from '../views/ProfilView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,11 @@ const router = createRouter({
       name: 'reservation',
       component: pageReservation,
     },
+    {
+      path: '/profil',
+      name: 'profil',
+      component: pageProfil,
+    }
   ],
 })
 

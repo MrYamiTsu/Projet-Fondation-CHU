@@ -5,24 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs'); try{if(fs.existsSync('dist')&&!fs.existsSync('../dist')){fs.cpSync('dist','../dist',{recursive:true})}if(fs.existsSync('../dist')&&!fs.existsSync('dist')){fs.cpSync('../dist','dist',{recursive:true})}}catch(e){}\"",
     "preview": "vite preview",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "autoprefixer": "^10.6.1",
     "pinia": "^4.0.2",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.1.5",
+    "vite-plugin-vue-devtools": "^8.1.5",
     "vue": "rc",
     "vue-router": "^5.2.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-vue": "^6.0.8",
-    "autoprefixer": "^10.6.1",
-    "postcss": "^8.5.28",
-    "prettier": "3.9.5",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.1.5",
-    "vite-plugin-vue-devtools": "^8.1.5"
+    "prettier": "3.9.5"
   },
   "engines": {
     "node": "^22.18.0 || >=24.12.0"

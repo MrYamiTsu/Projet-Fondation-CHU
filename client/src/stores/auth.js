@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-const API_BASE = import.meta.env.API_BASE || 'http://localhost:3000'
+const rawApi = import.meta.env.VITE_API_URL ?? import.meta.env.API_BASE
+const API_BASE = (rawApi !== undefined && rawApi !== null && rawApi !== '')
+  ? String(rawApi).replace(/\/+$/, '')
+  : (import.meta.env.DEV ? 'http://localhost:3000' : '')
 const API_URL = `${API_BASE}/auth`
 
 export const useAuthStore = defineStore('auth', () => {

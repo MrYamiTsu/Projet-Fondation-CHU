@@ -1,3 +1,9 @@
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'node:url';
+
+dotenv.config({ path: fileURLToPath(new URL('../../.env', import.meta.url)) });
+dotenv.config();
+
 import app from './app.mjs';
 
 const port = Number(process.env.PORT ?? 3000);

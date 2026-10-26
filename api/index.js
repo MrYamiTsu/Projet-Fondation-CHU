@@ -1,4 +1,5 @@
 import app from '../Backend/src/app.mjs';
 
-export default app;
-
+export default function handler(req, res) {
+  return app(req, res);
+}

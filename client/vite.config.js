@@ -14,6 +14,10 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
   ],
+  build: {
+    outDir: fileURLToPath(new URL('../dist', import.meta.url)),
+    emptyOutDir: true,
+  },
   server: {
     host: true,
     watch: {

@@ -1,10 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "outputDirectory": "client/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(emplacements|auth|reservations|hopitaux|hospitals)(.*)",
+      "source": "/(emplacements|auth|reservations)(.*)",
       "destination": "/api"
     },
     {
@@ -17,4 +17,3 @@
     }
   ]
 }
-

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail } from '../../Backend/src/models/auth.mjs';
+import pool from '../_db.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,7 +21,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ erreur: 'Identifiants invalides' });
     }
 
-    const utilisateur = await findUserByEmail(email);
+    const requete = `
+      SELECT id, nom, prenom, email, password_hash, role, actif
+      FROM utilisateur
+      WHERE LOWER(email) = LOWER($1)
+    `;
+    const result = await pool.query(requete, [email]);
+    const utilisateur = result.rows[0];
+
     if (!utilisateur) {
       return res.status(401).json({ erreur: 'Identifiants invalides' });
     }

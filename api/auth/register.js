@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail, createUser } from '../../Backend/src/models/auth.mjs';
+import pool from '../_db.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,13 +21,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ erreur: 'Données manquantes' });
     }
 
-    const existant = await findUserByEmail(email);
-    if (existant) {
+    const checkReq = `SELECT id FROM utilisateur WHERE LOWER(email) = LOWER($1)`;
+    const existant = await pool.query(checkReq, [email]);
+    if (existant.rows.length > 0) {
       return res.status(409).json({ erreur: 'Cet utilisateur existe déjà.' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const nouvelUtilisateur = await createUser(nom, prenom || '', email, passwordHash);
+    const insertReq = `
+      INSERT INTO utilisateur (nom, prenom, email, password_hash)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, nom, prenom, email, role, actif, created_at, updated_at
+    `;
+    const result = await pool.query(insertReq, [nom, prenom || '', email, passwordHash]);
+    const nouvelUtilisateur = result.rows[0];
 
     const jwtSecret = process.env.JWT_SECRET || 'fondation_chu_secret_jwt_key_2026_super_secure';
     const token = jwt.sign(

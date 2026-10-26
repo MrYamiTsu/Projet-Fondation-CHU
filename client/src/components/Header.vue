@@ -1,94 +1,106 @@
 <template>
-  <header class="bg-[#0a1526] text-white shadow-2xl relative z-20 border-b border-slate-800">
-    <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3.5">
-      <div class="flex items-center justify-between gap-6">
-        <!-- Logo & Titres CHU -->
-        <div class="flex items-center gap-6 shrink-0">
-          <router-link class="flex items-center gap-3 group" to="/">
-            <div
-              class="relative flex items-center justify-center w-12 h-12 text-teal-400 bg-teal-500/10 border border-teal-500/30 rounded-xl group-hover:bg-teal-500/20 transition-all shadow-inner"
-            >
-              <i class="fa-solid fa-hospital text-xl"></i>
-            </div>
-            <div class="flex flex-col leading-tight border-l border-slate-700/80 pl-3">
-              <span class="font-black text-2xl tracking-tight text-white">CHU</span>
-              <span class="text-[12px] font-bold tracking-wide text-white">de Québec</span>
-              <span class="text-[9px] text-slate-300 tracking-wider">Université Laval</span>
-            </div>
-          </router-link>
+  <header class="bg-white border-b border-slate-200/90 sticky top-0 z-40 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-md bg-white/95">
+    <!-- Fine ligne de signature institutionnelle en tête (sarcelle officiel du CHU) -->
+    <div class="h-[2px] bg-teal-700 w-full"></div>
 
-          <div class="hidden md:block h-12 w-px bg-slate-700/80"></div>
-
-          <div class="hidden sm:flex flex-col justify-center">
-            <h1
-              class="text-xl lg:text-2xl font-black tracking-tight text-white uppercase leading-none"
-            >
-              PLAN DE PROJET
-            </h1>
-            <h2
-              class="text-teal-300 text-[11px] lg:text-xs font-bold uppercase tracking-wider mt-1 leading-tight"
-            >
-              PLATEFORME DE VALORISATION DES ESPACES &bull;
-              <span class="text-teal-400">TOPONYMIE & VISIBILITÉ</span>
-            </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5 max-w-md font-light leading-snug hidden lg:block">
-              Transformer nos espaces en opportunités durables pour la santé, la recherche et la communauté.
-            </p>
-          </div>
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-6">
+      <!-- Identité institutionnelle recherchée -->
+      <router-link to="/" class="flex items-center gap-3.5 group shrink-0">
+        <!-- Monogramme architectural soigné -->
+        <div
+          class="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-sm group-hover:bg-slate-800 transition-colors border border-slate-800"
+        >
+          CHU
         </div>
 
-        <!-- Section Droite : Utilisateur / Espace Admin / Connexion -->
-        <div class="shrink-0 flex items-center gap-3 relative">
-          <template v-if="currentUser">
-            <!-- Bouton d'accès Admin pour les administrateurs -->
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">
+              CHU de Québec
+            </span>
+            <span
+              class="hidden md:inline-flex items-center text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded tracking-wide"
+            >
+              Fondation
+            </span>
+          </div>
+          <span class="text-xs text-slate-500 font-medium leading-none mt-1">
+            Université Laval &bull; <span class="text-slate-400">Espaces &amp; Commandites</span>
+          </span>
+        </div>
+      </router-link>
+
+      <!-- Navigation contextuelle sobre (dans les tons du site) -->
+      <nav class="hidden md:flex items-center gap-1 text-xs font-semibold text-slate-600">
+        <router-link
+          to="/"
+          class="px-3 py-1.5 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors"
+        >
+          Accueil
+        </router-link>
+        <router-link
+          to="/#emplacements"
+          class="px-3 py-1.5 rounded-lg hover:text-slate-900 hover:bg-slate-100/80 transition-colors flex items-center gap-1.5"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
+          <span>Explorer les emplacements</span>
+        </router-link>
+      </nav>
+
+      <!-- Section Actions / Utilisateur -->
+      <div class="flex items-center gap-3 shrink-0">
+        <template v-if="currentUser">
+          <div class="flex items-center gap-3">
+            <!-- Bouton d'accès Administration pour les administrateurs -->
             <router-link
               v-if="currentUser.admin"
               to="/admin"
-              class="flex items-center gap-2 px-3.5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all border border-teal-300/40"
-              title="Accéder au panneau d'administration"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-900 text-xs font-bold rounded-lg border border-teal-200 transition-colors shadow-2xs"
             >
-              <i class="fa-solid fa-gauge-high"></i>
-              <span class="hidden sm:inline">Espace Admin</span>
+              <i class="fa-solid fa-sliders text-teal-700 text-xs"></i>
+              <span class="hidden sm:inline">Administration</span>
             </router-link>
 
-            <div
-              class="flex flex-col items-end gap-1 bg-slate-900/90 border border-slate-700/80 p-2.5 rounded-xl shadow-inner"
-            >
-              <div class="flex items-center gap-2">
-                <span
-                  v-if="currentUser.admin"
-                  class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider"
-                >
-                  Admin
+            <!-- Profil connecté sobre -->
+            <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+              <div
+                class="w-8 h-8 rounded-full bg-slate-900 text-teal-300 border border-slate-700 flex items-center justify-center font-bold text-xs shrink-0"
+              >
+                {{ (currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase() }}
+              </div>
+
+              <div class="text-left leading-tight hidden sm:block">
+                <span class="block text-xs font-bold text-slate-900 max-w-[140px] truncate">
+                  {{ currentUser.name || currentUser.email }}
                 </span>
-                <span class="block text-xs font-bold text-white leading-none">
-                  {{ currentUser.name }}
+                <span class="block text-[10px] text-slate-500 mt-0.5">
+                  {{ currentUser.admin ? 'Administrateur' : 'Utilisateur' }}
                 </span>
               </div>
-              <span class="block text-[10px] text-teal-400 font-mono">
-                {{ currentUser.email }}
-              </span>
+
               <button
                 @click="$emit('logout')"
-                class="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider mt-0.5 cursor-pointer flex items-center gap-1"
+                class="text-xs text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                title="Se déconnecter"
+                aria-label="Déconnexion"
               >
-                <i class="fa-solid fa-arrow-right-from-bracket text-[9px]"></i>
-                <span>Déconnexion</span>
+                <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
               </button>
             </div>
-          </template>
+          </div>
+        </template>
 
-          <template v-else>
-            <button
-              @click.stop="$emit('open-auth')"
-              class="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-3 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 flex items-center gap-2 border border-teal-300/40 cursor-pointer"
-            >
-              <i class="fa-solid fa-user text-xs"></i>
-              <span>Connexion</span>
-            </button>
-            <slot name="auth" />
-          </template>
-        </div>
+        <template v-else>
+          <!-- Bouton Connexion : Ardoise noble, accent sarcelle discret -->
+          <button
+            @click.stop="$emit('open-auth')"
+            class="bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-xs font-bold px-4 py-2 rounded-lg border border-slate-800 transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <i class="fa-solid fa-lock text-[10px] text-teal-400"></i>
+            <span>Connexion</span>
+          </button>
+          <slot name="auth" />
+        </template>
       </div>
     </div>
   </header>

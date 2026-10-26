@@ -1,6 +1,6 @@
 import pool from '../db.mjs';
 
-export async function rechercherEmplacementsParLieu(lieu) {
+export async function findPlotByLieu(lieu) {
   const requete = `
     SELECT emplacement.*, hopital.acronyme
     FROM emplacement
@@ -13,7 +13,7 @@ export async function rechercherEmplacementsParLieu(lieu) {
   return result.rows;
 }
 
-export async function rechercherEmplacementsParDescription(mot) {
+export async function findPlotByDescription(mot) {
   const requete = `
     SELECT emplacement.*, hopital.acronyme
     FROM emplacement
@@ -26,7 +26,7 @@ export async function rechercherEmplacementsParDescription(mot) {
   return result.rows;
 }
 
-export async function rechercherEmplacementParId(id) {
+export async function findPlotById(id) {
   const requete = `
     SELECT emplacement.*, hopital.acronyme
     FROM emplacement

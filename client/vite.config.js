@@ -7,6 +7,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  envDir: fileURLToPath(new URL('../', import.meta.url)),
+  envPrefix: ['VITE_', 'API_'],
   plugins: [
     vue(),
     vueDevTools(),

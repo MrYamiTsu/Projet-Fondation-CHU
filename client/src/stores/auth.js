@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-const API_URL = 'http://localhost:3000/auth'
+const API_BASE = import.meta.env.API_BASE || 'http://localhost:3000'
+const API_URL = `${API_BASE}/auth`
 
 export const useAuthStore = defineStore('auth', () => {
   const savedUser = localStorage.getItem('chu_current_user')

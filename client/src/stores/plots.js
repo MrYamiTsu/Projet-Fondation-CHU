@@ -1,7 +1,8 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { ref, computed } from 'vue'
 
-const API_URL = 'http://localhost:3000/emplacements'
+const API_BASE = import.meta.env.API_BASE || 'http://localhost:3000'
+const API_URL = `${API_BASE}/emplacements`
 
 export const usePlotsStore = defineStore('plots', () => {
   const plots = ref([])

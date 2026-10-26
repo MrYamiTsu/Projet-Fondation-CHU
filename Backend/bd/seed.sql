@@ -82,9 +82,9 @@ INSERT INTO Sommaire
 
 
 INSERT INTO Utilisateur (nom, prenom, email, password_hash, role) VALUES
-('Admin', 'Admin', 'admin@admin.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin'),
-('Dupond', 'Jean', 'jeandupond@courriel.com', '$2a$10$8.hz9qL0O9u5q0K1L1x8Z.w7Jm7nK0qK0qK0qK0qK0qK0qK0qK0qG', 'user'),
-('Martin', 'Sophie', 'sophiemartin@courriel.com', '$2a$10$8.hz9qL0O9u5q0K1L1x8Z.w7Jm7nK0qK0qK0qK0qK0qK0qK0qK0qG', 'user');
+('Admin', 'Admin', 'admin@admin.com', '$2b$10$9EW6VqwgoL0nA6a8rFGU9OawU3rFFO.TokjKMq4oQVSRZQxCCy132', 'admin'),
+('Dupond', 'Jean', 'jeandupond@courriel.com', '$2b$10$s5IEFeKYPCwF1WG1aRBIe.bPBz58MflDCPUpNk9Z4GgZ48hf0Gdve', 'user'),
+('Martin', 'Sophie', 'sophiemartin@courriel.com', '$2b$10$s5IEFeKYPCwF1WG1aRBIe.bPBz58MflDCPUpNk9Z4GgZ48hf0Gdve', 'user');
 
 -- 6. Reservation
 INSERT INTO Reservation (emplacement_id, utilisateur_id, statut, date_debut, date_fin) VALUES

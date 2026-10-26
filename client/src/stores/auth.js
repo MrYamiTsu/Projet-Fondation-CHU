@@ -1,161 +1,125 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-const DEFAULT_USERS = [
-  { name: 'Administrateur CHU', email: 'admin@admin.ca', password: '123', admin: true },
-  { name: 'Utilisateur Standard', email: 'user@user.ca', password: '123', admin: false },
-]
+const API_BASE = import.meta.env.API_BASE || 'http://localhost:3000'
+const API_URL = `${API_BASE}/auth`
 
 export const useAuthStore = defineStore('auth', () => {
-  // Initialisation des utilisateurs depuis le localStorage
-  const loadUsers = () => {
-    try {
-      const saved = localStorage.getItem('chu_users')
-      if (saved) return JSON.parse(saved)
-    } catch (e) {
-      console.error('Erreur lors du chargement des utilisateurs:', e)
-    }
-    return DEFAULT_USERS
-  }
+  const savedUser = localStorage.getItem('chu_current_user')
+  const currentUser = ref(savedUser ? JSON.parse(savedUser) : null)
+  const token = ref(localStorage.getItem('token') || null)
+  const isLoading = ref(false)
 
-  // Initialisation de la session actuelle
-  const loadCurrentUser = () => {
-    try {
-      const saved = localStorage.getItem('chu_current_user')
-      if (saved) return JSON.parse(saved)
-    } catch (e) {
-      console.error('Erreur lors du chargement de la session:', e)
-    }
-    return null
-  }
-
-  const users = ref(loadUsers())
-  const currentUser = ref(loadCurrentUser())
+  const users = ref(JSON.parse(localStorage.getItem('chu_users') || '[]'))
 
   const isAuthenticated = computed(() => !!currentUser.value)
-  const isAdmin = computed(() => Boolean(currentUser.value?.admin))
+  const isAdmin = computed(() => currentUser.value?.role === 'admin' || currentUser.value?.admin === true)
 
-  function persistUsers() {
-    try {
-      localStorage.setItem('chu_users', JSON.stringify(users.value))
-    } catch (e) {
-      console.error('Erreur de sauvegarde des utilisateurs:', e)
+  function setSession(user, authToken) {
+    currentUser.value = {
+      id: user.id,
+      name: user.name || `${user.prenom || ''} ${user.nom || ''}`.trim() || user.email,
+      prenom: user.prenom,
+      nom: user.nom,
+      email: user.email,
+      role: user.role || 'user',
+      admin: user.role === 'admin' || Boolean(user.admin),
+    }
+    localStorage.setItem('chu_current_user', JSON.stringify(currentUser.value))
+
+    if (authToken) {
+      token.value = authToken
+      localStorage.setItem('token', authToken)
     }
   }
 
-  function persistCurrentUser() {
+  async function login(email, password) {
+    isLoading.value = true
     try {
-      if (currentUser.value) {
-        localStorage.setItem('chu_current_user', JSON.stringify(currentUser.value))
-      } else {
-        localStorage.removeItem('chu_current_user')
+      const res = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        return { success: false, message: data.erreur || data.message || 'Identifiants invalides' }
       }
-    } catch (e) {
-      console.error('Erreur de sauvegarde de la session:', e)
+
+      setSession(data.data.utilisateur, data.data.token)
+      return { success: true, user: currentUser.value }
+    } catch (error) {
+      return { success: false, message: 'Impossible de contacter le serveur backend.' }
+    } finally {
+      isLoading.value = false
     }
   }
 
-  function login(email, password) {
-    const found = users.value.find(
-      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password,
-    )
-    if (!found) {
-      return { success: false, message: 'Email ou mot de passe incorrect.' }
-    }
+  async function signup({ prenom, nom, email, password }) {
+    isLoading.value = true
+    try {
+      const res = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prenom: prenom?.trim(),
+          nom: nom?.trim(),
+          email: email?.trim(),
+          password,
+        }),
+      })
 
-    currentUser.value = {
-      name: found.name,
-      email: found.email,
-      admin: Boolean(found.admin),
-    }
-    persistCurrentUser()
-    return { success: true, user: currentUser.value }
-  }
+      const data = await res.json()
 
-  function signup({ name, email, password }) {
-    const cleanEmail = email.trim().toLowerCase()
-    const exists = users.value.some((u) => u.email.toLowerCase() === cleanEmail)
-    if (exists) {
-      return { success: false, message: 'Un compte existe déjà avec cet email.' }
-    }
+      if (!res.ok) {
+        return { success: false, message: data.erreur || data.message || "Erreur lors de l'inscription" }
+      }
 
-    const newUser = {
-      name: name.trim(),
-      email: cleanEmail,
-      password,
-      admin: false,
+      return await login(email, password)
+    } catch (error) {
+      return { success: false, message: 'Impossible de contacter le serveur backend.' }
+    } finally {
+      isLoading.value = false
     }
-    users.value.push(newUser)
-    persistUsers()
-
-    currentUser.value = {
-      name: newUser.name,
-      email: newUser.email,
-      admin: false,
-    }
-    persistCurrentUser()
-    return { success: true, user: currentUser.value }
   }
 
   function logout() {
     currentUser.value = null
-    persistCurrentUser()
+    token.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('chu_current_user')
   }
 
   function toggleUserAdmin(email) {
-    const user = users.value.find((u) => u.email.toLowerCase() === email.toLowerCase())
-    if (!user) return false
-
-    // Empêcher de rétrograder le dernier admin ou son propre compte si admin unique
-    const adminCount = users.value.filter((u) => u.admin).length
-    if (user.admin && adminCount <= 1) {
-      return { success: false, message: 'Impossible de retirer le rôle du dernier administrateur.' }
-    }
-
-    user.admin = !user.admin
-    persistUsers()
-
-    // Si on a modifié l'utilisateur actuellement connecté
-    if (currentUser.value && currentUser.value.email.toLowerCase() === email.toLowerCase()) {
-      currentUser.value.admin = user.admin
-      persistCurrentUser()
+    const user = users.value.find((u) => u.email === email)
+    if (user) {
+      user.admin = !user.admin
+      user.role = user.admin ? 'admin' : 'user'
+      localStorage.setItem('chu_users', JSON.stringify(users.value))
     }
     return { success: true }
   }
 
   function deleteUser(email) {
-    if (currentUser.value && currentUser.value.email.toLowerCase() === email.toLowerCase()) {
-      return { success: false, message: 'Vous ne pouvez pas supprimer votre propre compte actif.' }
-    }
-    const beforeCount = users.value.length
-    users.value = users.value.filter((u) => u.email.toLowerCase() !== email.toLowerCase())
-    if (users.value.length !== beforeCount) {
-      persistUsers()
-      return { success: true }
-    }
-    return { success: false, message: 'Utilisateur introuvable.' }
+    users.value = users.value.filter((u) => u.email !== email)
+    localStorage.setItem('chu_users', JSON.stringify(users.value))
+    return { success: true }
   }
 
   function addUser({ name, email, password, admin = false }) {
-    const cleanEmail = email.trim().toLowerCase()
-    const exists = users.value.some((u) => u.email.toLowerCase() === cleanEmail)
-    if (exists) {
-      return { success: false, message: 'Cet email est déjà utilisé.' }
-    }
-    const newUser = {
-      name: name.trim(),
-      email: cleanEmail,
-      password,
-      admin: Boolean(admin),
-    }
+    const newUser = { name, email, password, admin, role: admin ? 'admin' : 'user' }
     users.value.push(newUser)
-    persistUsers()
+    localStorage.setItem('chu_users', JSON.stringify(users.value))
     return { success: true, user: newUser }
   }
 
   return {
-    users,
     currentUser,
+    token,
+    users,
+    isLoading,
     isAuthenticated,
     isAdmin,
     login,
@@ -166,4 +130,3 @@ export const useAuthStore = defineStore('auth', () => {
     addUser,
   }
 })
-

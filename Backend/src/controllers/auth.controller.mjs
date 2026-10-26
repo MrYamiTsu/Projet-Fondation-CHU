@@ -1,7 +1,5 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail } from '../models/auth.mjs';
-import bcrypt from 'bcrypt';
 import { findUserByEmail, createUser } from '../models/auth.mjs';
 
 export async function login(req, res, next) {
@@ -61,7 +59,6 @@ export async function login(req, res, next) {
     return next(erreur);
   }
 }
-
 
 export async function register(req, res, next) {
   try {

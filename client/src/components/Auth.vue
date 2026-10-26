@@ -12,28 +12,31 @@
       ref="panel"
       role="dialog"
       aria-label="Connexion"
-      class="absolute right-0 top-full mt-3 z-50 w-84 max-w-[calc(100vw-2rem)] origin-top-right bg-[#0a1526] text-white border border-slate-700/80 rounded-xl shadow-2xl shadow-black/50 p-4"
+      class="absolute right-0 top-full mt-2.5 z-50 w-88 max-w-[calc(100vw-2rem)] origin-top-right bg-white text-slate-900 border border-slate-200/90 rounded-2xl shadow-xl p-5"
     >
+      <!-- Flèche discrète en haut -->
       <span
-        class="absolute -top-1.5 right-12 w-3 h-3 rotate-45 bg-[#0a1526] border-l border-t border-slate-700/80"
+        class="absolute -top-1.5 right-12 w-3 h-3 rotate-45 bg-white border-l border-t border-slate-200/90"
       ></span>
 
+      <!-- Bouton Fermer -->
       <button
         @click="close"
         aria-label="Fermer"
-        class="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-full text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+        class="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer text-xs"
       >
         ✕
       </button>
 
-      <div class="flex gap-4 border-b border-slate-700/80 mb-4 pr-6">
+      <!-- Onglets Connexion / Créer un compte -->
+      <div class="flex gap-4 border-b border-slate-200 mb-4 pr-8">
         <button
           @click="switchTab(false)"
           :class="[
-            'pb-2 text-[11px] font-black uppercase tracking-wider transition-colors border-b-2 -mb-px cursor-pointer',
+            'pb-2.5 text-xs font-bold transition-colors border-b-2 -mb-px cursor-pointer',
             !isSignUp
-              ? 'border-teal-400 text-teal-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200',
+              ? 'border-slate-900 text-slate-900'
+              : 'border-transparent text-slate-400 hover:text-slate-600',
           ]"
         >
           Connexion
@@ -41,101 +44,94 @@
         <button
           @click="switchTab(true)"
           :class="[
-            'pb-2 text-[11px] font-black uppercase tracking-wider transition-colors border-b-2 -mb-px cursor-pointer',
+            'pb-2.5 text-xs font-bold transition-colors border-b-2 -mb-px cursor-pointer',
             isSignUp
-              ? 'border-teal-400 text-teal-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200',
+              ? 'border-slate-900 text-slate-900'
+              : 'border-transparent text-slate-400 hover:text-slate-600',
           ]"
         >
           Créer un compte
         </button>
       </div>
 
+      <!-- Message d'erreur -->
       <div
         v-if="errorMessage"
-        class="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-lg font-medium flex items-center gap-2"
+        class="mb-3 px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg font-medium flex items-center gap-2"
       >
-        <i class="fa-solid fa-circle-exclamation text-red-400 text-xs"></i>
+        <i class="fa-solid fa-circle-exclamation text-rose-500 text-xs shrink-0"></i>
         <span>{{ errorMessage }}</span>
       </div>
 
-      <form @submit.prevent="submit" class="space-y-3">
-        <div v-if="isSignUp">
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-            Nom complet
-          </label>
-          <input
-            v-model="form.name"
-            type="text"
-            required
-            placeholder="Jean Dupont"
-            class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
-          />
+      <form @submit.prevent="submit" class="space-y-3.5">
+        <!-- Inscription : Prénom et Nom -->
+        <div v-if="isSignUp" class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+              Prénom
+            </label>
+            <input
+              v-model="form.prenom"
+              type="text"
+              required
+              placeholder="Jean"
+              class="w-full px-3 py-2 text-sm bg-slate-50 hover:bg-white text-slate-900 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10 transition-colors"
+            />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+              Nom
+            </label>
+            <input
+              v-model="form.nom"
+              type="text"
+              required
+              placeholder="Dupont"
+              class="w-full px-3 py-2 text-sm bg-slate-50 hover:bg-white text-slate-900 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10 transition-colors"
+            />
+          </div>
         </div>
+
         <div>
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-            Email
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">
+            Adresse courriel
           </label>
           <input
             v-model="form.email"
             type="email"
             required
             placeholder="exemple@hopital.ca"
-            class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
+            class="w-full px-3 py-2 text-sm bg-slate-50 hover:bg-white text-slate-900 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10 transition-colors"
           />
         </div>
+
         <div>
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-            Mot de passe
-          </label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] font-semibold text-slate-700">
+              Mot de passe
+            </label>
+            <span v-if="isSignUp" class="text-[10px] text-slate-400">min. 8 caractères</span>
+          </div>
           <input
             v-model="form.password"
             type="password"
             required
+            :minlength="isSignUp ? 8 : 1"
             placeholder="••••••••"
-            class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
+            class="w-full px-3 py-2 text-sm bg-slate-50 hover:bg-white text-slate-900 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10 transition-colors"
           />
         </div>
 
         <button
           type="submit"
-          class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 border border-teal-300/40 cursor-pointer"
+          :disabled="authStore.isLoading"
+          class="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-1"
         >
-          {{ isSignUp ? 'Créer mon compte' : 'Se connecter' }}
+          <i v-if="authStore.isLoading" class="fa-solid fa-spinner fa-spin text-xs"></i>
+          <i v-else class="fa-solid fa-lock text-[10px] text-teal-400"></i>
+          <span>{{ authStore.isLoading ? 'Patientez...' : isSignUp ? 'Créer mon compte' : 'Se connecter' }}</span>
         </button>
       </form>
-
-      <!-- Comptes de test rapides -->
-      <div v-if="!isSignUp" class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
-        <p class="font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-          <i class="fa-solid fa-key text-teal-400 text-[10px]"></i>
-          <span>Comptes pré-configurés :</span>
-        </p>
-        <div class="grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            @click="fillTestAccount('admin@admin.ca', '123')"
-            class="px-2 py-1 bg-slate-800/80 hover:bg-teal-500/20 border border-slate-700 hover:border-teal-400/60 rounded text-left transition-colors cursor-pointer group"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-[10px]">Admin</span>
-              <span class="text-[9px] bg-teal-500/20 text-teal-300 px-1 rounded font-semibold">Accès admin</span>
-            </div>
-            <span class="text-[9px] text-slate-400 group-hover:text-slate-300 font-mono">admin@admin.ca</span>
-          </button>
-          <button
-            type="button"
-            @click="fillTestAccount('user@user.ca', '123')"
-            class="px-2 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded text-left transition-colors cursor-pointer group"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-[10px]">Utilisateur</span>
-              <span class="text-[9px] bg-slate-700 text-slate-300 px-1 rounded font-semibold">Standard</span>
-            </div>
-            <span class="text-[9px] text-slate-400 group-hover:text-slate-300 font-mono">user@user.ca</span>
-          </button>
-        </div>
-      </div>
     </div>
   </Transition>
 </template>
@@ -157,18 +153,13 @@ const panel = ref(null)
 const isSignUp = ref(false)
 const errorMessage = ref('')
 
-const form = reactive({ name: '', email: '', password: '' })
+const form = reactive({ prenom: '', nom: '', email: '', password: '' })
 
 function resetForm() {
-  form.name = ''
+  form.prenom = ''
+  form.nom = ''
   form.email = ''
   form.password = ''
-}
-
-function fillTestAccount(email, password) {
-  form.email = email
-  form.password = password
-  errorMessage.value = ''
 }
 
 function switchTab(toSignUp) {
@@ -186,9 +177,9 @@ function submit() {
   else handleLogin()
 }
 
-function handleLogin() {
+async function handleLogin() {
   errorMessage.value = ''
-  const result = authStore.login(form.email, form.password)
+  const result = await authStore.login(form.email, form.password)
 
   if (!result.success) {
     errorMessage.value = result.message || 'Email ou mot de passe incorrect.'
@@ -200,10 +191,11 @@ function handleLogin() {
   close()
 }
 
-function handleSignUp() {
+async function handleSignUp() {
   errorMessage.value = ''
-  const result = authStore.signup({
-    name: form.name,
+  const result = await authStore.signup({
+    prenom: form.prenom,
+    nom: form.nom,
     email: form.email,
     password: form.password,
   })

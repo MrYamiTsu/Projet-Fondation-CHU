@@ -1,10 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(emplacements|auth|reservations)(.*)",
+      "source": "/(emplacements|auth|reservations|hopitaux|hospitals)(.*)",
       "destination": "/api"
     },
     {

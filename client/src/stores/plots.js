@@ -167,7 +167,6 @@ export const usePlotsStore = defineStore('plots', () => {
     formatPrice,
     getPlots,
     getPlotById,
-    RechercherPlots,
     addPlot,
     updatePlot,
     toggleAvailability,

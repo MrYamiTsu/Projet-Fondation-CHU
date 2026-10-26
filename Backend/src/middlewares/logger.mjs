@@ -6,6 +6,5 @@ export default function logger(req, res, next) {
     console.log(`${req.method} ${req.path} - ${res.statusCode} (${duree} ms)`);
   });
 
-  // Passe au middleware ou à la route suivante.
   next();
 }

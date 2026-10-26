@@ -1,14 +1,64 @@
 <template>
   <div>
     <Header
-      :hospitals="hospitals"
-      :selected-hospital="selectedHospital"
-      @select-hospital="handleHospitalSelect"
-    />
+      :current-user="authStore.currentUser"
+      @open-auth="isAuthModalOpen = true"
+      @logout="authStore.logout"
+    >
+      <template #auth>
+        <Auth
+          :is-open="isAuthModalOpen"
+          :users="authStore.users"
+          @close="isAuthModalOpen = false"
+        />
+      </template>
+    </Header>
   </div>
 
   <div v-if="plot" class="bg-white min-h-screen">
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <!-- Barre supérieure : Bouton Retour et Fil d'Ariane -->
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <button
+          @click="goBack"
+          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors cursor-pointer group"
+        >
+          <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+          <span>Retour aux emplacements</span>
+        </button>
+
+        <!-- Fil d'Ariane -->
+        <nav class="flex items-center gap-2 text-xs text-slate-400" aria-label="Fil d'Ariane">
+          <router-link
+            to="/#recherche"
+            class="hover:text-teal-600 transition-colors hover:underline"
+          >
+            Accueil
+          </router-link>
+          <span>/</span>
+          <button
+            v-if="plot?.hospital"
+            @click="navigateToHospital(plot.hospital)"
+            class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
+            :title="`Filtrer par l'hôpital ${plot.hospital}`"
+          >
+            {{ plot.hospital }}
+          </button>
+          <span v-if="plot?.hospital && plot?.sector">/</span>
+          <button
+            v-if="plot?.sector"
+            @click="navigateToSector(plot.sector)"
+            class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
+            :title="`Filtrer par le secteur ${plot.sector}`"
+          >
+            {{ plot.sector }}
+          </button>
+          <span>/</span>
+          <span class="text-slate-600 font-semibold truncate max-w-[200px] sm:max-w-[320px]">
+            {{ plot?.name }}
+          </span>
+        </nav>
+      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <!-- Colonne principale -->
@@ -16,7 +66,7 @@
           <div class="relative rounded-2xl overflow-hidden h-[380px]">
             <img
               :src="plot.image"
-              :alt="plot.name"
+              :alt="plot?.name || 'Image de l\'emplacement'"
               class="w-full h-full object-cover"
             />
             <span
@@ -34,19 +84,27 @@
           </div>
 
           <div>
-            <p class="text-sm font-semibold text-blue-600 uppercase tracking-wide">
-              {{ plot.hospital }}
+            <p
+              @click="navigateToHospital(plot.hospital)"
+              class="text-sm font-semibold text-blue-600 uppercase tracking-wide cursor-pointer hover:underline inline-block"
+              :title="`Filtrer par l'hôpital ${plot.hospital} sur la page principale`"
+            >
+              {{ plot?.hospital }}
             </p>
             <h1 class="text-3xl font-bold text-slate-900 mt-1">
-              {{ plot.name }}
+              {{ plot?.name }}
             </h1>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
               <p class="text-sm text-slate-500">Secteur de soins</p>
-              <p class="text-base font-medium text-slate-800">
-                {{ plot.sector }}
+              <p
+                @click="navigateToSector(plot.sector)"
+                class="text-base font-medium text-slate-800 cursor-pointer hover:underline inline-block hover:text-blue-600 transition-colors"
+                :title="`Filtrer par le secteur ${plot.sector} sur la page principale`"
+              >
+                {{ plot?.sector }}
               </p>
             </div>
           </div>
@@ -90,14 +148,16 @@
             <div>
               <p class="text-sm text-slate-500">Valeur de l'espace</p>
               <p class="text-3xl font-bold text-slate-900">
-                {{ plot.formattedPrice }}
+                {{ plot?.formattedPrice || 'Prix non disponible' }}
               </p>
             </div>
 
-           <button
-                class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
-                <i class="fa-solid fa-calendar-check"></i>
-                Réserver l'emplacement
+            <button
+              @click="openPlotReserver"
+              class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-calendar-check"></i>
+              Réserver l'emplacement
             </button>
           </div>
         </div>
@@ -111,18 +171,50 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { mockPlots } from '../data/mockData.js'
 import Header from '../components/Header.vue'
+import Auth from '../components/Auth.vue'
+import { usePlotsStore } from '../stores/plots.js'
+import { useAuthStore } from '../stores/auth.js'
 
 const route = useRoute()
 const router = useRouter()
+const plotsStore = usePlotsStore()
+const authStore = useAuthStore()
 
-const plot = ref(null)
+const isAuthModalOpen = ref(false)
+onMounted(() => { if (plotsStore.plots.length === 0) plotsStore.getPlots() })
 
-onMounted(() => {
+const plot = computed(() => {
   const id = Number(route.params.id)
-  plot.value = mockPlots.find((p) => p.id === id) || null
+  return plotsStore.getPlotById(id) || null
 })
+
+function goBack() {
+  router.push({ path: '/', query: route.query, hash: '#recherche' })
+}
+
+function navigateToHospital(code) {
+  if (!code) return
+  router.push({
+    path: '/',
+    query: { hospital: code },
+    hash: '#recherche',
+  })
+}
+
+function navigateToSector(sector) {
+  if (!sector) return
+  router.push({
+    path: '/',
+    query: { sector: sector },
+    hash: '#recherche',
+  })
+}
+
+function openPlotReserver() {
+  const id = route.params.id
+  router.push({ path: `/reservation/${id}`, query: route.query })
+}
 </script>

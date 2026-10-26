@@ -95,16 +95,39 @@ CREATE TABLE Sommaire (
 );
 
 -- ------------------------------------------------------------
--- 7. Table RESERVATION (dépend de Emplacement)
+-- 7. Table UTILISATEUR (table de référence, aucune dépendance)
+-- ------------------------------------------------------------
+CREATE TABLE utilisateur (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
+    actif BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT check_user_role
+        CHECK (role IN ('user', 'admin'))
+);
+CREATE UNIQUE INDEX utilisateur_email_unique_lower
+ON utilisateur (LOWER(email));
+
+-- ------------------------------------------------------------
+-- 8. Table RESERVATION (dépend de Emplacement et Utilisateur)
 -- ------------------------------------------------------------
 CREATE TABLE Reservation (
     id             SERIAL PRIMARY KEY,
     emplacement_id INTEGER NOT NULL,
+    utilisateur_id INTEGER NOT NULL,
     statut         VARCHAR(50),
     date_debut     TIMESTAMP,
     date_fin       TIMESTAMP,
     CONSTRAINT fk_reservation_emplacement
-        FOREIGN KEY (emplacement_id) REFERENCES Emplacement(id)
+        FOREIGN KEY (emplacement_id) REFERENCES Emplacement(id),
+    CONSTRAINT fk_reservation_utilisateur
+        FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id)
 );
 
 -- ============================================================

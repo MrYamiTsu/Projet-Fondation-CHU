@@ -1,0 +1,30 @@
+import express from 'express';
+import { fileURLToPath } from 'node:url';
+import logger from './middlewares/logger.mjs';
+import notFound from './middlewares/notFound.mjs';
+import errorHandler from './middlewares/errorHandler.mjs';
+import emplacementRoutes from './routes/emplacement.routes.mjs';
+import reservationRoutes from './routes/reservation.routes.mjs';
+import authRoutes from './routes/auth.routes.mjs';
+import cors from 'cors';
+
+const app = express();
+const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
+
+app.disable('x-powered-by');
+app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(logger);
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+
+
+
+app.use(express.static(publicDirectory));
+app.use('/emplacements', emplacementRoutes);
+app.use('/auth', authRoutes);
+app.use('/reservations', reservationRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+export default app;

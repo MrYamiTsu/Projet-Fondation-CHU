@@ -9,11 +9,7 @@
       "destination": "/api"
     },
     {
-      "source": "/(emplacements|auth|reservations)(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api($|/)).*)",
       "destination": "/index.html"
     }
   ]

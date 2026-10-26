@@ -5,15 +5,15 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(emplacements|auth|reservations|hopitaux|hospitals)(.*)",
-      "destination": "/api"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api"
     },
     {
-      "source": "/(.*)",
+      "source": "/(emplacements|auth|reservations)(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

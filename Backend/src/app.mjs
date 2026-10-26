@@ -44,6 +44,15 @@ app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 
 app.use(express.static(publicDirectory));
 
+// Normalisation de l'URL pour Vercel serverless si x-matched-path est fourni
+app.use((req, res, next) => {
+  const matched = req.headers['x-matched-path'] || req.headers['x-vercel-matched-path'];
+  if (matched && matched.startsWith('/api') && req.url === '/api') {
+    req.url = matched;
+  }
+  next();
+});
+
 // Healthcheck pour tester l'API en direct
 app.get('/api', (req, res) => {
   res.json({ status: 'ok', message: 'API Fondation CHU en ligne' });

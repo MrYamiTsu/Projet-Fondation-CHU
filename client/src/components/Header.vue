@@ -16,25 +16,6 @@
               <span class="text-[9px] text-slate-300 tracking-wider">Université Laval</span>
             </div>
           </router-link>
-
-          <div class="hidden md:block h-12 w-px bg-slate-700/80"></div>
-
-          <div class="hidden sm:flex flex-col justify-center">
-            <h1
-              class="text-xl lg:text-2xl font-black tracking-tight text-white uppercase leading-none"
-            >
-              PLAN DE PROJET
-            </h1>
-            <h2
-              class="text-teal-300 text-[11px] lg:text-xs font-bold uppercase tracking-wider mt-1 leading-tight"
-            >
-              PLATEFORME DE VALORISATION DES ESPACES &bull;
-              <span class="text-teal-400">TOPONYMIE & VISIBILITÉ</span>
-            </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5 max-w-md font-light leading-snug hidden lg:block">
-              Transformer nos espaces en opportunités durables pour la santé, la recherche et la communauté.
-            </p>
-          </div>
         </div>
 
         <!-- Section Droite : Utilisateur / Espace Admin / Connexion -->

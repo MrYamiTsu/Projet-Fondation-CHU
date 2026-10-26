@@ -6,7 +6,7 @@ const isDev = Boolean(import.meta.env.DEV)
 const API_BASE = (rawApi && (!String(rawApi).includes('localhost') || isDev))
   ? String(rawApi).replace(/\/+$/, '')
   : (isDev ? 'http://localhost:3000' : '')
-const API_URL = `${API_BASE}/auth`
+const API_URL = `${API_BASE}/api/auth`
 
 export const useAuthStore = defineStore('auth', () => {
   const savedUser = localStorage.getItem('chu_current_user')

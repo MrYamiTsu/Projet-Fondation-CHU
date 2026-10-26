@@ -12,7 +12,7 @@
       ref="panel"
       role="dialog"
       aria-label="Connexion"
-      class="absolute right-0 top-full mt-3 z-50 w-84 max-w-[calc(100vw-2rem)] origin-top-right bg-[#0a1526] text-white border border-slate-700/80 rounded-xl shadow-2xl shadow-black/50 p-4"
+      class="absolute right-0 top-full mt-3 z-50 w-88 max-w-[calc(100vw-2rem)] origin-top-right bg-[#0a1526] text-white border border-slate-700/80 rounded-xl shadow-2xl shadow-black/50 p-4"
     >
       <span
         class="absolute -top-1.5 right-12 w-3 h-3 rotate-45 bg-[#0a1526] border-l border-t border-slate-700/80"
@@ -55,23 +55,39 @@
         v-if="errorMessage"
         class="mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-lg font-medium flex items-center gap-2"
       >
-        <i class="fa-solid fa-circle-exclamation text-red-400 text-xs"></i>
+        <i class="fa-solid fa-circle-exclamation text-red-400 text-xs shrink-0"></i>
         <span>{{ errorMessage }}</span>
       </div>
 
       <form @submit.prevent="submit" class="space-y-3">
-        <div v-if="isSignUp">
-          <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-            Nom complet
-          </label>
-          <input
-            v-model="form.name"
-            type="text"
-            required
-            placeholder="Jean Dupont"
-            class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
-          />
+        <!-- Inscription : Prénom et Nom -->
+        <div v-if="isSignUp" class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Prénom
+            </label>
+            <input
+              v-model="form.prenom"
+              type="text"
+              required
+              placeholder="Jean"
+              class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Nom
+            </label>
+            <input
+              v-model="form.nom"
+              type="text"
+              required
+              placeholder="Dupont"
+              class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
+            />
+          </div>
         </div>
+
         <div>
           <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
             Email
@@ -84,14 +100,17 @@
             class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
           />
         </div>
+
         <div>
           <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">
             Mot de passe
+            <span v-if="isSignUp" class="text-[9px] text-slate-400 font-normal lowercase">(min. 8 car.)</span>
           </label>
           <input
             v-model="form.password"
             type="password"
             required
+            :minlength="isSignUp ? 8 : 1"
             placeholder="••••••••"
             class="w-full px-3 py-2 text-sm bg-slate-900/80 text-white placeholder-slate-500 border border-slate-700/80 rounded-lg focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/40 transition-colors"
           />
@@ -99,43 +118,13 @@
 
         <button
           type="submit"
-          class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 border border-teal-300/40 cursor-pointer"
+          :disabled="authStore.isLoading"
+          class="w-full bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 border border-teal-300/40 cursor-pointer flex items-center justify-center gap-2"
         >
-          {{ isSignUp ? 'Créer mon compte' : 'Se connecter' }}
+          <i v-if="authStore.isLoading" class="fa-solid fa-spinner fa-spin text-xs"></i>
+          <span>{{ authStore.isLoading ? 'Patientez...' : isSignUp ? 'Créer mon compte' : 'Se connecter' }}</span>
         </button>
       </form>
-
-      <!-- Comptes de test rapides -->
-      <div v-if="!isSignUp" class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
-        <p class="font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-          <i class="fa-solid fa-key text-teal-400 text-[10px]"></i>
-          <span>Comptes pré-configurés :</span>
-        </p>
-        <div class="grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            @click="fillTestAccount('admin@admin.ca', '123')"
-            class="px-2 py-1 bg-slate-800/80 hover:bg-teal-500/20 border border-slate-700 hover:border-teal-400/60 rounded text-left transition-colors cursor-pointer group"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-[10px]">Admin</span>
-              <span class="text-[9px] bg-teal-500/20 text-teal-300 px-1 rounded font-semibold">Accès admin</span>
-            </div>
-            <span class="text-[9px] text-slate-400 group-hover:text-slate-300 font-mono">admin@admin.ca</span>
-          </button>
-          <button
-            type="button"
-            @click="fillTestAccount('user@user.ca', '123')"
-            class="px-2 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded text-left transition-colors cursor-pointer group"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-white text-[10px]">Utilisateur</span>
-              <span class="text-[9px] bg-slate-700 text-slate-300 px-1 rounded font-semibold">Standard</span>
-            </div>
-            <span class="text-[9px] text-slate-400 group-hover:text-slate-300 font-mono">user@user.ca</span>
-          </button>
-        </div>
-      </div>
     </div>
   </Transition>
 </template>
@@ -157,18 +146,13 @@ const panel = ref(null)
 const isSignUp = ref(false)
 const errorMessage = ref('')
 
-const form = reactive({ name: '', email: '', password: '' })
+const form = reactive({ prenom: '', nom: '', email: '', password: '' })
 
 function resetForm() {
-  form.name = ''
+  form.prenom = ''
+  form.nom = ''
   form.email = ''
   form.password = ''
-}
-
-function fillTestAccount(email, password) {
-  form.email = email
-  form.password = password
-  errorMessage.value = ''
 }
 
 function switchTab(toSignUp) {
@@ -186,9 +170,9 @@ function submit() {
   else handleLogin()
 }
 
-function handleLogin() {
+async function handleLogin() {
   errorMessage.value = ''
-  const result = authStore.login(form.email, form.password)
+  const result = await authStore.login(form.email, form.password)
 
   if (!result.success) {
     errorMessage.value = result.message || 'Email ou mot de passe incorrect.'
@@ -200,10 +184,11 @@ function handleLogin() {
   close()
 }
 
-function handleSignUp() {
+async function handleSignUp() {
   errorMessage.value = ''
-  const result = authStore.signup({
-    name: form.name,
+  const result = await authStore.signup({
+    prenom: form.prenom,
+    nom: form.nom,
     email: form.email,
     password: form.password,
   })

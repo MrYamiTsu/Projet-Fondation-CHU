@@ -67,10 +67,10 @@ export function validateRegister(req, res, next) {
   if (
     typeof nom !== 'string' ||
     nom.trim() === '' ||
-    nom.length > 100 ||
+    nom.trim().length > 100 ||
     typeof prenom !== 'string' ||
     prenom.trim() === '' ||
-    prenom.length > 100
+    prenom.trim().length > 100
   ) {
     const erreur = new Error("Nom ou prénom invalide");
     erreur.status = 400;
@@ -79,7 +79,7 @@ export function validateRegister(req, res, next) {
 
   if (
     typeof email !== 'string' ||
-    email.length > 255 ||
+    email.trim().length > 255 ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
   ) {
     const erreur = new Error("Adresse email invalide");
@@ -87,9 +87,7 @@ export function validateRegister(req, res, next) {
     return next(erreur);
   }
 
-  if (
-    typeof password !== 'string' ||
-    password.length < 8
+  if ( typeof password !== 'string' || password.length < 8
   ) {
     const erreur = new Error(
       "Le mot de passe doit contenir au moins 8 caractères."

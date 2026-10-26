@@ -44,6 +44,12 @@ app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 
 app.use(express.static(publicDirectory));
 
+// Healthcheck pour tester l'API en direct
+app.get('/api', (req, res) => {
+  res.json({ status: 'ok', message: 'API Fondation CHU en ligne' });
+});
+
+// Routes principales (local ou avec réécriture)
 app.use('/emplacements', emplacementRoutes);
 app.use('/auth', authRoutes);
 app.use('/reservations', reservationRoutes);

@@ -5,8 +5,12 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
       "source": "/(emplacements|auth|reservations)(.*)",
-      "destination": "/api/$1$2"
+      "destination": "/api"
     },
     {
       "source": "/((?!api/).*)",

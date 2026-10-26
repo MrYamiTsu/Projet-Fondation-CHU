@@ -1,3 +1,4 @@
-import app from '../Backend/src/app.mjs';
-
-export default app;
+export default function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.status(200).json({ status: 'ok', message: 'API Fondation CHU en ligne' });
+}

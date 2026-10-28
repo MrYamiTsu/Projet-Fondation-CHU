@@ -61,7 +61,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function signup({ prenom, nom, email, password }) {
+  async function signup({ prenom, nom, email, password, confirmPassword }) {
+    if (password !== confirmPassword) {
+      return { success: false, message: 'Les mots de passe doivent correspondre.' }
+    }
+
     isLoading.value = true
     try {
       const res = await fetch(`${API_URL}/register`, {

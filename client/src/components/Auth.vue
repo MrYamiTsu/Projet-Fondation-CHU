@@ -54,22 +54,10 @@
         </button>
       </div>
 
-      <!-- Message d'erreur -->
-      <div
-        v-if="errorMessage"
-        class="mb-3 px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg font-medium flex items-center gap-2"
-      >
-        <i class="fa-solid fa-circle-exclamation text-rose-500 text-xs shrink-0"></i>
-        <span>{{ errorMessage }}</span>
-      </div>
-
       <form @submit.prevent="submit" class="space-y-3.5">
-        <!-- Inscription : Prénom et Nom -->
         <div v-if="isSignUp" class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-700 mb-1">
-              Prénom
-            </label>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1"> Prénom </label>
             <input
               v-model="form.prenom"
               type="text"
@@ -79,9 +67,7 @@
             />
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-slate-700 mb-1">
-              Nom
-            </label>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1"> Nom </label>
             <input
               v-model="form.nom"
               type="text"
@@ -107,9 +93,7 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-[11px] font-semibold text-slate-700">
-              Mot de passe
-            </label>
+            <label class="block text-[11px] font-semibold text-slate-700"> Mot de passe </label>
             <span v-if="isSignUp" class="text-[10px] text-slate-400">min. 8 caractères</span>
           </div>
           <input
@@ -122,6 +106,28 @@
           />
         </div>
 
+        <div v-if="isSignUp">
+          <label class="block text-[11px] font-semibold text-slate-700">
+            Confirmer le mot de passe
+          </label>
+          <input
+            v-model="form.confirmPassword"
+            type="password"
+            required
+            :minlength="isSignUp ? 8 : 1"
+            placeholder="••••••••"
+            class="w-full px-3 py-2 text-sm bg-slate-50 hover:bg-white text-slate-900 placeholder-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10 transition-colors"
+          />
+        </div>
+
+        <div
+          v-if="errorMessage"
+          class="mb-3 px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg font-medium flex items-center gap-2"
+        >
+          <i class="fa-solid fa-circle-exclamation text-rose-500 text-xs shrink-0"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+
         <button
           type="submit"
           :disabled="authStore.isLoading"
@@ -129,7 +135,9 @@
         >
           <i v-if="authStore.isLoading" class="fa-solid fa-spinner fa-spin text-xs"></i>
           <i v-else class="fa-solid fa-lock text-[10px] text-teal-400"></i>
-          <span>{{ authStore.isLoading ? 'Patientez...' : isSignUp ? 'Créer mon compte' : 'Se connecter' }}</span>
+          <span>{{
+            authStore.isLoading ? 'Patientez...' : isSignUp ? 'Créer mon compte' : 'Se connecter'
+          }}</span>
         </button>
       </form>
     </div>
@@ -153,13 +161,14 @@ const panel = ref(null)
 const isSignUp = ref(false)
 const errorMessage = ref('')
 
-const form = reactive({ prenom: '', nom: '', email: '', password: '' })
+const form = reactive({ prenom: '', nom: '', email: '', password: '', confirmPassword: '' })
 
 function resetForm() {
   form.prenom = ''
   form.nom = ''
   form.email = ''
   form.password = ''
+  form.confirmPassword = ''
 }
 
 function switchTab(toSignUp) {
@@ -198,6 +207,7 @@ async function handleSignUp() {
     nom: form.nom,
     email: form.email,
     password: form.password,
+    confirmPassword: form.confirmPassword,
   })
 
   if (!result.success) {

@@ -1,8 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-const API_BASE = import.meta.env.API_BASE || 'http://localhost:3000'
-const API_URL = `${API_BASE}/auth`
+const rawApi = import.meta.env.VITE_API_URL ?? import.meta.env.API_BASE
+const isDev = Boolean(import.meta.env.DEV)
+const API_BASE = (rawApi && (!String(rawApi).includes('localhost') || isDev))
+  ? String(rawApi).replace(/\/+$/, '')
+  : (isDev ? 'http://localhost:3000' : '')
+const API_URL = `${API_BASE}/api/auth`
 
 export const useAuthStore = defineStore('auth', () => {
   const savedUser = localStorage.getItem('chu_current_user')
@@ -57,7 +61,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function signup({ prenom, nom, email, password }) {
+  async function signup({ prenom, nom, email, password, confirmPassword }) {
+    if (password !== confirmPassword) {
+      return { success: false, message: 'Les mots de passe doivent correspondre.' }
+    }
+
     isLoading.value = true
     try {
       const res = await fetch(`${API_URL}/register`, {

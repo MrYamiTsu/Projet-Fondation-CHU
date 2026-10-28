@@ -1,8 +1,12 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { ref, computed } from 'vue'
 
-const API_BASE = import.meta.env.API_BASE || 'http://localhost:3000'
-const API_URL = `${API_BASE}/emplacements`
+const rawApi = import.meta.env.VITE_API_URL ?? import.meta.env.API_BASE
+const isDev = Boolean(import.meta.env.DEV)
+const API_BASE = (rawApi && (!String(rawApi).includes('localhost') || isDev))
+  ? String(rawApi).replace(/\/+$/, '')
+  : (isDev ? 'http://localhost:3000' : '')
+const API_URL = `${API_BASE}/api/emplacements`
 
 export const usePlotsStore = defineStore('plots', () => {
   const plots = ref([])
@@ -167,7 +171,6 @@ export const usePlotsStore = defineStore('plots', () => {
     formatPrice,
     getPlots,
     getPlotById,
-    RechercherPlots,
     addPlot,
     updatePlot,
     toggleAvailability,

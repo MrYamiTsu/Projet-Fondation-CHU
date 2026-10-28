@@ -5,8 +5,8 @@
   "description": "Base de projet Express.js en JavaScript avec modules ES.",
   "type": "module",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=.env src/server.mjs",
-    "start": "node --env-file-if-exists=.env src/server.mjs",
+    "dev": "node --watch --env-file-if-exists=../.env --env-file-if-exists=.env src/server.mjs",
+    "start": "node --env-file-if-exists=../.env --env-file-if-exists=.env src/server.mjs",
     "test": "vitest",
     "test:run": "vitest run",
     "coverage": "vitest run --coverage"

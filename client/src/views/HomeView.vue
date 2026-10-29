@@ -175,8 +175,17 @@ watch(
       String(query.maxPrice || '') !== String(route.query.maxPrice || '') ||
       (query.q || '') !== (route.query.q || '')
 
-    if (hasChanged) {
-      router.replace({ query, hash: route.hash })
+        if (hasChanged) {
+      const url = new URL(window.location.href)
+      const params = ['hospital', 'sector', 'availability', 'maxPrice', 'q']
+      params.forEach((k) => {
+        if (query[k]) {
+          url.searchParams.set(k, query[k])
+        } else {
+          url.searchParams.delete(k)
+        }
+      })
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
     }
   },
   { deep: true },
@@ -202,43 +211,22 @@ function checkRouteAlerts() {
 }
 
 function scrollToTarget(isInstant = false) {
-  const hash = route.hash || (route.query.hospital || route.query.sector ? '#recherche' : '')
+  const hash = route.hash
   if (!hash) return
 
   const cleanId = hash.replace('#', '')
+  const el = document.getElementById(cleanId)
+  if (el) {
+    const headerOffset = 80
+    const rect = el.getBoundingClientRect()
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const targetY = rect.top + scrollTop - headerOffset
 
-  const performScroll = (behavior = 'auto') => {
-    const el =
-      document.getElementById(cleanId) ||
-      document.getElementById('recherche') ||
-      document.getElementById('emplacements')
-    if (el) {
-      const headerOffset = 80
-      const rect = el.getBoundingClientRect()
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      const targetY = rect.top + scrollTop - headerOffset
-
-      window.scrollTo({
-        top: Math.max(0, targetY),
-        behavior: behavior,
-      })
-      return true
-    }
-    return false
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: isInstant ? 'auto' : 'smooth',
+    })
   }
-
-  // Application immédiate
-  performScroll(isInstant ? 'auto' : 'smooth')
-  nextTick(() => {
-    performScroll(isInstant ? 'auto' : 'smooth')
-  })
-  // Réajustement après montage du DOM et chargement des composants
-  setTimeout(() => {
-    performScroll(isInstant ? 'auto' : 'smooth')
-  }, 100)
-  setTimeout(() => {
-    performScroll(isInstant ? 'auto' : 'smooth')
-  }, 300)
 }
 
 onMounted(() => {

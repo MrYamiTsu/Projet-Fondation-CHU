@@ -105,7 +105,6 @@
 <script setup>
 import { computed } from 'vue'
 import { usePlotsStore } from '../stores/plots.js'
-import { mockPlots as fallbackMockPlots } from '../data/mockData.js'
 
 const props = defineProps({
   modelValue: {
@@ -133,7 +132,7 @@ const effectivePlots = computed(() => {
   if (plotsStore.plots && plotsStore.plots.length > 0) {
     return plotsStore.plots
   }
-  return fallbackMockPlots
+  return []
 })
 
 const allPlotsCount = computed(() => effectivePlots.value.length)

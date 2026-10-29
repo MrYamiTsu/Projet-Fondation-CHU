@@ -110,7 +110,7 @@ import PlotList from '../components/PlotList.vue'
 import PlotFilters from '../components/PlotFilter.vue'
 import Auth from '../components/Auth.vue'
 
-import { hospitals, hospitalPins, mockPlots } from '../data/mockData.js'
+import { hospitals, hospitalPins } from '../data/mockData.js'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
 

@@ -257,10 +257,6 @@ watch(
     filters.value.availability = newQuery.availability || defaultFilters.availability
     filters.value.maxPrice = newQuery.maxPrice ? Number(newQuery.maxPrice) : defaultFilters.maxPrice
     searchQuery.value = newQuery.q || ''
-
-    if (route.hash || newQuery.hospital || newQuery.sector) {
-      scrollToTarget(false)
-    }
   },
 )
 

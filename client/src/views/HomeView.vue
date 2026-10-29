@@ -125,7 +125,7 @@ const accessAlert = ref(null)
 const defaultFilters = {
   sector: '',
   availability: '',
-  maxPrice: 500000,
+  maxPrice: 100000,
 }
 
 const selectedHospital = ref(route.query.hospital || '')

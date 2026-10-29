@@ -55,7 +55,7 @@ export const usePlotsStore = defineStore('plots', () => {
       plots.value = data.map(formatPlot)
     } catch (error) {
       errorMessage.value = error.message
-    } finally {
+          } finally {
       isLoading.value = false
     }
   }
@@ -71,7 +71,13 @@ export const usePlotsStore = defineStore('plots', () => {
       return plot.value
     } catch (error) {
       errorMessage.value = error.message
-      return plots.value.find((p) => Number(p.id) === Number(id)) || null
+      const existing = plots.value.find((p) => Number(p.id) === Number(id)) || null
+      if (existing) {
+        plot.value = existing
+        return existing
+      }
+      plot.value = null
+      return null
     } finally {
       isLoading.value = false
     }

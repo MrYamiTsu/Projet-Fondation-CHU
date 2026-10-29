@@ -9,15 +9,29 @@ import pageProfil from '../views/ProfilView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
 
-  scrollBehavior(to, from, savedPosition) {
+      scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    // Si on reste sur la même page (changement de filtres, query, etc.)
+    if (to.path === from.path) {
+      // Uniquement si le hash a explicitement changé (ex: clic vers une ancre différente)
+      if (to.hash && to.hash !== from.hash) {
+        return {
+          el: to.hash,
+          top: 80,
+          behavior: 'smooth',
+        }
+      }
+      return false
+    }
+    // Navigation depuis une autre page avec une ancre
     if (to.hash) {
       return {
         el: to.hash,
         top: 80,
+        behavior: 'smooth',
       }
-    }
-    if (savedPosition) {
-      return savedPosition
     }
     return { top: 0 }
   },

@@ -130,6 +130,32 @@ CREATE TABLE Reservation (
         FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id)
 );
 
+-- ------------------------------------------------------------
+-- 9. Table Étages
+-- ------------------------------------------------------------
+CREATE TABLE Etage (
+    id          SERIAL PRIMARY KEY,
+    hopital_id  INTEGER NOT NULL REFERENCES Hopital(id),
+    niveau      INTEGER NOT NULL,          
+    nom         VARCHAR(100) NOT NULL,
+    image_url   VARCHAR(255),              
+    CONSTRAINT uq_etage_niveau UNIQUE (hopital_id, niveau),
+    CONSTRAINT uq_etage_hopital UNIQUE (id, hopital_id)
+);
+
+-- ------------------------------------------------------------
+-- 10. Table Pins d'Emplacement
+-- ------------------------------------------------------------
+CREATE TABLE Pin_Emplacement (
+    id              SERIAL PRIMARY KEY,
+    etage_id        INTEGER NOT NULL REFERENCES Etage(id) ON DELETE CASCADE,
+    emplacement_id  INTEGER NOT NULL UNIQUE,   
+    x               REAL NOT NULL CHECK (x BETWEEN 0 AND 1),
+    y               REAL NOT NULL CHECK (y BETWEEN 0 AND 1),
+    CONSTRAINT fk_pin_emplacement
+        FOREIGN KEY (emplacement_id, etage_id)
+        REFERENCES Emplacement(id, etage_id) ON DELETE CASCADE
+);
 -- ============================================================
 -- Fin du script
 -- ============================================================

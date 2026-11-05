@@ -28,10 +28,10 @@ Plateforme web de consultation, de filtrage et d'administration des opportunité
 
 ## Stack technique
 
-- **Client** : Vue 3 (Composition API), Pinia, Vue Router, Tailwind CSS v4, FontAwesome, Vite.
+- **Frontend** : Vue 3 (Composition API), Pinia, Vue Router, Tailwind CSS v4, FontAwesome, Vite.
 - **Serveur** : Node.js, Express 5, jsonwebtoken, bcrypt, pg (node-postgres).
 - **Base de données** : PostgreSQL 16 (local ou Neon Database).
-- **Fonctions serverless** : Endpoints situés dans `client/api/` pour l'hébergement Vercel.
+- **Fonctions serverless** : Endpoints situés dans `Frontend/api/` pour l'hébergement Vercel.
 - **Tests** : Vitest, Supertest.
 - **Conteneurisation** : Docker, Docker Compose.
 
@@ -52,7 +52,7 @@ Plateforme web de consultation, de filtrage et d'administration des opportunité
 │   │   └── server.mjs          # Point d'entrée de l'API
 │   ├── tests/                  # Tests unitaires et d'intégration
 │   └── package.json
-├── client/
+├── Frontend/
 │   ├── api/                    # Endpoints serverless pour Vercel
 │   │   ├── auth/
 │   │   ├── emplacements/
@@ -61,7 +61,7 @@ Plateforme web de consultation, de filtrage et d'administration des opportunité
 │   │   ├── components/         # Composants d'interface réutilisables
 │   │   ├── router/             # Définition des routes et gestion du défilement
 │   │   ├── stores/             # Stores Pinia (auth, plots)
-│   │   └── views/              # Pages principales (Home, Détail, Réservation, Admin)
+│   │   └── views/              # Vues principales (Home, PlotDetail, Reservation, Admin, Profil)
 │   ├── package.json
 │   └── vite.config.js
 ├── docker-compose.yml
@@ -94,7 +94,7 @@ PGPASSWORD=postgres
 # Authentification
 JWT_SECRET=cle_secrete_jwt_a_modifier
 
-# Serveur et client
+# Serveur et frontend
 PORT=3000
 VITE_API_URL=http://localhost:3000
 ```
@@ -108,18 +108,18 @@ npm install
 npm --prefix Backend install
 ```
 
-2. Démarrer simultanément le client et l'API :
+2. Démarrer simultanément le frontend et l'API :
 
 ```bash
 npm run dev
 ```
 
-- Client : http://localhost:5173
+- Frontend : http://localhost:5173
 - API Express : http://localhost:3000
 
 ### Lancement avec Docker
 
-Pour démarrer l'ensemble des services (PostgreSQL, API et client) :
+Pour démarrer l'ensemble des services (PostgreSQL, API et frontend) :
 
 ```bash
 docker compose up --build
@@ -143,11 +143,11 @@ psql -U postgres -d projet_integrateur -f Backend/bd/seed.sql
 
 Commandes à la racine :
 
-- `npm run dev` : lance le serveur et le client en parallèle avec rechargement à chaud.
-- `npm run client:dev` : lance uniquement le client Vite.
+- `npm run dev` : lance le serveur et le frontend en parallèle avec rechargement à chaud.
+- `npm run frontend:dev` : lance uniquement le frontend Vite.
 - `npm run server:dev` : lance uniquement le serveur Express en mode surveillance (`--watch`).
-- `npm run build` : compile le client pour la production dans le dossier `dist/`.
-- `npm run start` : lance le serveur Express et le client.
+- `npm run build` : compile le frontend pour la production dans le dossier `dist/`.
+- `npm run start` : lance le serveur Express et le frontend.
 
 Commandes pour le backend (`Backend/`) :
 
@@ -167,6 +167,6 @@ npm --prefix Backend run test:run
 
 Le projet est configuré pour un déploiement sur Vercel :
 
-- Le build client est géré par Vite (`npm run build`).
-- Les requêtes sous `/api/*` sont traitées par les fonctions serverless dans `client/api/`.
+- Le build frontend est géré par Vite (`npm run build`).
+- Les requêtes sous `/api/*` sont traitées par les fonctions serverless dans `Frontend/api/`.
 - La variable `DATABASE_URL` doit être configurée dans les paramètres d'environnement de Vercel pour les environnements de production et de prévisualisation (Preview).

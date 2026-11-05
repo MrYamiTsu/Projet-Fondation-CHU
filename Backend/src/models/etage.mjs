@@ -29,16 +29,16 @@ export async function findAllEtageByHospital(nom) {
   return result.rows;
 }
 
-export async function createEtage(etage) {
+export async function createEtage(hopital_id, niveau, nom) {
   const requete = `
-    INSERT INTO etage (hopital_id, nom, description)
+    INSERT INTO etage (hopital_id, niveau, nom)
     VALUES ($1, $2, $3)
     RETURNING *
   `;
   const result = await pool.query(requete, [
-    etage.hopital_id,
-    etage.nom,
-    etage.description,
+    hopital_id,
+    niveau,
+    nom
   ]);
   return result.rows[0];
 }

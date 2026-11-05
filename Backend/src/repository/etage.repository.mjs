@@ -8,8 +8,8 @@ export async function getAllEtageByHospital(nom) {
     return await Etage.findAllEtageByHospital(nom);
 }
 
-export async function createEtage(etage) {
-    return await Etage.createEtage(etage);
+export async function createEtage(hopital_id, niveau, nom) {
+    return await Etage.createEtage(hopital_id, niveau, nom);
 }
 
 export async function deleteEtage(id) {

@@ -11,6 +11,8 @@ services:
       - ./Backend:/app
       - /app/node_modules
     command: node --watch src/server.mjs
+    environment:
+      HOST: 0.0.0.0
 
   db:
     image: postgres:16
@@ -24,7 +26,7 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./Backend/bd:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       retries: 5
 

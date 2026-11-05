@@ -1,15 +1,18 @@
 import express from 'express';
-
-import {
-  obtenirEmplacementsParLieu,
-  obtenirEmplacementParId,
-  getAllPlots
-} from '../controllers/emplacement.controller.mjs';
+import { getPlotByLieu, getPlotById, getAllPlots, addPlot, modifyPlot } from '../controllers/emplacement.controller.mjs';
+import { validatePlot, validatePlotId } from '../middlewares/emplacement.middleware.mjs';
+import { verifyToken, requireAdmin } from '../middlewares/auth.middleware.mjs';
 
 const router = express.Router();
 
 router.get('/', getAllPlots);
-router.get('/recherche', obtenirEmplacementsParLieu);
-router.get('/:id', obtenirEmplacementParId);
+
+router.get('/recherche', getPlotByLieu);
+
+router.get('/:id', validatePlotId, getPlotById);
+
+router.post('/', verifyToken, requireAdmin, validatePlot, addPlot);
+
+router.put('/:id', verifyToken, requireAdmin, validatePlotId, validatePlot, modifyPlot);
 
 export default router;

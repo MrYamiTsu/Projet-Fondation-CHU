@@ -211,7 +211,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.variables.set(\"t\",\"elist|200|\");"
+                      "pm.variables.set(\"t\",\"elistx|200|\");"
                     ]
                   }
                 }
@@ -1118,7 +1118,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.variables.set(\"t\",\"rlist|200|\");"
+                      "pm.variables.set(\"t\",\"rlistx|200|\");"
                     ]
                   }
                 }
@@ -1386,7 +1386,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.variables.set(\"t\",\"rlist|200|\");"
+                      "pm.variables.set(\"t\",\"rlistx|200|\");"
                     ]
                   }
                 }
@@ -3040,16 +3040,20 @@
           "pm.test(\"Réponse JSON\",()=>pm.response.to.be.json);",
           "const b=pm.response.json(),a=arg.split(\",\"),ids=arg?a.map(Number):[],env=(b&&b.data)||{};",
           "const sorted=x=>x.slice().sort((m,n)=>m-n),idsOf=l=>sorted(l.map(r=>r.id));",
-          "const same=(l,name)=>{pm.test(\"Tableau conforme au schéma\",()=>{pm.expect(l).to.be.an(\"array\");l.forEach(r=>pm.expect(r).to.have.jsonSchema(sch(name)));});",
-          "pm.test(\"Ids = [\"+ids+\"]\",()=>pm.expect(idsOf(l)).to.eql(sorted(ids)));};",
+          "const same=(l,name,exact)=>{pm.test(\"Tableau conforme au schéma\",()=>{pm.expect(l).to.be.an(\"array\");l.forEach(r=>pm.expect(r).to.have.jsonSchema(sch(name)));});",
+          "if(exact)pm.test(\"Liste exactement = [\"+ids+\"]\",()=>pm.expect(idsOf(l)).to.eql(sorted(ids)));",
+          "else pm.test(\"Contient les ids du seed [\"+ids+\"]\",()=>pm.expect(idsOf(l)).to.include.members(ids));};",
           "const envelope=()=>pm.test(\"Enveloppe de succès (success, statusCode, message)\",()=>{pm.expect(b.success).to.eql(true);pm.expect(b.statusCode).to.eql(code);pm.expect(b.message).to.be.a(\"string\");});",
           "if(kind===\"err\"){pm.test(\"Corps d'erreur présent\",()=>pm.expect(b).to.be.an(\"object\"));",
           "if(arg)pm.test(\"Message d'erreur attendu\",()=>pm.expect(JSON.stringify(b)).to.include(arg));}",
-          "if(kind===\"elist\")same(Array.isArray(b)?b:(b.data||[]),\"jsonSchemaEmplacement\");",
+          "if(kind===\"elist\"||kind===\"elistx\")same(Array.isArray(b)?b:(b.data||[]),\"jsonSchemaEmplacement\",kind===\"elistx\");",
           "if(kind===\"eone\"){pm.test(\"L'emplacement respecte le schéma\",()=>pm.expect(b).to.have.jsonSchema(sch(\"jsonSchemaEmplacement\")));",
           "pm.test(\"L'emplacement correspond au seed\",()=>{pm.expect(b.id).to.eql(+a[0]);pm.expect(b.no_local_pavillon).to.eql(a[1]);});}",
-          "if(kind===\"rlist\"){envelope();same(env.reservations||[],\"jsonSchemaReservation\");",
-          "pm.test(\"count = nombre de réservations\",()=>pm.expect(env.count).to.eql((env.reservations||[]).length));}",
+          "if(kind===\"rlist\"||kind===\"rlistx\"){envelope();const rs=env.reservations||[];same(rs,\"jsonSchemaReservation\",kind===\"rlistx\");",
+          "pm.test(\"count = nombre de réservations\",()=>pm.expect(env.count).to.eql(rs.length));",
+          "const u=pm.variables.replaceIn(pm.request.url.toString()),ms=u.match(/\\/reservations\\/status\\?(?:.*&)?status=([^&]*)/),me=u.match(/\\/reservations\\/emplacement\\/(\\d+)/);",
+          "if(ms)pm.test(\"Toutes les réservations ont le statut demandé\",()=>rs.forEach(r=>pm.expect(String(r.statut).toLowerCase()).to.eql(decodeURIComponent(ms[1]).trim().toLowerCase())));",
+          "if(me)pm.test(\"Toutes les réservations sont sur l'emplacement demandé\",()=>rs.forEach(r=>pm.expect(r.emplacement_id).to.eql(+me[1])));}",
           "if([\"rone\",\"rcreate\"].includes(kind)){const r=env.reservation||{};envelope();",
           "pm.test(\"Réservation conforme au schéma\",()=>pm.expect(r).to.have.jsonSchema(sch(\"jsonSchemaReservation\")));",
           "if(kind===\"rone\")pm.test(\"Réservation conforme au seed\",()=>{pm.expect(r.id).to.eql(+a[0]);pm.expect(r.emplacement_id).to.eql(+a[1]);pm.expect(r.statut).to.eql(a[2]);});",

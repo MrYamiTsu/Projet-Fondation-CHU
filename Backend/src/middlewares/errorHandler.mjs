@@ -1,6 +1,16 @@
 export default function errorHandler(error, req, res, next) {
-  if (res.headersSent) {
+    if (res.headersSent) {
     return next(error);
+  }
+
+  const isDbDown = error.code === 'ECONNREFUSED' || (Array.isArray(error.errors) && error.errors.some((e) => e.code === 'ECONNREFUSED'));
+  if (isDbDown) {
+    console.warn('[SERVER] Connexion refusee : Impossible de joindre PostgreSQL sur le port 5432.');
+    return res.status(503).json({
+      success: false,
+      erreur: 'Base de données PostgreSQL inaccessible (port 5432). Vérifiez que PostgreSQL est démarré.',
+      code: 'DB_UNAVAILABLE'
+    });
   }
 
   const status = Number.isInteger(error.status)

@@ -1,0 +1,45 @@
+# Dépendances
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Fichiers d'environnement et secrets
+.env
+.env.*
+!.env.example
+
+# Dossiers de compilation
+dist/
+dist-ssr/
+build/
+*.local
+
+# Logs
+logs/
+*.log
+
+# Caches et éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Agents et métadonnées d'outils
+.gemini/
+.agent/
+.antigravity/
+
+# Tests & caches Vite / TypeScript
+coverage/
+.eslintcache
+*.tsbuildinfo
+*.timestamp-*-*.mjs
+

@@ -15,7 +15,15 @@
     </Header>
   </div>
 
-  <div v-if="plot" class="bg-white min-h-screen">
+  <div
+    v-if="plotsStore.isLoading && !plot"
+    class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-3"
+  >
+    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600"></i>
+    <p class="text-sm font-medium">Chargement des détails de l'emplacement...</p>
+  </div>
+
+  <div v-else-if="plot" class="bg-white min-h-screen">
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
       <!-- Barre supérieure : Bouton Retour et Fil d'Ariane -->
       <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
@@ -165,13 +173,20 @@
     </div>
   </div>
 
-  <div v-else class="min-h-screen flex items-center justify-center text-slate-500">
-    Emplacement introuvable.
+  <div v-else class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-4">
+    <p class="text-base font-medium">Emplacement introuvable.</p>
+    <button
+      @click="goBack"
+      class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors cursor-pointer"
+    >
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Retour aux emplacements</span>
+    </button>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from '../components/Header.vue'
 import Auth from '../components/Auth.vue'
@@ -184,12 +199,36 @@ const plotsStore = usePlotsStore()
 const authStore = useAuthStore()
 
 const isAuthModalOpen = ref(false)
-onMounted(() => { if (plotsStore.plots.length === 0) plotsStore.getPlots() })
 
 const plot = computed(() => {
   const id = Number(route.params.id)
-  return plotsStore.getPlotById(id) || null
+  if (!id) return null
+  if (plotsStore.plot && Number(plotsStore.plot.id) === id) {
+    return plotsStore.plot
+  }
+  return plotsStore.plots.find((p) => Number(p.id) === id) || null
 })
+
+async function loadPlot() {
+  const id = Number(route.params.id)
+  if (!isNaN(id) && id > 0) {
+    await plotsStore.getPlotById(id)
+  }
+}
+
+onMounted(async () => {
+  if (plotsStore.plots.length === 0) {
+    plotsStore.getPlots()
+  }
+  await loadPlot()
+})
+
+watch(
+  () => route.params.id,
+  async () => {
+    await loadPlot()
+  }
+)
 
 function goBack() {
   router.push({ path: '/', query: route.query, hash: '#recherche' })

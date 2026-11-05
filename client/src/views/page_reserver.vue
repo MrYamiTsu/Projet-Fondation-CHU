@@ -196,9 +196,8 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, watch, onBeforeUnmount } from 'vue'
+import { reactive, ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { mockPlots } from '../data/mockData.js'
 import Header from '../components/Header.vue'
 import Auth from '../components/Auth.vue'
 import { useAuthStore } from '../stores/auth.js'
@@ -252,8 +251,30 @@ onBeforeUnmount(() => {
 
 const plot = computed(() => {
   const id = Number(route.params.id)
-  return plotsStore.getPlotById(id) || mockPlots.find((p) => p.id === id) || null
+  if (!id) return null
+  if (plotsStore.plot && Number(plotsStore.plot.id) === id) {
+    return plotsStore.plot
+  }
+  return plotsStore.plots.find((p) => Number(p.id) === id) || plotsStore.plot || null
 })
+
+async function loadPlot() {
+  const id = Number(route.params.id)
+  if (!isNaN(id) && id > 0) {
+    await plotsStore.getPlotById(id)
+  }
+}
+
+onMounted(async () => {
+  await loadPlot()
+})
+
+watch(
+  () => route.params.id,
+  async () => {
+    await loadPlot()
+  }
+)
 
 watch(
   () => form.start,

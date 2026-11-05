@@ -1,0 +1,72 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+
+const rawApi = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE
+const isDev = Boolean(import.meta.env.DEV)
+
+const API_BASE =
+  rawApi && (!String(rawApi).includes('localhost') || isDev)
+    ? String(rawApi).replace(/\/+$/, '')
+    : isDev
+      ? 'http://localhost:3000'
+      : ''
+
+export const useReservationStore = defineStore('reservations', () => {
+  const reservations = ref([])
+  const loading = ref(false)
+  const error = ref(null)
+  const reservedPeriods = ref([])
+  async function addReservation(emplacementId, dateDebut, dateFin) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+
+      if (!token) {
+        throw new Error('Utilisateur non authentifié')
+      }
+
+      const response = await fetch(`${API_BASE}/reservations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          emplacementId,
+          dateDebut,
+          dateFin,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Erreur lors de la création de la réservation')
+      }
+
+      const reservation = result.data.reservation
+
+      reservations.value.push(reservation)
+
+      return reservation
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+ 
+
+
+  return {
+    reservations,
+    loading,
+    error,
+    addReservation,
+    getLastReservedDate,
+  }
+})

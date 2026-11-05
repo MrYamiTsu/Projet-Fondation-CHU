@@ -58,68 +58,59 @@ export const useReservationStore = defineStore('reservations', () => {
       loading.value = false
     }
   }
-async function getReservedPeriods(emplacementId) {
-  loading.value = true
-  error.value = null
-  reservedPeriods.value = []
+  async function getReservedPeriods(emplacementId) {
+    loading.value = true
+    error.value = null
+    reservedPeriods.value = []
 
-  try {
-    const token = localStorage.getItem('token')
+    try {
+      const token = localStorage.getItem('token')
 
-    if (!token) {
-      throw new Error('Utilisateur non authentifié')
-    }
+      if (!token) {
+        throw new Error('Utilisateur non authentifié')
+      }
 
-    const response = await fetch(
-      `${API_BASE}/reservations/emplacement/${emplacementId}`,
-      {
+      const response = await fetch(`${API_BASE}/reservations/emplacement/${emplacementId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Impossible de récupérer les réservations')
       }
-    )
 
-    const result = await response.json()
+      const emplacementReservations = result.data.reservations
 
-    if (!response.ok) {
-      throw new Error(
-        result.message || 'Impossible de récupérer les réservations'
-      )
+      if (!Array.isArray(emplacementReservations)) {
+        throw new Error('Format des réservations invalide')
+      }
+
+      reservedPeriods.value = emplacementReservations
+        .filter((reservation) => reservation.statut === 'confirmed')
+        .map((reservation) => ({
+          start: String(reservation.date_debut).slice(0, 10),
+          end: String(reservation.date_fin).slice(0, 10),
+        }))
+
+      return reservedPeriods.value
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
     }
-
-    const emplacementReservations = result.data.reservations
-
-    if (!Array.isArray(emplacementReservations)) {
-      throw new Error('Format des réservations invalide')
-    }
-
-    reservedPeriods.value = emplacementReservations
-      .filter((reservation) => reservation.statut === 'confirmed')
-      .map((reservation) => ({
-        start: String(reservation.date_debut).slice(0, 10),
-        end: String(reservation.date_fin).slice(0, 10),
-      }))
-
-    return reservedPeriods.value
-
-  } catch (err) {
-    error.value = err.message
-    throw err
-
-  } finally {
-    loading.value = false
   }
-}
-
- 
-
 
   return {
     reservations,
+    reservedPeriods,
     loading,
     error,
     addReservation,
-    getLastReservedDate,
+    getReservedPeriods,
   }
 })

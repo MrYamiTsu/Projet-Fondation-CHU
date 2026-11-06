@@ -1,4 +1,4 @@
-import * as EtageRepository from "../models/etages.repository.mjs";
+import * as EtageRepository from "../repository/etage.repository.mjs";
 
 export async function getEtageById(id) {
   if (
@@ -52,26 +52,7 @@ export async function createEtage(hopital_id, niveau, nom) {
     throw erreur;
   }
 
-  const etageExisting = await EtageRepository.getAllEtageByHospital(nom.trim());
-  const niveauDejaUtilise = etageExisting.find(
-    (etage) => etage.niveau === niveau,
-  );
-
-  if (niveauDejaUtilise) {
-    const erreur = new Error(
-      "Un étage avec ce niveau existe déjà pour cet hôpital",
-    );
-    erreur.status = 400;
-    throw erreur;
-  }
-
-  const etage = {
-    hopital_id: hopital_id,
-    niveau: niveau,
-    nom: nom,
-  };
-
-  return await EtageRepository.createEtage(etage);
+  return await EtageRepository.createEtage(hopital_id, niveau, nom.trim());
 }
 
 export async function deleteEtage(id) {
@@ -86,6 +67,5 @@ export async function deleteEtage(id) {
     throw erreur;
   }
 
-    return await EtageRepository.deleteEtage(Number(id));
+  return await EtageRepository.deleteEtage(Number(id));
 }
-

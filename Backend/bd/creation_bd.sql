@@ -60,7 +60,8 @@ CREATE TABLE Emplacement (
     CONSTRAINT fk_emplacement_fl
         FOREIGN KEY (fl_id) REFERENCES FL(id),
     CONSTRAINT fk_emplacement_ff
-        FOREIGN KEY (ff_id) REFERENCES FF(id)
+        FOREIGN KEY (ff_id) REFERENCES FF(id),
+    CONSTRAINT uq_emplacement_hopital UNIQUE (id, composante_id)
 );
 
 -- ------------------------------------------------------------
@@ -148,13 +149,17 @@ CREATE TABLE Etage (
 -- ------------------------------------------------------------
 CREATE TABLE Pin_Emplacement (
     id              SERIAL PRIMARY KEY,
-    etage_id        INTEGER NOT NULL REFERENCES Etage(id) ON DELETE CASCADE,
-    emplacement_id  INTEGER NOT NULL UNIQUE,   
+    hopital_id      INTEGER NOT NULL,
+    etage_id        INTEGER NOT NULL,
+    emplacement_id  INTEGER NOT NULL UNIQUE,
     x               REAL NOT NULL CHECK (x BETWEEN 0 AND 1),
     y               REAL NOT NULL CHECK (y BETWEEN 0 AND 1),
+    CONSTRAINT fk_pin_etage
+        FOREIGN KEY (etage_id, hopital_id)
+        REFERENCES Etage(id, hopital_id) ON DELETE CASCADE,
     CONSTRAINT fk_pin_emplacement
-        FOREIGN KEY (emplacement_id, etage_id)
-        REFERENCES Emplacement(id, etage_id) ON DELETE CASCADE
+        FOREIGN KEY (emplacement_id, hopital_id)
+        REFERENCES Emplacement(id, composante_id) ON DELETE CASCADE
 );
 -- ============================================================
 -- Fin du script

@@ -11,13 +11,13 @@
 
       <div v-if="accessAlert" class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6">
         <div class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg" :class="accessAlert.type === 'danger'
-            ? 'bg-red-950/90 text-red-100 border-red-500/50'
-            : 'bg-amber-950/90 text-amber-100 border-amber-500/50'
+          ? 'bg-red-950/90 text-red-100 border-red-500/50'
+          : 'bg-amber-950/90 text-amber-100 border-amber-500/50'
           ">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" :class="accessAlert.type === 'danger'
-                ? 'bg-red-500/20 text-red-400'
-                : 'bg-amber-500/20 text-amber-400'
+              ? 'bg-red-500/20 text-red-400'
+              : 'bg-amber-500/20 text-amber-400'
               ">
               <i :class="accessAlert.type === 'danger' ? 'fa-solid fa-ban' : 'fa-solid fa-lock'"></i>
             </div>

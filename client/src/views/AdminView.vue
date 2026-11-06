@@ -68,8 +68,8 @@
       <div v-if="toastMessage"
         class="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border text-xs font-semibold"
         :class="toastType === 'success'
-            ? 'bg-emerald-900 text-emerald-100 border-emerald-600/50'
-            : 'bg-red-900 text-red-100 border-red-600/50'
+          ? 'bg-emerald-900 text-emerald-100 border-emerald-600/50'
+          : 'bg-red-900 text-red-100 border-red-600/50'
           ">
         <i :class="toastType === 'success'
             ? 'fa-solid fa-circle-check text-emerald-300 text-sm'

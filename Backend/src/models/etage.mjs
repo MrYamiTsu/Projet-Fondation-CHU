@@ -23,6 +23,7 @@ export async function findAllEtageByHospital(nom) {
     FROM etage
     JOIN hopital ON etage.hopital_id = hopital.id
     WHERE hopital.nom ILIKE $1
+    ORDER BY etage.niveau
   `;
 
   const result = await pool.query(requete, ["%" + nom + "%"]);
@@ -35,11 +36,7 @@ export async function createEtage(hopital_id, niveau, nom) {
     VALUES ($1, $2, $3)
     RETURNING *
   `;
-  const result = await pool.query(requete, [
-    hopital_id,
-    niveau,
-    nom
-  ]);
+  const result = await pool.query(requete, [hopital_id, niveau, nom]);
   return result.rows[0];
 }
 

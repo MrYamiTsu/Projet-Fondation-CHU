@@ -11,15 +11,17 @@ export async function getAllReservations() {
   return result.rows;
 }
 
-export async function createReservation(emplacementId, dateDebut, dateFin) {
+
+export async function createReservation(emplacementId, utilisateurId, dateDebut, dateFin) {
   const requete = `
-    INSERT INTO reservation (emplacement_id, statut, date_debut, date_fin)
-    VALUES ($1, 'pending', $2, $3)
+    INSERT INTO reservation (emplacement_id, utilisateur_id, statut, date_debut, date_fin)
+    VALUES ($1, $2, 'pending', $3, $4)
     RETURNING *
   `;
 
   const result = await pool.query(requete, [
     emplacementId,
+    utilisateurId,
     dateDebut,
     dateFin
   ]);
@@ -27,6 +29,7 @@ export async function createReservation(emplacementId, dateDebut, dateFin) {
   return result.rows[0];
 }
 
+ 
 export async function updateReservation(id, emplacementId, dateDebut, dateFin) {
   const requete = `
     UPDATE reservation

@@ -1,4 +1,3 @@
-
 import {
   getAllReservations,
   createReservation,
@@ -6,9 +5,8 @@ import {
   getReservationsByEmplacementId,
   getReservationsByStatus,
   updateReservation,
-  confirmReservation
-} from '../models/reservation.mjs';
-
+  confirmReservation,
+} from "../models/reservation.mjs";
 
 export async function obtenirToutesLesReservations(req, res, next) {
   try {
@@ -23,25 +21,41 @@ export async function obtenirToutesLesReservations(req, res, next) {
       method: req.method,
       data: {
         reservations,
-        count: reservations.length
-      }
+        count: reservations.length,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }
 }
 
-
 export async function addReservation(req, res, next) {
   try {
     const { emplacementId, dateDebut, dateFin } = req.body;
-
-    const reservation = await createReservation(
+    const reservations = await getReservationsByEmplacementId(
       Number(emplacementId),
-      dateDebut,
-      dateFin
     );
+
+    const conflit = reservations.some(
+      (reservation) =>
+        reservation.statut === "confirmed" &&
+        new Date(reservation.date_debut) <= new Date(dateFin) &&
+        new Date(reservation.date_fin) >= new Date(dateDebut),
+    );
+
+    if (conflit) {
+      const erreur = new Error(
+        "Cet emplacement est déjà réservé pour cette période",
+      );
+      erreur.status = 409;
+      return next(erreur);
+    }
+    const reservation = await createReservation(
+  Number(emplacementId),
+  req.user.id,
+  dateDebut,
+  dateFin,
+);
 
     return res.status(201).json({
       success: true,
@@ -51,21 +65,19 @@ export async function addReservation(req, res, next) {
       path: req.originalUrl,
       method: req.method,
       data: {
-        reservation
-      }
+        reservation,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }
 }
 
-
 export async function obtenirReservationParId(req, res, next) {
   const { id } = req.params;
 
   if (
-    id.trim() === '' ||
+    id.trim() === "" ||
     !Number.isSafeInteger(Number(id)) ||
     Number(id) <= 0
   ) {
@@ -91,21 +103,19 @@ export async function obtenirReservationParId(req, res, next) {
       path: req.originalUrl,
       method: req.method,
       data: {
-        reservation
-      }
+        reservation,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }
 }
 
-
 export async function obtenirReservationsParEmplacement(req, res, next) {
   const { emplacementId } = req.params;
 
   if (
-    emplacementId.trim() === '' ||
+    emplacementId.trim() === "" ||
     !Number.isSafeInteger(Number(emplacementId)) ||
     Number(emplacementId) <= 0
   ) {
@@ -116,7 +126,7 @@ export async function obtenirReservationsParEmplacement(req, res, next) {
 
   try {
     const reservations = await getReservationsByEmplacementId(
-      Number(emplacementId)
+      Number(emplacementId),
     );
 
     return res.status(200).json({
@@ -128,20 +138,18 @@ export async function obtenirReservationsParEmplacement(req, res, next) {
       method: req.method,
       data: {
         reservations,
-        count: reservations.length
-      }
+        count: reservations.length,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }
 }
 
-
 export async function obtenirReservationsParStatut(req, res, next) {
   const { status } = req.query;
 
-  if (typeof status !== 'string' || status.trim() === '') {
+  if (typeof status !== "string" || status.trim() === "") {
     const erreur = new Error("Statut invalide");
     erreur.status = 400;
     return next(erreur);
@@ -159,15 +167,13 @@ export async function obtenirReservationsParStatut(req, res, next) {
       method: req.method,
       data: {
         reservations,
-        count: reservations.length
-      }
+        count: reservations.length,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }
 }
-
 
 export async function modifyReservation(req, res, next) {
   const { id } = req.params;
@@ -179,7 +185,7 @@ export async function modifyReservation(req, res, next) {
       Number(id),
       Number(emplacementId),
       dateDebut,
-      dateFin
+      dateFin,
     );
 
     if (!reservation) {
@@ -196,20 +202,41 @@ export async function modifyReservation(req, res, next) {
       path: req.originalUrl,
       method: req.method,
       data: {
-        reservation
-      }
+        reservation,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }
 }
 
-
 export async function approveReservation(req, res, next) {
   const { id } = req.params;
 
   try {
+    const demande = await getReservationById(Number(id));
+
+    if (demande) {
+      const reservations = await getReservationsByEmplacementId(
+        Number(demande.emplacement_id),
+      );
+
+      const conflit = reservations.some(
+        (reservation) =>
+          Number(reservation.id) !== Number(id) &&
+          reservation.statut === "confirmed" &&
+          new Date(reservation.date_debut) <= new Date(demande.date_fin) &&
+          new Date(reservation.date_fin) >= new Date(demande.date_debut),
+      );
+
+      if (conflit) {
+        const erreur = new Error(
+          "Cet emplacement est déjà réservé pour cette période",
+        );
+        erreur.status = 409;
+        return next(erreur);
+      }
+    }
     const reservation = await confirmReservation(Number(id));
 
     if (!reservation) {
@@ -231,10 +258,9 @@ export async function approveReservation(req, res, next) {
       path: req.originalUrl,
       method: req.method,
       data: {
-        reservation
-      }
+        reservation,
+      },
     });
-
   } catch (erreur) {
     return next(erreur);
   }

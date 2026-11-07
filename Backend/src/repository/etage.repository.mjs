@@ -16,9 +16,9 @@ export async function deleteEtage(id) {
     return await Etage.deleteEtage(id);
 }
 
-export async function addImageToEtage(etageId, imageUrl) {
-    return await Etage.AddImageToEtage(etageId, imageUrl);
-}   
+export async function addImageToEtage(etageId, imageUrl, imagePublicId) {
+    return await Etage.AddImageToEtage(etageId, imageUrl, imagePublicId);
+}
 
 export async function deleteImageFromEtage(etageId) {
     return await Etage.DeleteImageFromEtage(etageId);

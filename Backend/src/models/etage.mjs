@@ -50,21 +50,21 @@ export async function deleteEtage(id) {
   return result.rows[0];
 }
 
-export async function AddImageToEtage(etageId, imageUrl) {
+export async function AddImageToEtage(etageId, imageUrl, imagePublicId) {
   const requete = `
     UPDATE etage
-    SET image_url = $1
-    WHERE id = $2
+    SET image_url = $1, image_public_id = $2
+    WHERE id = $3
     RETURNING *
   `;
-  const result = await pool.query(requete, [imageUrl, etageId]);
+  const result = await pool.query(requete, [imageUrl, imagePublicId, etageId]);
   return result.rows[0];
 }
 
 export async function DeleteImageFromEtage(etageId) {
   const requete = `
     UPDATE etage
-    SET image_url = NULL
+    SET image_url = NULL, image_public_id = NULL
     WHERE id = $1
     RETURNING *
   `;

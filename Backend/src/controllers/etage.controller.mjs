@@ -45,3 +45,21 @@ export async function deleteEtage(req, res) {
         res.status(error.status || 500).json({ message: error.message });
     }
 }
+
+export async function addImageToEtage(req, res) {
+    try {
+        const etage = await etageService.addImageToEtage(req.params.id, req.file);
+        res.json(etage);
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
+}
+
+export async function deleteImageFromEtage(req, res) {
+    try {
+        const etage = await etageService.deleteImageFromEtage(req.params.id);
+        res.json(etage);
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
+}

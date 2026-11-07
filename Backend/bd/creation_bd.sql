@@ -140,6 +140,7 @@ CREATE TABLE Etage (
     niveau      INTEGER NOT NULL,          
     nom         VARCHAR(100) NOT NULL,
     image_url   VARCHAR(255),              
+    image_public_id  VARCHAR(255),
     CONSTRAINT uq_etage_niveau UNIQUE (hopital_id, niveau),
     CONSTRAINT uq_etage_hopital UNIQUE (id, hopital_id)
 );

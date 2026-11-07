@@ -42,8 +42,12 @@ export const useReservationStore = defineStore('reservations', () => {
 
       const result = await response.json()
 
+      console.log('POST /reservations :', response.status, result)
+
       if (!response.ok) {
-        throw new Error(result.message || 'Erreur lors de la création de la réservation')
+        throw new Error(
+          result.message || result.erreur || result.error || `Erreur HTTP ${response.status}`,
+        )
       }
 
       const reservation = result.data.reservation

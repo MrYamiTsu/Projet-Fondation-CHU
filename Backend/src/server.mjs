@@ -7,7 +7,7 @@ dotenv.config();
 import app from './app.mjs';
 
 const port = Number(process.env.PORT ?? 3000);
-const host = process.env.HOST || '127.0.0.1';
+const host = process.env.HOST || '0.0.0.0';
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   console.error('PORT doit être un nombre entier entre 1 et 65535.');

@@ -19,7 +19,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-6xl mx-auto">
       <aside class="lg:sticky lg:top-8">
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div class="aspect-4/3 bg-gray-50 flex items-center justify-center">
+          <div class="aspect-4/3 bg-gray-50 relative flex items-center justify-center overflow-hidden">
             <img v-if="plot?.image" :src="plot.image" :alt="plot.name || 'Image de l\'emplacement'"
               class="w-full h-full object-cover" />
             <div v-else class="flex flex-col items-center gap-2 text-gray-400">
@@ -29,6 +29,9 @@
               </svg>
               <span class="text-sm">Aucune image disponible</span>
             </div>
+
+            <img v-if="previewUrl" :src="previewUrl" alt="Aperçu du logo"
+              class="absolute inset-0 m-auto max-w-[50%] max-h-[50%] object-contain drop-shadow-lg" />
           </div>
           <div v-if="plot" class="p-4">
             <p class="text-sm font-medium text-gray-900">

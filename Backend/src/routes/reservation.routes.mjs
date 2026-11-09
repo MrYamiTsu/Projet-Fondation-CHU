@@ -5,6 +5,7 @@ import {
   addReservation,
   obtenirReservationParId,
   obtenirReservationsParEmplacement,
+  obtenirReservationsConfirmees,
   obtenirReservationsParStatut,
   modifyReservation,
   approveReservation
@@ -26,7 +27,9 @@ router.get('/', verifyToken, requireAdmin, obtenirToutesLesReservations);
 
 router.get('/status', verifyToken, requireAdmin, obtenirReservationsParStatut);
 
-router.get('/emplacement/:emplacementId', verifyToken, obtenirReservationsParEmplacement);
+router.get('/confirmed', obtenirReservationsConfirmees);
+
+router.get('/emplacement/:emplacementId', obtenirReservationsParEmplacement);
 
 router.get('/:id', verifyToken, requireAdmin, validateReservationId, obtenirReservationParId);
 

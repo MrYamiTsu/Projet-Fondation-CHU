@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   addReservation,
   obtenirReservationsParEmplacement,
+  obtenirReservationsConfirmees,
   approveReservation,
 } from "../../src/controllers/reservation.controller.mjs";
 import {
   createReservation,
   getReservationsByEmplacementId,
   getReservationById,
+  getConfirmedReservations,
   confirmReservation,
 } from "../../src/models/reservation.mjs";
 
@@ -17,6 +19,7 @@ vi.mock("../../src/models/reservation.mjs", () => ({
   getReservationById: vi.fn(),
   getReservationsByEmplacementId: vi.fn(),
   getReservationsByStatus: vi.fn(),
+  getConfirmedReservations: vi.fn(),
   updateReservation: vi.fn(),
   confirmReservation: vi.fn(),
 }));
@@ -146,6 +149,33 @@ describe("Contrôleur des réservations", () => {
 
     it("termine la requête sans appeler next", async () => {
       await obtenirReservationsParEmplacement(requete, reponse, next);
+
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("obtenirReservationsConfirmees", () => {
+    beforeEach(() => {
+      requete = { originalUrl: "/api/reservations/confirmed", method: "GET" };
+      getConfirmedReservations.mockResolvedValue([reservationConfirmee]);
+    });
+
+    it("renvoie le statut HTTP 200", async () => {
+      await obtenirReservationsConfirmees(requete, reponse, next);
+
+      expect(reponse.status).toHaveBeenCalledWith(200);
+    });
+
+    it("retourne la liste des réservations confirmées", async () => {
+      await obtenirReservationsConfirmees(requete, reponse, next);
+
+      const corpsReponse = reponse.json.mock.lastCall?.[0];
+      expect(corpsReponse?.data?.reservations).toEqual([reservationConfirmee]);
+      expect(corpsReponse?.data?.count).toBe(1);
+    });
+
+    it("termine la requête sans appeler next", async () => {
+      await obtenirReservationsConfirmees(requete, reponse, next);
 
       expect(next).not.toHaveBeenCalled();
     });

@@ -27,7 +27,36 @@
         <span>Réinitialiser les filtres</span>
       </button>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div>
+        <label
+          class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between"
+        >
+          <span class="flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar-days text-teal-600 text-[10px]"></i>
+            <span>Dates souhaitées</span>
+          </span>
+          <span
+            v-if="hasActiveDateFilter"
+            class="text-[9px] font-semibold text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200"
+          >
+            Période active
+          </span>
+        </label>
+        <div class="filter-datepicker-wrapper">
+          <VueDatePicker
+            v-model="dateRangeModel"
+            :range="{ noDisabledRange: false, partialRange: false }"
+            :time-config="{ enableTimePicker: false }"
+            :enable-time-picker="false"
+            :format="formatRange"
+            :min-date="today"
+            placeholder="Choisir des dates"
+            auto-apply
+            :clearable="true"
+          />
+        </div>
+      </div>
       <div>
         <label
           class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1.5"
@@ -65,8 +94,12 @@
             class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 font-medium cursor-pointer transition-colors pr-8 appearance-none"
           >
             <option value="">Tous les statuts</option>
-            <option value="available">Disponibles seulement</option>
-            <option value="reserved">Réservés / Occupés</option>
+            <option value="available">
+              {{ hasActiveDateFilter ? 'Disponibles sur ces dates' : 'Disponibles seulement' }}
+            </option>
+            <option value="reserved">
+              {{ hasActiveDateFilter ? 'Réservés sur ces dates' : 'Réservés / Occupés' }}
+            </option>
           </select>
           <i
             class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"
@@ -107,6 +140,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 import { usePlotsStore } from '../stores/plots.js'
 
 const props = defineProps({
@@ -128,8 +163,31 @@ const emit = defineEmits(['update:modelValue', 'reset'])
 
 const plotsStore = usePlotsStore()
 
+const today = new Date()
 const minRange = 0
 const stepValue = 5000
+
+const hasActiveDateFilter = computed(() => {
+  const range = props.modelValue?.dateRange
+  return Array.isArray(range) && Boolean(range[0]) && Boolean(range[1])
+})
+
+const dateRangeModel = computed({
+  get: () => props.modelValue?.dateRange ?? null,
+  set: (val) => updateFilter('dateRange', val),
+})
+
+function formatRange(dates) {
+  if (!dates) return ''
+  const fmt = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  if (Array.isArray(dates)) {
+    if (dates[0] && dates[1]) return `${fmt(dates[0])} au ${fmt(dates[1])}`
+    if (dates[0]) return fmt(dates[0])
+    return ''
+  }
+  return fmt(dates)
+}
 
 const effectivePlots = computed(() => {
   if (props.plots && props.plots.length > 0) {
@@ -242,5 +300,38 @@ function updateFilter(key, value) {
   background: transparent;
   height: 8px;
   border-radius: 8px;
+}
+
+:deep(.filter-datepicker-wrapper) {
+  --dp-primary-color: #0d9488;
+  --dp-primary-text-color: #ffffff;
+  --dp-border-radius: 0.75rem;
+  --dp-font-size: 0.75rem;
+}
+
+:deep(.dp__input) {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+  color: #1e293b;
+  font-weight: 500;
+  font-family: inherit;
+  box-shadow: none;
+}
+
+:deep(.dp__input:hover) {
+  border-color: #cbd5e1;
+}
+
+:deep(.dp__input:focus) {
+  border-color: #0d9488;
+  outline: none;
+}
+
+:deep(.dp__icon) {
+  color: #0d9488;
 }
 </style>

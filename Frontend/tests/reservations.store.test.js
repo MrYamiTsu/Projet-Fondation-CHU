@@ -1,9 +1,9 @@
 
+// @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useReservationStore } from '../src/stores/reservations.js'
-
-// @vitest-environment jsdom
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -120,6 +120,43 @@ describe('Store des réservations', () => {
     )
 
     expect(store.reservations).toHaveLength(0)
+  })
+
+  it('permet de récupérer les réservations même sans token utilisateur', async () => {
+    localStorage.clear()
+    const store = useReservationStore()
+
+    fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: {
+          reservations: [
+            {
+              statut: 'confirmed',
+              date_debut: '2026-12-01',
+              date_fin: '2026-12-05'
+            }
+          ]
+        }
+      })
+    })
+
+    await store.getReservedPeriods(5)
+    expect(store.reservedPeriods).toEqual([
+      { start: '2026-12-01', end: '2026-12-05' }
+    ])
+  })
+
+  it('vérifie la disponibilité d’un emplacement pour une période donnée', async () => {
+    const store = useReservationStore()
+    store.allConfirmedReservations = [
+      { id: 1, emplacement_id: 3, start: '2026-11-10', end: '2026-11-15' }
+    ]
+
+    expect(store.isEmplacementAvailable(3, '2026-11-12', '2026-11-18')).toBe(false)
+    expect(store.isEmplacementAvailable(3, '2026-11-05', '2026-11-10')).toBe(false)
+    expect(store.isEmplacementAvailable(3, '2026-11-16', '2026-11-20')).toBe(true)
+    expect(store.isEmplacementAvailable(4, '2026-11-10', '2026-11-15')).toBe(true)
   })
 
 })

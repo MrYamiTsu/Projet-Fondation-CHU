@@ -4,8 +4,11 @@ import {
   getReservationById,
   getReservationsByEmplacementId,
   getReservationsByStatus,
+  getReservationsByUserId,
   updateReservation,
   confirmReservation,
+  updateMyPendingReservation,
+  cancelMyPendingReservation,
 } from "../models/reservation.mjs";
 
 export async function obtenirToutesLesReservations(req, res, next) {
@@ -29,6 +32,27 @@ export async function obtenirToutesLesReservations(req, res, next) {
   }
 }
 
+export async function getMyReservations(req, res, next) {
+  try {
+    const reservations = await getReservationsByUserId(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "Réservations récupérées avec succès",
+      timestamp: new Date().toISOString(),
+      path: req.originalUrl,
+      method: req.method,
+      data: {
+        reservations,
+        count: reservations.length,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function addReservation(req, res, next) {
   try {
     const { emplacementId, dateDebut, dateFin } = req.body;
@@ -38,7 +62,7 @@ export async function addReservation(req, res, next) {
 
     const conflit = reservations.some(
       (reservation) =>
-        reservation.statut === "confirmed" &&
+        ["pending", "confirmed"].includes(reservation.statut) &&
         new Date(reservation.date_debut) <= new Date(dateFin) &&
         new Date(reservation.date_fin) >= new Date(dateDebut),
     );
@@ -51,11 +75,11 @@ export async function addReservation(req, res, next) {
       return next(erreur);
     }
     const reservation = await createReservation(
-  Number(emplacementId),
-  req.user.id,
-  dateDebut,
-  dateFin,
-);
+      Number(emplacementId),
+      req.user.id,
+      dateDebut,
+      dateFin,
+    );
 
     return res.status(201).json({
       success: true,
@@ -175,38 +199,106 @@ export async function obtenirReservationsParStatut(req, res, next) {
   }
 }
 
-export async function modifyReservation(req, res, next) {
-  const { id } = req.params;
-
+export async function updateMyReservation(req, res, next) {
   try {
-    const { emplacementId, dateDebut, dateFin } = req.body;
+    const id = Number(req.params.id);
+    const { dateDebut, dateFin } = req.body;
 
-    const reservation = await updateReservation(
-      Number(id),
-      Number(emplacementId),
+    if (
+      !Number.isInteger(id) ||
+      id <= 0 ||
+      typeof dateDebut !== "string" ||
+      typeof dateFin !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(dateDebut) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(dateFin) ||
+      Number.isNaN(Date.parse(dateDebut)) ||
+      Number.isNaN(Date.parse(dateFin)) ||
+      dateDebut > dateFin
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Dates ou identifiant invalides" });
+    }
+
+    const reservation = await getReservationById(id);
+
+    if (
+      !reservation ||
+      Number(reservation.utilisateur_id) !== Number(req.user.id)
+    ) {
+      return res.status(404).json({ message: "Réservation introuvable" });
+    }
+
+    if (reservation.statut !== "pending") {
+      return res.status(409).json({
+        message: "Seule une réservation en attente peut être modifiée",
+      });
+    }
+
+    const existingReservations = await getReservationsByEmplacementId(
+      reservation.emplacement_id,
+    );
+
+    const hasConflict = existingReservations.some(
+      (item) =>
+        Number(item.id) !== Number(id) &&
+        ["pending", "confirmed"].includes(item.statut) &&
+        new Date(item.date_debut) <= new Date(dateFin) &&
+        new Date(item.date_fin) >= new Date(dateDebut),
+    );
+
+    if (hasConflict) {
+      return res.status(409).json({
+        message: "Cet emplacement est déjà réservé pour cette période",
+      });
+    }
+
+    const updated = await updateMyPendingReservation(
+      id,
+      req.user.id,
       dateDebut,
       dateFin,
     );
 
-    if (!reservation) {
-      const erreur = new Error("Réservation introuvable");
-      erreur.status = 404;
-      return next(erreur);
+    if (!updated) {
+      return res.status(409).json({
+        message: "La réservation ne peut plus être modifiée",
+      });
     }
 
     return res.status(200).json({
       success: true,
-      statusCode: 200,
       message: "Réservation modifiée avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservation,
-      },
+      data: { reservation: updated },
     });
-  } catch (erreur) {
-    return next(erreur);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function cancelMyReservation(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "Identifiant invalide" });
+    }
+
+    const reservation = await cancelMyPendingReservation(id, req.user.id);
+
+    if (!reservation) {
+      return res.status(409).json({
+        message: "Réservation introuvable ou non annulable",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Réservation annulée avec succès",
+      data: { reservation },
+    });
+  } catch (error) {
+    next(error);
   }
 }
 
@@ -224,7 +316,7 @@ export async function approveReservation(req, res, next) {
       const conflit = reservations.some(
         (reservation) =>
           Number(reservation.id) !== Number(id) &&
-          reservation.statut === "confirmed" &&
+          ["pending", "confirmed"].includes(reservation.statut) &&
           new Date(reservation.date_debut) <= new Date(demande.date_fin) &&
           new Date(reservation.date_fin) >= new Date(demande.date_debut),
       );

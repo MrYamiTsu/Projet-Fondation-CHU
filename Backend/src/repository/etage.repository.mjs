@@ -1,4 +1,4 @@
-import * as Etage from '../models/etage.model.mjs';
+import * as Etage from '../models/etage.mjs';
 
 export async function getEtageById(id) {
     return await Etage.findEtageById(id);

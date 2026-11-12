@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as etageController from "../controller/etage.controller.mjs";
+import * as etageController from "../controllers/etage.controller.mjs";
 import { verifyToken } from "../middlewares/auth.middleware.mjs";
 
 const router = Router();

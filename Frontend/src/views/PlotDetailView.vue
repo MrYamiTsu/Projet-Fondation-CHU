@@ -1,24 +1,14 @@
 <template>
   <div>
-    <Header
-      :current-user="authStore.currentUser"
-      @open-auth="isAuthModalOpen = true"
-      @logout="authStore.logout"
-    >
+    <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="authStore.logout">
       <template #auth>
-        <Auth
-          :is-open="isAuthModalOpen"
-          :users="authStore.users"
-          @close="isAuthModalOpen = false"
-        />
+        <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false" />
       </template>
     </Header>
   </div>
 
-  <div
-    v-if="plotsStore.isLoading && !plot"
-    class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-3"
-  >
+  <div v-if="plotsStore.isLoading && !plot"
+    class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-3">
     <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600"></i>
     <p class="text-sm font-medium">Chargement des détails de l'emplacement...</p>
   </div>
@@ -27,38 +17,27 @@
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
       <!-- Barre supérieure : Bouton Retour et Fil d'Ariane -->
       <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <button
-          @click="goBack"
-          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors cursor-pointer group"
-        >
+        <button @click="goBack"
+          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors cursor-pointer group">
           <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
           <span>Retour aux emplacements</span>
         </button>
 
         <!-- Fil d'Ariane -->
         <nav class="flex items-center gap-2 text-xs text-slate-400" aria-label="Fil d'Ariane">
-          <router-link
-            to="/#recherche"
-            class="hover:text-teal-600 transition-colors hover:underline"
-          >
+          <router-link to="/#recherche" class="hover:text-teal-600 transition-colors hover:underline">
             Accueil
           </router-link>
           <span>/</span>
-          <button
-            v-if="plot?.hospital"
-            @click="navigateToHospital(plot.hospital)"
+          <button v-if="plot?.hospital" @click="navigateToHospital(plot.hospital)"
             class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
-            :title="`Filtrer par l'hôpital ${plot.hospital}`"
-          >
+            :title="`Filtrer par l'hôpital ${plot.hospital}`">
             {{ plot.hospital }}
           </button>
           <span v-if="plot?.hospital && plot?.sector">/</span>
-          <button
-            v-if="plot?.sector"
-            @click="navigateToSector(plot.sector)"
+          <button v-if="plot?.sector" @click="navigateToSector(plot.sector)"
             class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
-            :title="`Filtrer par le secteur ${plot.sector}`"
-          >
+            :title="`Filtrer par le secteur ${plot.sector}`">
             {{ plot.sector }}
           </button>
           <span>/</span>
@@ -72,31 +51,21 @@
         <!-- Colonne principale -->
         <div class="lg:col-span-2 space-y-6">
           <div class="relative rounded-2xl overflow-hidden h-[380px]">
-            <img
-              :src="plot.image"
-              :alt="plot?.name || 'Image de l\'emplacement'"
-              class="w-full h-full object-cover"
-            />
-            <span
-              v-if="plot.available"
-              class="absolute top-4 right-4 bg-emerald-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full"
-            >
+            <img :src="plot.image" :alt="plot?.name || 'Image de l\'emplacement'" class="w-full h-full object-cover" />
+            <span v-if="plot.available"
+              class="absolute top-4 right-4 bg-emerald-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full">
               Disponible
             </span>
-            <span
-              v-else
-              class="absolute top-4 right-4 bg-slate-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full"
-            >
+            <span v-else
+              class="absolute top-4 right-4 bg-slate-500 text-white text-sm font-semibold px-4 py-1.5 rounded-full">
               Non disponible
             </span>
           </div>
 
           <div>
-            <p
-              @click="navigateToHospital(plot.hospital)"
+            <p @click="navigateToHospital(plot.hospital)"
               class="text-sm font-semibold text-blue-600 uppercase tracking-wide cursor-pointer hover:underline inline-block"
-              :title="`Filtrer par l'hôpital ${plot.hospital} sur la page principale`"
-            >
+              :title="`Filtrer par l'hôpital ${plot.hospital} sur la page principale`">
               {{ plot?.hospital }}
             </p>
             <h1 class="text-3xl font-bold text-slate-900 mt-1">
@@ -107,11 +76,9 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
               <p class="text-sm text-slate-500">Secteur de soins</p>
-              <p
-                @click="navigateToSector(plot.sector)"
+              <p @click="navigateToSector(plot.sector)"
                 class="text-base font-medium text-slate-800 cursor-pointer hover:underline inline-block hover:text-blue-600 transition-colors"
-                :title="`Filtrer par le secteur ${plot.sector} sur la page principale`"
-              >
+                :title="`Filtrer par le secteur ${plot.sector} sur la page principale`">
                 {{ plot?.sector }}
               </p>
             </div>
@@ -160,10 +127,8 @@
               </p>
             </div>
 
-            <button
-              @click="openPlotReserver"
-              class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
-            >
+            <button @click="openPlotReserver"
+              class="w-full bg-[#0A1526] hover:bg-[#132238] text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2">
               <i class="fa-solid fa-calendar-check"></i>
               Réserver l'emplacement
             </button>
@@ -175,10 +140,8 @@
 
   <div v-else class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-4">
     <p class="text-base font-medium">Emplacement introuvable.</p>
-    <button
-      @click="goBack"
-      class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors cursor-pointer"
-    >
+    <button @click="goBack"
+      class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors cursor-pointer">
       <i class="fa-solid fa-arrow-left"></i>
       <span>Retour aux emplacements</span>
     </button>

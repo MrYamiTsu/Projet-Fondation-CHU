@@ -26,7 +26,7 @@ router.get('/', verifyToken, requireAdmin, obtenirToutesLesReservations);
 
 router.get('/status', verifyToken, requireAdmin, obtenirReservationsParStatut);
 
-router.get('/emplacement/:emplacementId', verifyToken, requireAdmin, obtenirReservationsParEmplacement);
+router.get('/emplacement/:emplacementId', verifyToken, obtenirReservationsParEmplacement);
 
 router.get('/:id', verifyToken, requireAdmin, validateReservationId, obtenirReservationParId);
 

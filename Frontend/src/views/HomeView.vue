@@ -281,10 +281,8 @@ const filteredPlots = computed(() => {
 
       // 3. Filtre par Disponibilité
       if (hasDateRange) {
-        if (filters.value.availability === 'available' && !plot.isAvailableForSelectedRange) {
-          return false
-        }
-        if (filters.value.availability === 'reserved' && plot.isAvailableForSelectedRange) {
+        // Quand des dates sont sélectionnées, la liste n'affiche QUE les emplacements disponibles
+        if (!plot.isAvailableForSelectedRange) {
           return false
         }
       } else {

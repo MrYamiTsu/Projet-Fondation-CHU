@@ -78,14 +78,14 @@
         </label>
         <div class="relative">
           <select :value="modelValue.availability" @change="updateFilter('availability', $event.target.value)"
-            class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 font-medium cursor-pointer transition-colors pr-8 appearance-none">
-            <option value="">Tous les statuts</option>
-            <option value="available">
-              {{ hasActiveDateFilter ? 'Disponibles sur ces dates' : 'Disponibles seulement' }}
-            </option>
-            <option value="reserved">
-              {{ hasActiveDateFilter ? 'Réservés sur ces dates' : 'Réservés / Occupés' }}
-            </option>
+            :disabled="hasActiveDateFilter"
+            class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 font-medium cursor-pointer transition-colors pr-8 appearance-none disabled:opacity-60 disabled:cursor-not-allowed">
+            <option v-if="hasActiveDateFilter" value="">Disponibles sur ces dates</option>
+            <template v-else>
+              <option value="">Tous les statuts</option>
+              <option value="available">Disponibles seulement</option>
+              <option value="reserved">Réservés / Occupés</option>
+            </template>
           </select>
           <i
             class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>

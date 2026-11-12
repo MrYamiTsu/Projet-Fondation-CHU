@@ -15,21 +15,11 @@
       <div
         class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20"
       ></div>
-      <div class="absolute top-3 inset-x-3 flex items-center justify-between">
+      <div class="absolute top-3 left-3 flex items-center">
         <span
           class="bg-slate-900/85 backdrop-blur text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border border-slate-700/80 shadow-xs"
         >
           {{ plot?.hospital }}
-        </span>
-        <span
-          :class="[
-            'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs backdrop-blur',
-            isAvailable
-              ? 'bg-emerald-500 text-white'
-              : 'bg-slate-800/90 text-slate-300 border border-slate-600',
-          ]"
-        >
-          {{ badgeText }}
         </span>
       </div>
       <div class="absolute bottom-2.5 left-3">
@@ -70,24 +60,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-
-const props = defineProps({
+defineProps({
   plot: { type: Object, default: () => ({}) },
 })
 defineEmits(['select'])
-
-const isAvailable = computed(() => {
-  if (props.plot?.hasDateFilterActive) {
-    return Boolean(props.plot?.isAvailableForSelectedRange)
-  }
-  return Boolean(props.plot?.available)
-})
-
-const badgeText = computed(() => {
-  if (props.plot?.hasDateFilterActive) {
-    return isAvailable.value ? 'Disponible' : 'Occupé'
-  }
-  return props.plot?.available ? 'Disponible' : 'Réservé'
-})
 </script>

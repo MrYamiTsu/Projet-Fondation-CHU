@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import PageDetail from '../views/page_details.vue'
+import PlotDetailView from '../views/PlotDetailView.vue'
 import AdminView from '../views/AdminView.vue'
+import ReservationView from '../views/ReservationView.vue'
+import ProfilView from '../views/ProfilView.vue'
 import { useAuthStore } from '../stores/auth.js'
-import pageReservation from '../views/page_reserver.vue'
-import pageProfil from '../views/ProfilView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,7 +45,7 @@ const router = createRouter({
     {
       path: '/emplacement/:id',
       name: 'emplacement-detail',
-      component: PageDetail,
+      component: PlotDetailView,
     },
     {
       path: '/admin',
@@ -56,12 +56,12 @@ const router = createRouter({
     {
       path: '/reservation/:id',
       name: 'reservation',
-      component: pageReservation,
+      component: ReservationView,
     },
     {
       path: '/profil',
       name: 'profil',
-      component: pageProfil,
+      component: ProfilView,
       meta: { requiresAuth: true },
     }
   ],

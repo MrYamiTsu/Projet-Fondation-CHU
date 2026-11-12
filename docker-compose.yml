@@ -30,12 +30,12 @@ services:
       interval: 5s
       retries: 5
 
-  client:
-    build: ./client
+  frontend:
+    build: ./Frontend
     ports:
       - "5173:5173"
     volumes:
-      - ./client:/app
+      - ./Frontend:/app
       - /app/node_modules
     depends_on:
       - api

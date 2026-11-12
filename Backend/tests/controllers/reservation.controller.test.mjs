@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   addReservation,
   obtenirReservationsParEmplacement,
+  obtenirReservationsConfirmees,
   approveReservation,
   getMyReservations,
   updateMyReservation,
@@ -15,6 +16,7 @@ import {
   confirmReservation,
   updateMyPendingReservation,
   cancelMyPendingReservation,
+  getConfirmedReservations,
 } from "../../src/models/reservation.mjs";
 
 vi.mock("../../src/models/reservation.mjs", () => ({
@@ -28,6 +30,7 @@ vi.mock("../../src/models/reservation.mjs", () => ({
   confirmReservation: vi.fn(),
   updateMyPendingReservation: vi.fn(),
   cancelMyPendingReservation: vi.fn(),
+  getConfirmedReservations: vi.fn(),
 }));
 
 describe("Contrôleur des réservations", () => {
@@ -484,6 +487,26 @@ describe("Contrôleur des réservations", () => {
       await cancelMyReservation(requete, reponse, next);
 
       expect(cancelMyPendingReservation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("obtenirReservationsConfirmees", () => {
+    it("retourne la liste des réservations confirmées avec un code 200", async () => {
+      const mockConfirmees = [reservationConfirmee];
+      getConfirmedReservations.mockResolvedValue(mockConfirmees);
+
+      await obtenirReservationsConfirmees(requete, reponse, next);
+
+      expect(reponse.status).toHaveBeenCalledWith(200);
+      expect(reponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: {
+            reservations: mockConfirmees,
+            count: 1,
+          },
+        }),
+      );
     });
   });
 });

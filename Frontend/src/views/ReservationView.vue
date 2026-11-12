@@ -98,11 +98,19 @@
         Période de réservation <span class="text-red-500">*</span>
       </label>
 
-      <VueDatePicker v-model="selectedRange" :range="{ noDisabledRange: true, partialRange: false }"
-        :disabled-dates="disabledDates" :min-date="firstAvailableDate"
-        :start-date="firstAvailableDate" :enable-time-picker="false"
-        :disabled="formDisabled" placeholder="Choisir une période"
-        auto-apply />
+      <VueDatePicker
+        v-model="selectedRange"
+        :range="{ noDisabledRange: true, partialRange: false }"
+        :disabled-dates="disabledDates"
+        :min-date="firstAvailableDate"
+        :start-date="firstAvailableDate"
+        :time-config="{ enableTimePicker: false }"
+        :enable-time-picker="false"
+        :format="formatRange"
+        :disabled="formDisabled"
+        placeholder="Choisir une période"
+        auto-apply
+      />
 
       <p v-if="periodsLoaded" class="mt-2 text-sm text-gray-600">
         Première date disponible : {{ firstAvailableDate.toLocaleDateString('fr-CA', { dateStyle: 'long' }) }}
@@ -244,6 +252,14 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
+}
+
+function formatRange(dates) {
+  if (!dates || !Array.isArray(dates) || !dates[0]) return ''
+  const start = formatDate(dates[0])
+  if (!dates[1]) return start
+  const end = formatDate(dates[1])
+  return `${start} au ${end}`
 }
 
 watch(selectedRange, (range) => {

@@ -28,26 +28,6 @@ export async function getMyReservations(req, res, next) {
   }
 }
 
-export async function getMyReservations(req, res, next) {
-  try {
-    const reservations = await getReservationsByUserId(req.user.id);
-
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservations récupérées avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservations,
-        count: reservations.length,
-      },
-    });
-  } catch (error) {
-    return next(error);
-  }
-}
 
 export async function addReservation(req, res, next) {
   try {

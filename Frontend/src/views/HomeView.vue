@@ -1,45 +1,25 @@
 <template>
   <div
-    class="min-h-screen flex flex-col justify-between bg-slate-100 text-slate-800 selection:bg-blue-500 selection:text-white"
-  >
+    class="min-h-screen flex flex-col justify-between bg-slate-100 text-slate-800 selection:bg-blue-500 selection:text-white">
     <div>
-      <Header
-        :current-user="authStore.currentUser"
-        @open-auth="isAuthModalOpen = true"
-        @logout="handleLogout"
-      >
+      <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="handleLogout">
         <template #auth>
-          <Auth
-            :is-open="isAuthModalOpen"
-            :users="authStore.users"
-            @close="isAuthModalOpen = false"
-            @login="handleLoginSuccess"
-            @signup="handleSignUpSuccess"
-          />
+          <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false"
+            @login="handleLoginSuccess" @signup="handleSignUpSuccess" />
         </template>
       </Header>
 
       <div v-if="accessAlert" class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6">
-        <div
-          class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg"
-          :class="
-            accessAlert.type === 'danger'
-              ? 'bg-red-950/90 text-red-100 border-red-500/50'
-              : 'bg-amber-950/90 text-amber-100 border-amber-500/50'
-          "
-        >
+        <div class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg" :class="accessAlert.type === 'danger'
+          ? 'bg-red-950/90 text-red-100 border-red-500/50'
+          : 'bg-amber-950/90 text-amber-100 border-amber-500/50'
+          ">
           <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-              :class="
-                accessAlert.type === 'danger'
-                  ? 'bg-red-500/20 text-red-400'
-                  : 'bg-amber-500/20 text-amber-400'
-              "
-            >
-              <i
-                :class="accessAlert.type === 'danger' ? 'fa-solid fa-ban' : 'fa-solid fa-lock'"
-              ></i>
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" :class="accessAlert.type === 'danger'
+              ? 'bg-red-500/20 text-red-400'
+              : 'bg-amber-500/20 text-amber-400'
+              ">
+              <i :class="accessAlert.type === 'danger' ? 'fa-solid fa-ban' : 'fa-solid fa-lock'"></i>
             </div>
             <div>
               <p class="font-bold text-sm">{{ accessAlert.title }}</p>
@@ -47,18 +27,12 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button
-              v-if="!authStore.isAuthenticated"
-              @click="isAuthModalOpen = true"
-              class="px-3 py-1.5 bg-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg cursor-pointer hover:bg-teal-400 transition-colors"
-            >
+            <button v-if="!authStore.isAuthenticated" @click="isAuthModalOpen = true"
+              class="px-3 py-1.5 bg-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg cursor-pointer hover:bg-teal-400 transition-colors">
               Se connecter
             </button>
-            <button
-              @click="accessAlert = null"
-              class="text-xs opacity-75 hover:opacity-100 p-1 cursor-pointer"
-              title="Fermer"
-            >
+            <button @click="accessAlert = null" class="text-xs opacity-75 hover:opacity-100 p-1 cursor-pointer"
+              title="Fermer">
               ✕
             </button>
           </div>
@@ -68,27 +42,17 @@
       <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
         <!-- Section Carte Interactive & Cartes d'Hôpitaux + Valorisation -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch">
-          <Map
-            class="xl:col-span-8"
-            :hospitals="hospitals"
-            :pins="hospitalPins"
-            :active-hospital="selectedHospital"
-            :search-query="searchQuery"
-            @update:search-query="searchQuery = $event"
-            @select-hospital="handleHospitalSelect"
-          />
+          <Map class="xl:col-span-8" :hospitals="hospitals" :pins="hospitalPins" :active-hospital="selectedHospital"
+            :search-query="searchQuery" @update:search-query="searchQuery = $event"
+            @select-hospital="handleHospitalSelect" />
           <Valuation class="xl:col-span-4" :selected-hospital="selectedHospital" />
         </div>
 
         <!-- Section des Filtres & Emplacements Recherchés -->
         <div id="recherche" class="space-y-8 scroll-mt-24">
           <!-- Section des Filtres (Secteur, Disponibilité, Budget) -->
-          <PlotFilters
-            v-model="filters"
-            :plots="plotsStore.plots"
-            :result-count="filteredPlots.length"
-            @reset="resetFilters"
-          />
+          <PlotFilters v-model="filters" :plots="plotsStore.plots" :result-count="filteredPlots.length"
+            @reset="resetFilters" />
 
           <!-- Liste des Emplacements -->
           <div id="emplacements" class="scroll-mt-24">
@@ -175,7 +139,7 @@ watch(
       String(query.maxPrice || '') !== String(route.query.maxPrice || '') ||
       (query.q || '') !== (route.query.q || '')
 
-        if (hasChanged) {
+    if (hasChanged) {
       const url = new URL(window.location.href)
       const params = ['hospital', 'sector', 'availability', 'maxPrice', 'q']
       params.forEach((k) => {

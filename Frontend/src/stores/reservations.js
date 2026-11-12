@@ -17,6 +17,7 @@ export const useReservationStore = defineStore('reservations', () => {
   const error = ref(null)
   const reservedPeriods = ref([])
   const allConfirmedReservations = ref([])
+  const myReservations = ref([])
 
   function formatDate(d) {
     if (!d) return ''
@@ -75,7 +76,41 @@ export const useReservationStore = defineStore('reservations', () => {
     }
   }
 
-  async function getReservedPeriods(emplacementId) {
+  async function fetchMyReservations() {
+    loading.value = true
+    error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+
+      if (!token) {
+        throw new Error('Utilisateur non authentifié')
+      }
+
+      const response = await fetch(`${API_BASE}/reservations/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || result.erreur || 'Erreur de chargement')
+      }
+
+      myReservations.value = result.data.reservations
+      return myReservations.value
+    } catch (err) {
+      error.value = err.message
+      myReservations.value = []
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function getReservedPeriods(emplacementId, excludedReservationId = null) {
     loading.value = true
     error.value = null
     reservedPeriods.value = []
@@ -105,7 +140,11 @@ export const useReservationStore = defineStore('reservations', () => {
       }
 
       reservedPeriods.value = emplacementReservations
-        .filter((reservation) => reservation.statut === 'confirmed')
+        .filter(
+          (reservation) =>
+            reservation.statut === 'confirmed' &&
+            (excludedReservationId === null || Number(reservation.id) !== Number(excludedReservationId)),
+        )
         .map((reservation) => ({
           start: String(reservation.date_debut).slice(0, 10),
           end: String(reservation.date_fin).slice(0, 10),
@@ -159,16 +198,80 @@ export const useReservationStore = defineStore('reservations', () => {
     })
   }
 
+  async function updateMyReservation(id, dateDebut, dateFin) {
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      throw new Error('Utilisateur non authentifié')
+    }
+
+    const response = await fetch(`${API_BASE}/reservations/me/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ dateDebut, dateFin }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || result.erreur || 'Impossible de modifier la réservation')
+    }
+
+    const updatedReservation = result.data.reservation
+
+    const index = myReservations.value.findIndex(
+      (reservation) => Number(reservation.id) === Number(id),
+    )
+
+    if (index !== -1) {
+      myReservations.value[index] = {
+        ...myReservations.value[index],
+        ...updatedReservation,
+      }
+    }
+
+    return updatedReservation
+  }
+
+  async function cancelMyReservation(id) {
+    const token = localStorage.getItem('token')
+
+    if (!token) throw new Error('Utilisateur non authentifié')
+
+    const response = await fetch(`${API_BASE}/reservations/me/${id}/cancel`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || "Impossible d'annuler la réservation")
+    }
+
+    await fetchMyReservations()
+    return result.data.reservation
+  }
+
   return {
     reservations,
     reservedPeriods,
     allConfirmedReservations,
+    myReservations,
     loading,
     error,
     addReservation,
+    fetchMyReservations,
     getReservedPeriods,
     getAllConfirmedReservations,
     isEmplacementAvailable,
+    updateMyReservation,
+    cancelMyReservation,
     formatDate,
   }
 })

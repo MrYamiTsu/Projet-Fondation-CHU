@@ -167,7 +167,6 @@ export async function obtenirReservationsConfirmees(req, res, next) {
     return next(erreur);
   }
 }
-
 export async function obtenirReservationsParStatut(req, res, next) {
   const { status } = req.query;
 

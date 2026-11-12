@@ -24,12 +24,12 @@
         <span
           :class="[
             'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs backdrop-blur',
-            plot?.available
+            isAvailable
               ? 'bg-emerald-500 text-white'
               : 'bg-slate-800/90 text-slate-300 border border-slate-600',
           ]"
         >
-          {{ plot?.available ? 'Disponible' : 'Réservé' }}
+          {{ badgeText }}
         </span>
       </div>
       <div class="absolute bottom-2.5 left-3">
@@ -70,8 +70,24 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   plot: { type: Object, default: () => ({}) },
 })
 defineEmits(['select'])
+
+const isAvailable = computed(() => {
+  if (props.plot?.hasDateFilterActive) {
+    return Boolean(props.plot?.isAvailableForSelectedRange)
+  }
+  return Boolean(props.plot?.available)
+})
+
+const badgeText = computed(() => {
+  if (props.plot?.hasDateFilterActive) {
+    return isAvailable.value ? 'Disponible' : 'Occupé'
+  }
+  return props.plot?.available ? 'Disponible' : 'Réservé'
+})
 </script>

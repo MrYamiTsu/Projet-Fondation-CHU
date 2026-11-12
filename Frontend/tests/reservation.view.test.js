@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
-import ReservationView from '../src/views/page_reserver.vue'
+import ReservationView from '../src/views/ReservationView.vue'
 import { useAuthStore } from '../src/stores/auth.js'
 import { usePlotsStore } from '../src/stores/plots.js'
 import { useReservationStore } from '../src/stores/reservations.js'
@@ -30,7 +30,8 @@ vi.mock('vue-router', async (importOriginal) => ({
     query: {}
   }),
   useRouter: () => ({
-    push: vi.fn()
+    push: vi.fn(),
+    currentRoute: { value: {} }
   })
 }))
 

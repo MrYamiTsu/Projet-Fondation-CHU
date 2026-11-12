@@ -77,11 +77,13 @@ import Auth from '../components/Auth.vue'
 import { hospitals, hospitalPins } from '../data/mockData.js'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
+import { useReservationStore } from '../stores/reservations.js'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const plotsStore = usePlotsStore()
+const reservationStore = useReservationStore()
 
 const isAuthModalOpen = ref(false)
 const accessAlert = ref(null)
@@ -90,6 +92,18 @@ const defaultFilters = {
   sector: '',
   availability: '',
   maxPrice: 100000,
+  dateRange: null,
+}
+
+function parseDateRangeFromQuery(query) {
+  if (query.startDate && query.endDate) {
+    const s = new Date(query.startDate + 'T00:00:00')
+    const e = new Date(query.endDate + 'T00:00:00')
+    if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+      return [s, e]
+    }
+  }
+  return null
 }
 
 const selectedHospital = ref(route.query.hospital || '')
@@ -99,6 +113,7 @@ const filters = ref({
   sector: route.query.sector || defaultFilters.sector,
   availability: route.query.availability || defaultFilters.availability,
   maxPrice: route.query.maxPrice ? Number(route.query.maxPrice) : defaultFilters.maxPrice,
+  dateRange: parseDateRangeFromQuery(route.query),
 })
 
 // Synchronisation des états vers les query parameters de l'URL
@@ -131,17 +146,26 @@ watch(
     } else {
       delete query.q
     }
+    if (filters.value.dateRange && filters.value.dateRange[0] && filters.value.dateRange[1]) {
+      query.startDate = reservationStore.formatDate(filters.value.dateRange[0])
+      query.endDate = reservationStore.formatDate(filters.value.dateRange[1])
+    } else {
+      delete query.startDate
+      delete query.endDate
+    }
 
     const hasChanged =
       (query.hospital || '') !== (route.query.hospital || '') ||
       (query.sector || '') !== (route.query.sector || '') ||
       (query.availability || '') !== (route.query.availability || '') ||
       String(query.maxPrice || '') !== String(route.query.maxPrice || '') ||
-      (query.q || '') !== (route.query.q || '')
+      (query.q || '') !== (route.query.q || '') ||
+      (query.startDate || '') !== (route.query.startDate || '') ||
+      (query.endDate || '') !== (route.query.endDate || '')
 
     if (hasChanged) {
       const url = new URL(window.location.href)
-      const params = ['hospital', 'sector', 'availability', 'maxPrice', 'q']
+      const params = ['hospital', 'sector', 'availability', 'maxPrice', 'q', 'startDate', 'endDate']
       params.forEach((k) => {
         if (query[k]) {
           url.searchParams.set(k, query[k])
@@ -196,6 +220,7 @@ function scrollToTarget(isInstant = false) {
 onMounted(() => {
   checkRouteAlerts()
   plotsStore.getPlots()
+  reservationStore.getAllConfirmedReservations()
   scrollToTarget(true)
 })
 
@@ -208,6 +233,7 @@ watch(
     filters.value.sector = newQuery.sector || defaultFilters.sector
     filters.value.availability = newQuery.availability || defaultFilters.availability
     filters.value.maxPrice = newQuery.maxPrice ? Number(newQuery.maxPrice) : defaultFilters.maxPrice
+    filters.value.dateRange = parseDateRangeFromQuery(newQuery)
     searchQuery.value = newQuery.q || ''
   },
 )
@@ -220,43 +246,70 @@ watch(
 )
 
 const filteredPlots = computed(() => {
-  return plotsStore.plots.filter((plot) => {
-    // 1. Filtre par Hôpital
-    if (selectedHospital.value && plot.hospital !== selectedHospital.value) {
-      return false
-    }
+  const hasDateRange =
+    Array.isArray(filters.value.dateRange) &&
+    Boolean(filters.value.dateRange[0]) &&
+    Boolean(filters.value.dateRange[1])
 
-    // 2. Filtre par Secteur
-    if (filters.value.sector) {
-      const targetSector = filters.value.sector.trim().toLowerCase()
-      const plotSector = (plot.sector || '').trim().toLowerCase()
-      if (plotSector !== targetSector) return false
-    }
+  const startDateStr = hasDateRange ? reservationStore.formatDate(filters.value.dateRange[0]) : ''
+  const endDateStr = hasDateRange ? reservationStore.formatDate(filters.value.dateRange[1]) : ''
 
-    // 3. Filtre par Disponibilité
-    if (filters.value.availability === 'available' && !plot.available) {
-      return false
-    }
-    if (filters.value.availability === 'reserved' && plot.available) {
-      return false
-    }
+  return plotsStore.plots
+    .map((plot) => {
+      const isAvailableForSelectedRange = hasDateRange
+        ? reservationStore.isEmplacementAvailable(plot.id, startDateStr, endDateStr)
+        : plot.available
 
-    // 4. Filtre par Prix maximum
-    if (plot.price && plot.price > filters.value.maxPrice) {
-      return false
-    }
+      return {
+        ...plot,
+        isAvailableForSelectedRange,
+        hasDateFilterActive: hasDateRange,
+      }
+    })
+    .filter((plot) => {
+      // 1. Filtre par Hôpital
+      if (selectedHospital.value && plot.hospital !== selectedHospital.value) {
+        return false
+      }
 
-    // 5. Recherche textuelle (nom, hôpital ou secteur)
-    if (searchQuery.value) {
-      const q = searchQuery.value.toLowerCase().trim()
-      const matchName = plot.name?.toLowerCase().includes(q)
-      const matchSector = plot.sector?.toLowerCase().includes(q)
-      const matchHospital = plot.hospital?.toLowerCase().includes(q)
-      if (!matchName && !matchSector && !matchHospital) return false
-    }
+      // 2. Filtre par Secteur
+      if (filters.value.sector) {
+        const targetSector = filters.value.sector.trim().toLowerCase()
+        const plotSector = (plot.sector || '').trim().toLowerCase()
+        if (plotSector !== targetSector) return false
+      }
 
-    return true
-  })
+      // 3. Filtre par Disponibilité
+      if (hasDateRange) {
+        if (filters.value.availability === 'available' && !plot.isAvailableForSelectedRange) {
+          return false
+        }
+        if (filters.value.availability === 'reserved' && plot.isAvailableForSelectedRange) {
+          return false
+        }
+      } else {
+        if (filters.value.availability === 'available' && !plot.available) {
+          return false
+        }
+        if (filters.value.availability === 'reserved' && plot.available) {
+          return false
+        }
+      }
+
+      if (plot.price && plot.price > filters.value.maxPrice) {
+        return false
+      }
+
+      if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase().trim()
+        const matchName = plot.name?.toLowerCase().includes(q)
+        const matchSector = plot.sector?.toLowerCase().includes(q)
+        const matchHospital = plot.hospital?.toLowerCase().includes(q)
+        if (!matchName && !matchSector && !matchHospital) return false
+      }
+
+      return true
+    })
 })
 
 function handleHospitalSelect(code) {
@@ -264,7 +317,7 @@ function handleHospitalSelect(code) {
 }
 
 function resetFilters() {
-  filters.value = { ...defaultFilters }
+  filters.value = { ...defaultFilters, dateRange: null }
   searchQuery.value = ''
   selectedHospital.value = ''
 }

@@ -4,6 +4,7 @@ import {
   getReservationById,
   getReservationsByEmplacementId,
   getReservationsByStatus,
+  getConfirmedReservations,
   updateReservation,
   confirmReservation,
 } from "../models/reservation.mjs";
@@ -146,6 +147,26 @@ export async function obtenirReservationsParEmplacement(req, res, next) {
   }
 }
 
+export async function obtenirReservationsConfirmees(req, res, next) {
+  try {
+    const reservations = await getConfirmedReservations();
+
+    return res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "Réservations confirmées récupérées avec succès",
+      timestamp: new Date().toISOString(),
+      path: req.originalUrl,
+      method: req.method,
+      data: {
+        reservations,
+        count: reservations.length,
+      },
+    });
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
 export async function obtenirReservationsParStatut(req, res, next) {
   const { status } = req.query;
 

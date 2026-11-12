@@ -108,3 +108,54 @@ export async function confirmReservation(id) {
 
   return result.rows[0];
 }
+
+export async function getReservationsByUserId(utilisateurId) {
+  const requete = `
+    SELECT
+      r.id,
+      r.emplacement_id,
+      r.statut,
+      r.date_debut,
+      r.date_fin,
+      e.no_local_pavillon,
+      e.lieu_specifique
+    FROM reservation r
+    LEFT JOIN emplacement e ON e.id = r.emplacement_id
+    WHERE r.utilisateur_id = $1
+    ORDER BY r.date_debut DESC
+  `;
+
+  const result = await pool.query(requete, [utilisateurId]);
+
+  return result.rows;
+}
+
+
+export async function updateMyPendingReservation(id, userId, dateDebut, dateFin) {
+  const result = await pool.query(
+    `UPDATE reservation
+     SET date_debut = $1, date_fin = $2
+     WHERE id = $3
+       AND utilisateur_id = $4
+       AND statut = 'pending'
+     RETURNING *`,
+    [dateDebut, dateFin, id, userId]
+  )
+
+  return result.rows[0]
+}
+
+export async function cancelMyPendingReservation(id, userId) {
+  const result = await pool.query(
+    `UPDATE reservation
+     SET statut = 'cancelled'
+     WHERE id = $1
+       AND utilisateur_id = $2
+       AND statut = 'pending'
+     RETURNING *`,
+    [id, userId]
+  )
+
+  return result.rows[0]
+}
+

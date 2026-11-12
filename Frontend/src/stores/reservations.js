@@ -16,19 +16,7 @@ export const useReservationStore = defineStore('reservations', () => {
   const loading = ref(false)
   const error = ref(null)
   const reservedPeriods = ref([])
-  const allConfirmedReservations = ref([])
   const myReservations = ref([])
-
-  function formatDate(d) {
-    if (!d) return ''
-    const date = new Date(d)
-    if (isNaN(date.getTime())) return ''
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
   async function addReservation(emplacementId, dateDebut, dateFin) {
     loading.value = true
     error.value = null
@@ -113,6 +101,40 @@ export const useReservationStore = defineStore('reservations', () => {
   async function getReservedPeriods(emplacementId, excludedReservationId = null) {
     loading.value = true
     error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+
+      if (!token) {
+        throw new Error('Utilisateur non authentifié')
+      }
+
+      const response = await fetch(`${API_BASE}/reservations/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || result.erreur || 'Erreur de chargement')
+      }
+
+      myReservations.value = result.data.reservations
+      return myReservations.value
+    } catch (err) {
+      error.value = err.message
+      myReservations.value = []
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function getReservedPeriods(emplacementId, excludedReservationId = null) {
+    loading.value = true
+    error.value = null
     reservedPeriods.value = []
 
     try {
@@ -142,8 +164,8 @@ export const useReservationStore = defineStore('reservations', () => {
       reservedPeriods.value = emplacementReservations
         .filter(
           (reservation) =>
-            reservation.statut === 'confirmed' &&
-            (excludedReservationId === null || Number(reservation.id) !== Number(excludedReservationId)),
+            ['pending', 'confirmed'].includes(reservation.statut) &&
+            Number(reservation.id) !== Number(excludedReservationId),
         )
         .map((reservation) => ({
           start: String(reservation.date_debut).slice(0, 10),
@@ -157,45 +179,6 @@ export const useReservationStore = defineStore('reservations', () => {
     } finally {
       loading.value = false
     }
-  }
-
-  async function getAllConfirmedReservations() {
-    loading.value = true
-    try {
-      const response = await fetch(`${API_BASE}/reservations/confirmed`)
-      if (!response.ok) return []
-      const result = await response.json()
-      const list = result.data?.reservations || []
-      allConfirmedReservations.value = list.map((reservation) => ({
-        id: reservation.id,
-        emplacement_id: Number(reservation.emplacement_id),
-        start: String(reservation.date_debut).slice(0, 10),
-        end: String(reservation.date_fin).slice(0, 10),
-      }))
-      return allConfirmedReservations.value
-    } catch {
-      return []
-    } finally {
-      loading.value = false
-    }
-  }
-
-  function isEmplacementAvailable(emplacementId, startDate, endDate) {
-    if (!startDate || !endDate) return true
-    const startStr = typeof startDate === 'string' ? startDate.slice(0, 10) : formatDate(startDate)
-    const endStr = typeof endDate === 'string' ? endDate.slice(0, 10) : formatDate(endDate)
-    if (!startStr || !endStr) return true
-
-    const relevant =
-      allConfirmedReservations.value.length > 0
-        ? allConfirmedReservations.value.filter(
-            (r) => Number(r.emplacement_id) === Number(emplacementId),
-          )
-        : reservedPeriods.value
-
-    return !relevant.some((r) => {
-      return r.start <= endStr && r.end >= startStr
-    })
   }
 
   async function updateMyReservation(id, dateDebut, dateFin) {
@@ -268,10 +251,9 @@ export const useReservationStore = defineStore('reservations', () => {
     addReservation,
     fetchMyReservations,
     getReservedPeriods,
-    getAllConfirmedReservations,
-    isEmplacementAvailable,
-    updateMyReservation,
+    myReservations,
+    fetchMyReservations,
     cancelMyReservation,
-    formatDate,
+    updateMyReservation,
   }
 })

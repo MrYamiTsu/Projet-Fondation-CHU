@@ -100,8 +100,7 @@
 
       <VueDatePicker v-model="selectedRange" :range="{ noDisabledRange: true, partialRange: false }"
         :disabled-dates="disabledDates" :min-date="firstAvailableDate"
-        :start-date="firstAvailableDate" :time-config="{ enableTimePicker: false }"
-        :enable-time-picker="false" :format="formatRange"
+        :start-date="firstAvailableDate" :enable-time-picker="false"
         :disabled="formDisabled" placeholder="Choisir une période"
         auto-apply />
 
@@ -169,7 +168,7 @@ const fileError = ref('')
 const previewUrl = ref('')
 const reservationError = ref('')
 const confirmedRoute = shallowRef(null)
-const showConfirmation = computed(() => Boolean(confirmedRoute.value) && confirmedRoute.value === router.currentRoute?.value)
+const showConfirmation = computed(() => confirmedRoute.value === router.currentRoute.value)
 const selectedRange = ref(null)
 const periodsLoaded = ref(false)
 const formDisabled = computed(() => reservationStore.loading || showConfirmation.value || !periodsLoaded.value)
@@ -245,18 +244,6 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
-}
-
-function formatRange(dates) {
-  if (!dates) return ''
-  const fmt = (d) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  if (Array.isArray(dates)) {
-    if (dates[0] && dates[1]) return `${fmt(dates[0])} au ${fmt(dates[1])}`
-    if (dates[0]) return fmt(dates[0])
-    return ''
-  }
-  return fmt(dates)
 }
 
 watch(selectedRange, (range) => {
@@ -371,21 +358,7 @@ watch(
 
     try {
       await reservationStore.getReservedPeriods(emplacementId)
-      if (plot.value?.id === emplacementId) {
-        periodsLoaded.value = true
-        const startQ = route.query.start || route.query.startDate
-        const endQ = route.query.end || route.query.endDate
-        if (startQ && endQ) {
-          const s = new Date(startQ + 'T00:00:00')
-          const e = new Date(endQ + 'T00:00:00')
-          const isFree = !reservationStore.reservedPeriods.some(
-            (p) => p.start <= endQ && p.end >= startQ,
-          )
-          if (isFree && !isNaN(s.getTime()) && !isNaN(e.getTime())) {
-            selectedRange.value = [s, e]
-          }
-        }
-      }
+      if (plot.value?.id === emplacementId) periodsLoaded.value = true
     } catch (err) {
       reservationError.value = err.message
       console.error('Erreur des réservations :', err)

@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 
 import {
   obtenirToutesLesReservations,
@@ -7,36 +7,54 @@ import {
   obtenirReservationsParEmplacement,
   obtenirReservationsConfirmees,
   obtenirReservationsParStatut,
-  modifyReservation,
-  approveReservation
-} from '../controllers/reservation.controller.mjs';
+  approveReservation,
+  getMyReservations,
+  updateMyReservation,
+  cancelMyReservation,
+} from "../controllers/reservation.controller.mjs";
 
 import {
   validateReservation,
-  validateReservationId
-} from '../middlewares/reservation.middleware.mjs';
+  validateReservationId,
+} from "../middlewares/reservation.middleware.mjs";
 
-import {
-  verifyToken,
-  requireAdmin
-} from '../middlewares/auth.middleware.mjs';
+import { verifyToken, requireAdmin } from "../middlewares/auth.middleware.mjs";
 
 const router = express.Router();
 
-router.get('/', verifyToken, requireAdmin, obtenirToutesLesReservations);
+router.get("/", verifyToken, requireAdmin, obtenirToutesLesReservations);
 
-router.get('/status', verifyToken, requireAdmin, obtenirReservationsParStatut);
+router.get("/status", verifyToken, requireAdmin, obtenirReservationsParStatut);
 
-router.get('/confirmed', obtenirReservationsConfirmees);
+router.get(
+  "/emplacement/:emplacementId",
+  verifyToken,
+  obtenirReservationsParEmplacement,
+);
 
-router.get('/emplacement/:emplacementId', obtenirReservationsParEmplacement);
+router.get("/me", verifyToken, getMyReservations);
 
-router.get('/:id', verifyToken, requireAdmin, validateReservationId, obtenirReservationParId);
+router.put("/me/:id", verifyToken, updateMyReservation);
+router.patch("/me/:id/cancel", verifyToken, cancelMyReservation);
 
-router.post('/', verifyToken, validateReservation, addReservation);
+router.get(
+  "/:id",
+  verifyToken,
+  requireAdmin,
+  validateReservationId,
+  obtenirReservationParId,
+);
 
-router.put('/:id', verifyToken, requireAdmin, validateReservationId, validateReservation, modifyReservation);
+router.post("/", verifyToken, validateReservation, addReservation);
 
-router.patch('/:id/confirm', verifyToken, requireAdmin, validateReservationId, approveReservation);
+
+
+router.patch(
+  "/:id/confirm",
+  verifyToken,
+  requireAdmin,
+  validateReservationId,
+  approveReservation,
+);
 
 export default router;

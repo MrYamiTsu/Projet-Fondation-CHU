@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build && node -e \"const fs=require('fs'); try{if(fs.existsSync('dist')&&!fs.existsSync('../dist')){fs.cpSync('dist','../dist',{recursive:true})}if(fs.existsSync('../dist')&&!fs.existsSync('dist')){fs.cpSync('../dist','dist',{recursive:true})}}catch(e){}\"",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {

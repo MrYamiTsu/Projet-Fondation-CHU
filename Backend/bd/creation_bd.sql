@@ -60,7 +60,8 @@ CREATE TABLE Emplacement (
     CONSTRAINT fk_emplacement_fl
         FOREIGN KEY (fl_id) REFERENCES FL(id),
     CONSTRAINT fk_emplacement_ff
-        FOREIGN KEY (ff_id) REFERENCES FF(id)
+        FOREIGN KEY (ff_id) REFERENCES FF(id),
+    CONSTRAINT uq_emplacement_hopital UNIQUE (id, composante_id)
 );
 
 -- ------------------------------------------------------------
@@ -130,6 +131,37 @@ CREATE TABLE Reservation (
         FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id)
 );
 
+-- ------------------------------------------------------------
+-- 9. Table Étages
+-- ------------------------------------------------------------
+CREATE TABLE Etage (
+    id          SERIAL PRIMARY KEY,
+    hopital_id  INTEGER NOT NULL REFERENCES Hopital(id),
+    niveau      INTEGER NOT NULL,          
+    nom         VARCHAR(100) NOT NULL,
+    image_url   VARCHAR(255),              
+    image_public_id  VARCHAR(255),
+    CONSTRAINT uq_etage_niveau UNIQUE (hopital_id, niveau),
+    CONSTRAINT uq_etage_hopital UNIQUE (id, hopital_id)
+);
+
+-- ------------------------------------------------------------
+-- 10. Table Pins d'Emplacement
+-- ------------------------------------------------------------
+CREATE TABLE Pin_Emplacement (
+    id              SERIAL PRIMARY KEY,
+    hopital_id      INTEGER NOT NULL,
+    etage_id        INTEGER NOT NULL,
+    emplacement_id  INTEGER NOT NULL UNIQUE,
+    x               REAL NOT NULL CHECK (x BETWEEN 0 AND 1),
+    y               REAL NOT NULL CHECK (y BETWEEN 0 AND 1),
+    CONSTRAINT fk_pin_etage
+        FOREIGN KEY (etage_id, hopital_id)
+        REFERENCES Etage(id, hopital_id) ON DELETE CASCADE,
+    CONSTRAINT fk_pin_emplacement
+        FOREIGN KEY (emplacement_id, hopital_id)
+        REFERENCES Emplacement(id, composante_id) ON DELETE CASCADE
+);
 -- ============================================================
 -- Fin du script
 -- ============================================================

@@ -62,13 +62,25 @@ export async function getReservationById(id) {
 
 export async function getReservationsByEmplacementId(emplacementId) {
   const requete = `
-    SELECT *
+    SELECT id, emplacement_id, statut, date_debut, date_fin
     FROM reservation
     WHERE emplacement_id = $1
     ORDER BY date_debut ASC
   `;
 
   const result = await pool.query(requete, [emplacementId]);
+  return result.rows;
+}
+
+export async function getConfirmedReservations() {
+  const requete = `
+    SELECT id, emplacement_id, statut, date_debut, date_fin
+    FROM reservation
+    WHERE statut = 'confirmed'
+    ORDER BY date_debut ASC
+  `;
+
+  const result = await pool.query(requete);
   return result.rows;
 }
 

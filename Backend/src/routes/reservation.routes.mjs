@@ -5,6 +5,7 @@ import {
   addReservation,
   obtenirReservationParId,
   obtenirReservationsParEmplacement,
+  obtenirReservationsConfirmees,
   obtenirReservationsParStatut,
   approveReservation,
   getMyReservations,

@@ -101,7 +101,6 @@ export const useReservationStore = defineStore('reservations', () => {
   async function getReservedPeriods(emplacementId, excludedReservationId = null) {
     loading.value = true
     error.value = null
-    reservedPeriods.value = []
 
     try {
       const token = localStorage.getItem('token')
@@ -110,11 +109,44 @@ export const useReservationStore = defineStore('reservations', () => {
         throw new Error('Utilisateur non authentifié')
       }
 
-      const response = await fetch(`${API_BASE}/reservations/emplacement/${emplacementId}`, {
-        method: 'GET',
+      const response = await fetch(`${API_BASE}/reservations/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || result.erreur || 'Erreur de chargement')
+      }
+
+      myReservations.value = result.data.reservations
+      return myReservations.value
+    } catch (err) {
+      error.value = err.message
+      myReservations.value = []
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function getReservedPeriods(emplacementId, excludedReservationId = null) {
+    loading.value = true
+    error.value = null
+    reservedPeriods.value = []
+
+    try {
+      const token = localStorage.getItem('token')
+      const headers = {}
+      if (token) {
+        headers.Authorization = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_BASE}/reservations/emplacement/${emplacementId}`, {
+        method: 'GET',
+        headers,
       })
 
       const result = await response.json()
@@ -212,9 +244,12 @@ export const useReservationStore = defineStore('reservations', () => {
   return {
     reservations,
     reservedPeriods,
+    allConfirmedReservations,
+    myReservations,
     loading,
     error,
     addReservation,
+    fetchMyReservations,
     getReservedPeriods,
     myReservations,
     fetchMyReservations,

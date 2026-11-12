@@ -8,6 +8,7 @@ import {
   confirmReservation,
   updateMyPendingReservation,
   cancelMyPendingReservation,
+  getConfirmedReservations,
 } from "../models/reservation.mjs";
 
 const STATUTS_BLOQUANTS = ["pending", "confirmed"];
@@ -69,6 +70,10 @@ async function verifierDisponibilite(emplacementId, dateDebut, dateFin, idAIgnor
 
 export async function obtenirToutesLesReservations() {
   return getAllReservations();
+}
+
+export async function obtenirReservationsConfirmees() {
+  return getConfirmedReservations();
 }
 
 export async function getMyReservations(utilisateurId) {

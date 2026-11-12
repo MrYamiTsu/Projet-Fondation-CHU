@@ -18,6 +18,23 @@ export async function obtenirToutesLesReservations(req, res, next) {
   }
 }
 
+export async function obtenirReservationsConfirmees(req, res, next) {
+  try {
+    const reservations = await reservationService.obtenirReservationsConfirmees();
+
+    return envoyerReservations(
+      req,
+      res,
+      "Réservations confirmées récupérées avec succès",
+      reservations,
+    );
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
+
+export const getConfirmedReservations = obtenirReservationsConfirmees;
+
 export async function getMyReservations(req, res, next) {
   try {
     const reservations = await reservationService.getMyReservations(req.user.id);

@@ -22,13 +22,12 @@ import { verifyToken, requireAdmin } from "../middlewares/auth.middleware.mjs";
 
 const router = express.Router();
 
+router.get("/confirmed", obtenirReservationsConfirmees);
 router.get("/", verifyToken, requireAdmin, obtenirToutesLesReservations);
-
 router.get("/status", verifyToken, requireAdmin, obtenirReservationsParStatut);
 
 router.get(
   "/emplacement/:emplacementId",
-  verifyToken,
   obtenirReservationsParEmplacement,
 );
 

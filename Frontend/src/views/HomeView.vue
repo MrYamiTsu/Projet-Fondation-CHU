@@ -42,9 +42,16 @@
       <main class="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 space-y-8">
         <!-- Section Carte Interactive & Cartes d'Hôpitaux + Valorisation -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch">
-          <Map class="xl:col-span-8" :hospitals="hospitals" :pins="hospitalPins" :active-hospital="selectedHospital"
-            :search-query="searchQuery" @update:search-query="searchQuery = $event"
-            @select-hospital="handleHospitalSelect" />
+          <Map
+            class="xl:col-span-8"
+            :hospitals="hospitals"
+            :pins="hospitalPins"
+            :active-hospital="selectedHospital"
+            :search-query="searchQuery"
+            @update:search-query="searchQuery = $event"
+            @select-hospital="handleHospitalSelect"
+            @select-plot="openPlotDetail"
+          />
           <Valuation class="xl:col-span-4" :selected-hospital="selectedHospital" />
         </div>
 
@@ -320,11 +327,14 @@ function resetFilters() {
   selectedHospital.value = ''
 }
 
-function openPlotDetail(plot) {
-  router.push({
-    path: `/emplacement/${plot.id}`,
-    query: { ...route.query },
-  })
+function openPlotDetail(plotOrId) {
+  const id = typeof plotOrId === 'object' ? plotOrId?.id : plotOrId
+  if (id) {
+    router.push({
+      path: `/emplacement/${id}`,
+      query: { ...route.query },
+    })
+  }
 }
 
 function handleLoginSuccess(user) {

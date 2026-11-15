@@ -1,4 +1,4 @@
-import * as pinService from '../services/pin.services.mjs';
+import * as pinService from '../services/pin.service.mjs';
 
 export async function createPin(req, res) {
     try {

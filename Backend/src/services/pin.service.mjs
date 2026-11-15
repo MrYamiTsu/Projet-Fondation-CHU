@@ -5,8 +5,7 @@ import * as EtageRepository from "../repository/etage.repository.mjs";
 export async function createPin(etage_id, emplacement_id, x, y) {
   if (
     typeof etage_id !== "number" ||
-    !Number.isInteger(etage_id) ||
-    etage_id <= 0
+    !Number.isInteger(etage_id)
   ) {
     const erreur = new Error(
       "Veuillez fournir un id d'étage entier positif valide",

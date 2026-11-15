@@ -7,9 +7,10 @@ const TAILLE_MAX_IMAGE = 5 * 1024 * 1024; // 5 Mo
 
 export async function getEtageById(id) {
   if (
-    typeof id !== "number" ||
-    !Number.isInteger(id) ||
-    id <= 0
+    typeof id !== "string" ||
+    id.trim() === "" ||
+    !Number.isInteger(Number(id)) ||
+    Number(id) <= 0
   ) {
     const erreur = new Error("Veuillez fournir un id entier positif valide");
     erreur.status = 400;

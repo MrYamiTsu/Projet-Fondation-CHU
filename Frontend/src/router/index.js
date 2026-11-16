@@ -1,21 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import PageDetail from '../views/page_details.vue'
+import PlotDetailView from '../views/PlotDetailView.vue'
 import AdminView from '../views/AdminView.vue'
+import ReservationView from '../views/ReservationView.vue'
+import ProfilView from '../views/ProfilView.vue'
 import { useAuthStore } from '../stores/auth.js'
-import pageReservation from '../views/page_reserver.vue'
-import pageProfil from '../views/ProfilView.vue'
+import MyReservationsView from '../views/MyReservationsView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(import.meta.env.BASE_URL),
 
-      scrollBehavior(to, from, savedPosition) {
+    scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     }
-    // Si on reste sur la même page (changement de filtres, query, etc.)
     if (to.path === from.path) {
-      // Uniquement si le hash a explicitement changé (ex: clic vers une ancre différente)
       if (to.hash && to.hash !== from.hash) {
         return {
           el: to.hash,
@@ -25,7 +24,6 @@ const router = createRouter({
       }
       return false
     }
-    // Navigation depuis une autre page avec une ancre
     if (to.hash) {
       return {
         el: to.hash,
@@ -43,9 +41,15 @@ const router = createRouter({
       component: HomeView,
     },
     {
+     path: '/mes-reservations',
+     name: 'my-reservations',
+     component: MyReservationsView,
+     meta: { requiresAuth: true },
+    },
+    {
       path: '/emplacement/:id',
       name: 'emplacement-detail',
-      component: PageDetail,
+      component: PlotDetailView,
     },
     {
       path: '/admin',
@@ -56,18 +60,18 @@ const router = createRouter({
     {
       path: '/reservation/:id',
       name: 'reservation',
-      component: pageReservation,
+      component: ReservationView,
     },
     {
       path: '/profil',
       name: 'profil',
-      component: pageProfil,
+      component: ProfilView,
       meta: { requiresAuth: true },
     }
   ],
 })
 
-// Garde de navigation pour protéger la vue admin (syntaxe moderne Vue Router sans callback next())
+
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 

@@ -9,6 +9,7 @@ import reservationRoutes from './routes/reservation.routes.mjs';
 import authRoutes from './routes/auth.routes.mjs';
 import hospitalRoutes from './routes/hospital.routes.mjs';
 import etageRoutes from './routes/etage.routes.mjs';
+import pinRoutes from "./routes/pin.routes.mjs";
 
 const app = express();
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
@@ -64,12 +65,14 @@ app.use('/emplacements', emplacementRoutes);
 app.use('/auth', authRoutes);
 app.use('/reservations', reservationRoutes);
 app.use('/etages', etageRoutes);
+app.use('/pins', pinRoutes);
 
 // Pour Vercel
 app.use('/api/emplacements', emplacementRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/etages', etageRoutes);
+app.use('/api/pins', pinRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

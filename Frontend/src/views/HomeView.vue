@@ -48,6 +48,8 @@
             :pins="hospitalPins"
             :active-hospital="selectedHospital"
             :search-query="searchQuery"
+            :date-range="filters.dateRange"
+            @update:date-range="filters.dateRange = $event"
             @update:search-query="searchQuery = $event"
             @select-hospital="handleHospitalSelect"
             @select-plot="openPlotDetail"

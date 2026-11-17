@@ -8,6 +8,7 @@ import MapComponent from '../src/components/Map.vue'
 import { hospitals } from '../src/data/mockData.js'
 import { usePlotsStore } from '../src/stores/plots.js'
 import { useEtagesStore } from '../src/stores/etages.js'
+import { useReservationStore } from '../src/stores/reservations.js'
 
 vi.mock('../src/stores/plots.js', () => ({
   usePlotsStore: vi.fn(),
@@ -15,6 +16,10 @@ vi.mock('../src/stores/plots.js', () => ({
 
 vi.mock('../src/stores/etages.js', () => ({
   useEtagesStore: vi.fn(),
+}))
+
+vi.mock('../src/stores/reservations.js', () => ({
+  useReservationStore: vi.fn(),
 }))
 
 describe('MapComponent (Map.vue)', () => {
@@ -28,6 +33,13 @@ describe('MapComponent (Map.vue)', () => {
         { id: 1, hospital: 'CHUL', name: 'Hall principal' },
         { id: 2, hospital: 'NCH', name: 'Atrium' },
       ],
+    })
+
+    useReservationStore.mockReturnValue({
+      allConfirmedReservations: [],
+      getAllConfirmedReservations: vi.fn(),
+      formatDate: vi.fn((d) => (d ? '2026-06-01' : '')),
+      isEmplacementAvailable: vi.fn(() => true),
     })
 
     mockEtagesStore = {

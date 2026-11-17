@@ -76,6 +76,8 @@
         :etages="etagesStore.etages"
         :current-etage="etagesStore.currentEtage"
         :selected-pin="etagesStore.selectedPin"
+        :date-range="dateRange"
+        @update:date-range="$emit('update:date-range', $event)"
         @select-etage="etagesStore.selectEtage"
         @select-pin="etagesStore.selectPin"
         @view-plot="handlePlotSelect"
@@ -172,9 +174,10 @@ const props = defineProps({
   pins: { type: Array, default: () => [] },
   activeHospital: { type: String, default: '' },
   searchQuery: { type: String, default: '' },
+  dateRange: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['select-hospital', 'update:searchQuery', 'select-plot'])
+const emit = defineEmits(['select-hospital', 'update:searchQuery', 'update:date-range', 'select-plot'])
 
 const plotsStore = usePlotsStore()
 const etagesStore = useEtagesStore()

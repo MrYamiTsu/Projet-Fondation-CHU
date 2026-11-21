@@ -18,7 +18,15 @@ export const useReservationStore = defineStore('reservations', () => {
   const reservedPeriods = ref([])
   const allConfirmedReservations = ref([])
   const myReservations = ref([])
-
+  const pendingReservations = ref([]) 
+  const pendingLoading = ref(false) 
+  const pendingError = ref(null) 
+  const confirmingReservationId = ref(null)
+  const allReservations = ref([]) 
+  const allLoading = ref(false)
+  const allError = ref(null)
+  const processingReservationId = ref(null) 
+  const processingAction = ref(null) 
   function formatDate(d) {
     if (!d) return ''
     const date = new Date(d)
@@ -143,7 +151,8 @@ export const useReservationStore = defineStore('reservations', () => {
         .filter(
           (reservation) =>
             reservation.statut === 'confirmed' &&
-            (excludedReservationId === null || Number(reservation.id) !== Number(excludedReservationId)),
+            (excludedReservationId === null ||
+              Number(reservation.id) !== Number(excludedReservationId)),
         )
         .map((reservation) => ({
           start: String(reservation.date_debut).slice(0, 10),
@@ -257,21 +266,218 @@ export const useReservationStore = defineStore('reservations', () => {
     await fetchMyReservations()
     return result.data.reservation
   }
+  async function requestAdminReservation(path, options = {}) {
+    const token = localStorage.getItem('token')
 
-  return {
-    reservations,
-    reservedPeriods,
-    allConfirmedReservations,
-    myReservations,
-    loading,
-    error,
-    addReservation,
-    fetchMyReservations,
-    getReservedPeriods,
-    getAllConfirmedReservations,
-    isEmplacementAvailable,
-    updateMyReservation,
-    cancelMyReservation,
-    formatDate,
+    if (!token) {
+      throw new Error('Connecte-toi avec un compte administrateur.')
+    }
+
+    let response
+
+    try {
+      response = await fetch(`${API_BASE}/reservations${path}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    } catch {
+      throw new Error('Impossible de contacter le serveur backend.')
+    }
+
+    const result = await response.json().catch(() => null)
+
+    if (response.status === 401) {
+      throw new Error('Ta session a expiré. Reconnecte-toi.')
+    }
+
+    if (response.status === 403) {
+      throw new Error('Cette action est réservée aux administrateurs.')
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        result?.message || result?.erreur || result?.error || `Erreur HTTP ${response.status}`,
+      )
+    }
+
+    if (!result?.data) {
+      throw new Error('Réponse du serveur invalide.')
+    }
+
+    return result.data
   }
+  async function fetchPendingReservations() {
+    pendingLoading.value = true
+    pendingError.value = null
+    pendingReservations.value = []
+
+    try {
+      const data = await requestAdminReservation('/status?status=pending')
+
+      if (!Array.isArray(data.reservations)) {
+        throw new Error('Format des réservations invalide.')
+      }
+
+      pendingReservations.value = data.reservations.filter(
+        (reservation) => reservation.statut === 'pending',
+      )
+
+      return pendingReservations.value
+    } catch (err) {
+      pendingError.value = err.message
+      throw err
+    } finally {
+      pendingLoading.value = false
+    }
+  }
+  async function confirmPendingReservation(id) {
+    if (confirmingReservationId.value !== null) {
+      throw new Error('Une confirmation est déjà en cours.')
+    }
+
+    confirmingReservationId.value = id
+    pendingError.value = null
+
+    try {
+      const { reservation } = await requestAdminReservation(`/${encodeURIComponent(id)}/confirm`, {
+        method: 'PATCH',
+      })
+
+      if (
+        !reservation ||
+        String(reservation.id) !== String(id) ||
+        reservation.statut !== 'confirmed'
+      ) {
+        throw new Error('La confirmation retournée par le serveur est invalide.')
+      }
+
+      pendingReservations.value = pendingReservations.value.filter(
+        (item) => String(item.id) !== String(id),
+      )
+
+      for (const list of [reservations, myReservations]) {
+        const index = list.value.findIndex((item) => String(item.id) === String(id))
+
+        if (index !== -1) {
+          list.value[index] = {
+            ...list.value[index],
+            ...reservation,
+          }
+        }
+      }
+
+      return reservation
+    } catch (err) {
+      pendingError.value = err.message
+      throw err
+    } finally {
+      confirmingReservationId.value = null
+    }
+  }
+  async function fetchAllReservations() {
+    allLoading.value = true
+    allError.value = null
+
+    try {
+      const data = await requestAdminReservation('')
+
+      if (!Array.isArray(data.reservations)) {
+        throw new Error('Format des réservations invalide.')
+      }
+
+      allReservations.value = data.reservations
+      return allReservations.value
+    } catch (err) {
+      allError.value = err.message
+      allReservations.value = []
+      throw err
+    } finally {
+      allLoading.value = false
+    }
+  }
+
+  // Confirmation ou annulation d'une réservation par un administrateur.
+  async function processReservationAsAdmin(id, action) {
+    if (processingReservationId.value !== null) {
+      throw new Error('Une action est déjà en cours.')
+    }
+
+    processingReservationId.value = id
+    processingAction.value = action
+    allError.value = null
+
+    try {
+      const { reservation } = await requestAdminReservation(
+        `/${encodeURIComponent(id)}/${action}`,
+        { method: 'PATCH' },
+      )
+
+      if (!reservation || String(reservation.id) !== String(id)) {
+        throw new Error('La réponse du serveur est invalide.')
+      }
+
+      // Le statut a changé : la réservation n'est plus « en attente ».
+      pendingReservations.value = pendingReservations.value.filter(
+        (item) => String(item.id) !== String(id),
+      )
+
+      for (const list of [allReservations, reservations, myReservations]) {
+        const index = list.value.findIndex((item) => String(item.id) === String(id))
+
+        if (index !== -1) {
+          list.value[index] = {
+            ...list.value[index],
+            ...reservation,
+          }
+        }
+      }
+
+      return reservation
+    } catch (err) {
+      allError.value = err.message
+      throw err
+    } finally {
+      processingReservationId.value = null
+      processingAction.value = null
+    }
+  }
+
+  const confirmReservationAsAdmin = (id) => processReservationAsAdmin(id, 'confirm')
+  const cancelReservationAsAdmin = (id) => processReservationAsAdmin(id, 'cancel')
+
+ return {
+  reservations,
+  reservedPeriods,
+  allConfirmedReservations,
+  myReservations,
+  loading,
+  error,
+
+  pendingReservations,
+  pendingLoading,
+  pendingError,
+  confirmingReservationId,
+
+  allReservations,
+  allLoading,
+  allError,
+  processingReservationId,
+  processingAction,
+
+  addReservation,
+  fetchMyReservations,
+  getReservedPeriods,
+  getAllConfirmedReservations,
+  isEmplacementAvailable,
+  updateMyReservation,
+  cancelMyReservation,
+  formatDate,
+  fetchPendingReservations,
+  confirmPendingReservation,
+  fetchAllReservations,
+  confirmReservationAsAdmin,
+  cancelReservationAsAdmin,
+}
 })

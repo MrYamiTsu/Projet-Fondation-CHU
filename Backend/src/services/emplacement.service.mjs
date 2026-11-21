@@ -7,14 +7,12 @@ import {
   updatePlot
 } from '../models/emplacement.mjs';
 
-// Crée une erreur avec un code HTTP, que le middleware d'erreurs saura utiliser
 function creerErreur(message, status) {
   const erreur = new Error(message);
   erreur.status = status;
   return erreur;
 }
 
-// Vérifie que l'id est un entier positif et le retourne sous forme de nombre
 function validerId(id) {
   const nombre = Number(id);
 
@@ -25,8 +23,7 @@ function validerId(id) {
   return nombre;
 }
 
-// Cherche par lieu. S'il n'y a aucun résultat, propose des emplacements
-// dont la description correspond.
+
 export async function getPlotByLieu(lieu) {
   if (typeof lieu !== 'string' || lieu.trim() === '') {
     throw creerErreur('Veuillez fournir un lieu à rechercher', 400);

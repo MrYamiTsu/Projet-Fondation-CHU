@@ -8,9 +8,9 @@ import { useAuthStore } from '../stores/auth.js'
 import MyReservationsView from '../views/MyReservationsView.vue'
 
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
 
-    scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     }
@@ -41,10 +41,10 @@ const router = createRouter({
       component: HomeView,
     },
     {
-     path: '/mes-reservations',
-     name: 'my-reservations',
-     component: MyReservationsView,
-     meta: { requiresAuth: true },
+      path: '/mes-reservations',
+      name: 'my-reservations',
+      component: MyReservationsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/emplacement/:id',
@@ -63,14 +63,19 @@ const router = createRouter({
       component: ReservationView,
     },
     {
+      path: '/admin/emplacements/ajouter',
+      name: 'ajouter-emplacement',
+      component: () => import('../views/AddPlotView.vue'),
+      meta: { requiresAdmin: true },
+    },
+    {
       path: '/profil',
       name: 'profil',
       component: ProfilView,
       meta: { requiresAuth: true },
-    }
+    },
   ],
 })
-
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()

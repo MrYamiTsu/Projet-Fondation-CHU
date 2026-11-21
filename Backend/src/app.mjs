@@ -66,6 +66,7 @@ app.use('/auth', authRoutes);
 app.use('/reservations', reservationRoutes);
 app.use('/etages', etageRoutes);
 app.use('/pins', pinRoutes);
+app.use('/hopitaux', hospitalRoutes)
 
 // Pour Vercel
 app.use('/api/emplacements', emplacementRoutes);
@@ -73,7 +74,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/etages', etageRoutes);
 app.use('/api/pins', pinRoutes);
-
+app.use('/api/hopitaux', hospitalRoutes)
 app.use(notFound);
 app.use(errorHandler);
 

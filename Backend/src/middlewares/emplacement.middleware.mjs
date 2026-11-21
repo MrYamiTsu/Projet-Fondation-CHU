@@ -1,127 +1,78 @@
+/* ------------------------------------------------------------------ */
+/* Règles de validation                                                */
+/* ------------------------------------------------------------------ */
+
+const CHAMPS_ID = ["composante_id", "fl_id", "ff_id"];
+const CHAMPS_SUPERFICIE = ["superficie", "superficie_ajuste"];
+const CHAMPS_ENTIERS = ["poid_relatif", "valeur_toponymique", "valeur_toponymique_ancien"];
+
+// Longueur maximale de chaque champ texte
+const LONGUEURS_MAX = {
+  no_local_pavillon: 100,
+  categorie: 100,
+  type_lieu: 100,
+  lieu_specifique: 255,
+  description: 255,
+  commentaire: 255,
+  statut: 50,
+};
+
+/* ------------------------------------------------------------------ */
+/* Fonctions utilitaires                                               */
+/* ------------------------------------------------------------------ */
+
+function erreur400(message) {
+  const erreur = new Error(message);
+  erreur.status = 400;
+  return erreur;
+}
+
+// Un nombre peut arriver en JSON sous forme de number ou de chaîne ("12")
+const estNombre = (valeur) =>
+  (typeof valeur === "number" || typeof valeur === "string") &&
+  String(valeur).trim() !== "" &&
+  Number.isFinite(Number(valeur));
+
+const estEntier = (valeur) => estNombre(valeur) && Number.isSafeInteger(Number(valeur));
+const estEntierPositif = (valeur) => estEntier(valeur) && Number(valeur) > 0;
+const estPositifOuNul = (valeur) => estNombre(valeur) && Number(valeur) >= 0;
+
+// Un champ facultatif peut être absent ou null
+const facultatif = (valeur, estValide) => valeur == null || estValide(valeur);
+
+/* ------------------------------------------------------------------ */
+/* Middlewares                                                         */
+/* ------------------------------------------------------------------ */
 
 export function validatePlot(req, res, next) {
-  const {
-    composante_id,
-    no_local_pavillon,
-    categorie,
-    type_lieu,
-    lieu_specifique,
-    description,
-    superficie,
-    fl_id,
-    ff_id,
-    superficie_ajuste,
-    poid_relatif,
-    valeur_toponymique,
-    valeur_toponymique_ancien,
-    commentaire,
-    statut
-  } = req.body ?? {};
+  const body = req.body ?? {};
 
-  if (
-    !Number.isSafeInteger(Number(composante_id)) ||
-    Number(composante_id) <= 0 ||
-    composante_id == null ||
-    String(composante_id).trim() === "" ||
-
-    !Number.isSafeInteger(Number(fl_id)) ||
-    Number(fl_id) <= 0 ||
-    fl_id == null ||
-    String(fl_id).trim() === "" ||
-
-    !Number.isSafeInteger(Number(ff_id)) ||
-    Number(ff_id) <= 0 ||
-    ff_id == null ||
-    String(ff_id).trim() === ""
-  ) {
-    const erreur = new Error(
-      "composante_id, fl_id et ff_id doivent être des entiers positifs valides"
-    );
-    erreur.status = 400;
-    return next(erreur);
+  if (!CHAMPS_ID.every((champ) => estEntierPositif(body[champ]))) {
+    return next(erreur400("composante_id, fl_id et ff_id doivent être des entiers positifs valides"));
   }
 
-  const nombres = [superficie, superficie_ajuste];
+  if (!CHAMPS_SUPERFICIE.every((champ) => facultatif(body[champ], estPositifOuNul))) {
+    return next(erreur400("Les superficies doivent être des nombres positifs ou nuls"));
+  }
 
-  for (const nombre of nombres) {
-    if (
-      nombre != null &&
-      (typeof nombre === "boolean" ||
-       String(nombre).trim() === "" ||
-       !Number.isFinite(Number(nombre)) ||
-       Number(nombre) < 0)
-    ) {
-      const erreur = new Error(
-        "Les superficies doivent être des nombres positifs ou nuls"
-      );
-      erreur.status = 400;
-      return next(erreur);
+  if (!CHAMPS_ENTIERS.every((champ) => facultatif(body[champ], estEntier))) {
+    return next(erreur400("Les champs numériques entiers doivent contenir des entiers valides"));
+  }
+
+  for (const [champ, longueurMax] of Object.entries(LONGUEURS_MAX)) {
+    const valeur = body[champ];
+
+    if (valeur != null && (typeof valeur !== "string" || valeur.length > longueurMax)) {
+      return next(erreur400(`${champ} doit être un texte de ${longueurMax} caractères maximum`));
     }
   }
 
-  const entiers = [
-    poid_relatif,
-    valeur_toponymique,
-    valeur_toponymique_ancien
-  ];
-
-  for (const entier of entiers) {
-    if (
-      entier != null &&
-      (String(entier).trim() === "" ||
-       typeof entier === "boolean" ||
-       !Number.isSafeInteger(Number(entier)))
-    ) {
-      const erreur = new Error(
-        "Les champs numériques entiers doivent contenir des entiers valides"
-      );
-      erreur.status = 400;
-      return next(erreur);
-    }
-  }
-
-  const textes = {
-    no_local_pavillon: 100,
-    categorie: 100,
-    type_lieu: 100,
-    lieu_specifique: 255,
-    description: 255,
-    commentaire: 255,
-    statut: 50
-  };
-
-  for (const [champ, longueurMax] of Object.entries(textes)) {
-    const valeur = req.body[champ];
-
-    if (
-      valeur != null &&
-      (typeof valeur !== "string" || valeur.length > longueurMax)
-    ) {
-      const erreur = new Error(
-        `${champ} doit être un texte de ${longueurMax} caractères maximum`
-      );
-      erreur.status = 400;
-      return next(erreur);
-    }
-  }
-
-  // Toutes les données sont valides
   next();
 }
 
-
 export function validatePlotId(req, res, next) {
-  const { id } = req.params;
-
-  if (
-    !id ||
-    String(id).trim() === "" ||
-    !Number.isSafeInteger(Number(id)) ||
-    Number(id) <= 0
-  ) {
-    const erreur = new Error("Identifiant d'emplacement invalide");
-    erreur.status = 400;
-    return next(erreur);
+  if (!estEntierPositif(req.params.id)) {
+    return next(erreur400("Identifiant d'emplacement invalide"));
   }
 
   next();

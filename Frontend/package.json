@@ -19,6 +19,7 @@
     "bcrypt": "^6.0.0",
     "date-fns": "^4.4.0",
     "jsonwebtoken": "^9.0.3",
+    "leaflet": "^1.9.4",
     "pg": "^8.23.1",
     "pinia": "^4.0.2",
     "postcss": "^8.5.28",

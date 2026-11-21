@@ -1,0 +1,10 @@
+# Exclure tous les fichiers d'environnement et secrets pour Windsurf / Codeium
+.env
+.env.*
+*.env
+**/.env
+**/.env.*
+
+# Autoriser explicitement le gabarit d'exemple
+!.env.example
+!**/.env.example

@@ -1,11 +1,10 @@
 <script setup>
 import { onMounted, onUnmounted, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { useEmplacementsStore } from '../stores/emplacements'
+import { useToastStore } from '../stores/toast'
 
-// Description du formulaire. type : 'text' (par défaut), 'number', 'textarea'
-// ou 'hopital' (liste déroulante des hôpitaux existants).
-// entier : true → nombre entier supérieur ou égal à 1 (identifiants).
 const sections = [
   {
     titre: 'Localisation',
@@ -35,24 +34,34 @@ const sections = [
 ]
 
 const champs = sections.flatMap(section => section.champs)
-const valeursVides = () => Object.fromEntries(champs.map(({ cle }) => [cle, '']))
+const emptyValues = () => Object.fromEntries(champs.map(({ cle }) => [cle, '']))
 
+const router = useRouter()
+const toast = useToastStore()
 const store = useEmplacementsStore()
-const { hopitaux, envoiEnCours, erreur, succes, nouvelId } = storeToRefs(store)
-const formulaire = reactive(valeursVides())
+const { hopitaux, envoiEnCours, erreur } = storeToRefs(store)
+const formulaire = reactive(emptyValues())
 
-async function ajouter() {
+function goBack() {
+  if (window.history.state?.back) router.back()
+  else router.push('/admin')
+}
+
+async function submit() {
   const donnees = Object.fromEntries(
     Object.entries(formulaire).map(([cle, valeur]) => [cle, valeur === '' ? null : valeur]),
   )
 
-  const reussi = await store.ajouter(donnees)
-  if (reussi) Object.assign(formulaire, valeursVides())
+  const reussi = await store.addPlot(donnees)
+  if (!reussi) return
+
+  toast.show(store.succes)
+  goBack()
 }
 
-onMounted(store.chargerHopitaux)
+onMounted(store.fetchHospitals)
 
-onUnmounted(store.effacerMessages)
+onUnmounted(store.clearMessages)
 </script>
 
 <template>
@@ -61,7 +70,7 @@ onUnmounted(store.effacerMessages)
     <h1 class="mt-4 text-3xl font-bold">Ajouter un emplacement</h1>
     <p class="mt-2 text-sm text-slate-600">Les champs marqués d’un astérisque (*) sont obligatoires.</p>
 
-    <form class="mt-6 space-y-6" @submit.prevent="ajouter">
+    <form class="mt-6 space-y-6" @submit.prevent="submit">
       <fieldset
         v-for="section in sections"
         :key="section.titre"
@@ -87,7 +96,6 @@ onUnmounted(store.effacerMessages)
               :required="champ.requis"
             >
               <option value="" disabled>Choisir un hôpital</option>
-              <!-- Le client voit le nom, mais c'est l'id qui est enregistré dans le formulaire -->
               <option v-for="hopital in hopitaux" :key="hopital.id" :value="hopital.id">
                 {{ hopital.nom }}
               </option>
@@ -112,17 +120,6 @@ onUnmounted(store.effacerMessages)
       </fieldset>
 
       <p v-if="erreur" role="alert" class="text-red-700">{{ erreur }}</p>
-
-      <div v-if="succes" role="status" class="text-teal-800">
-        {{ succes }}
-        <RouterLink
-          v-if="nouvelId"
-          class="ml-2 underline"
-          :to="{ name: 'emplacement-detail', params: { id: nouvelId } }"
-        >
-          Voir la fiche
-        </RouterLink>
-      </div>
 
       <button
         type="submit"

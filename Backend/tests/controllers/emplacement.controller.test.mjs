@@ -5,6 +5,7 @@ import {
   getPlotById,
   getAllPlots,
   addPlot,
+  modifyPlot,
 } from '../../src/controllers/emplacement.controller.mjs';
 
 vi.mock('../../src/models/emplacement.mjs', () => ({
@@ -12,10 +13,12 @@ vi.mock('../../src/models/emplacement.mjs', () => ({
   findPlotByDescription: vi.fn(),
   findPlotById: vi.fn(),
   findAllPlots: vi.fn(),
+  findPlotByComposanteAndLieu: vi.fn(),
   createPlot: vi.fn(),
+  updatePlot: vi.fn(),
 }));
 
-const creerRes = () => {
+const createRes = () => {
   const res = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
@@ -28,7 +31,7 @@ describe('emplacement.controller', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    res = creerRes();
+    res = createRes();
     next = vi.fn();
   });
 
@@ -148,8 +151,6 @@ describe('emplacement.controller', () => {
     });
   });
 
-  // La validation des champs est testée avec le middleware validatePlot,
-  // pas ici : le controller reçoit des données déjà validées.
   describe('addPlot', () => {
     const donnees = {
       composante_id: 1,
@@ -160,10 +161,12 @@ describe('emplacement.controller', () => {
 
     it('retourne 201 avec l’emplacement créé', async () => {
       const emplacement = { id: 11, ...donnees };
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
       modele.createPlot.mockResolvedValue(emplacement);
 
       await addPlot({ body: donnees }, res, next);
 
+      expect(modele.findPlotByComposanteAndLieu).toHaveBeenCalledWith(1, 'Aile A', null);
       expect(modele.createPlot).toHaveBeenCalledWith(donnees);
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(
@@ -172,11 +175,111 @@ describe('emplacement.controller', () => {
       expect(next).not.toHaveBeenCalled();
     });
 
+    it('retourne 409 si le lieu existe déjà dans cet hôpital', async () => {
+      modele.findPlotByComposanteAndLieu.mockResolvedValue({ id: 3 });
+
+      await addPlot({ body: donnees }, res, next);
+
+      const erreur = next.mock.calls[0][0];
+      expect(erreur.status).toBe(409);
+      expect(modele.createPlot).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
+    it('retourne 409 si la base refuse un doublon créé en même temps (code 23505)', async () => {
+      const doublon = Object.assign(new Error('duplicate key'), { code: '23505' });
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
+      modele.createPlot.mockRejectedValue(doublon);
+
+      await addPlot({ body: donnees }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(409);
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
     it('transmet l’erreur à next si le modèle échoue', async () => {
       const erreur = new Error('DB down');
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
       modele.createPlot.mockRejectedValue(erreur);
 
       await addPlot({ body: donnees }, res, next);
+
+      expect(next).toHaveBeenCalledWith(erreur);
+      expect(res.json).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('modifyPlot', () => {
+    const donnees = {
+      composante_id: 1,
+      lieu_specifique: 'Aile A',
+      fl_id: 1,
+      ff_id: 1,
+    };
+
+    it.each([
+      ['une lettre', 'abc'],
+      ['zéro', '0'],
+      ['négatif', '-5'],
+    ])('retourne 400 si l’id est %s', async (_nom, id) => {
+      await modifyPlot({ params: { id }, body: donnees }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(400);
+      expect(modele.updatePlot).not.toHaveBeenCalled();
+    });
+
+    it('retourne 200 avec l’emplacement modifié', async () => {
+      const emplacement = { id: 5, ...donnees };
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
+      modele.updatePlot.mockResolvedValue(emplacement);
+
+      await modifyPlot({ params: { id: '5' }, body: donnees }, res, next);
+
+      expect(modele.findPlotByComposanteAndLieu).toHaveBeenCalledWith(1, 'Aile A', 5);
+      expect(modele.updatePlot).toHaveBeenCalledWith(5, donnees);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { emplacement } }),
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('retourne 409 si un autre emplacement de l’hôpital a déjà ce lieu', async () => {
+      modele.findPlotByComposanteAndLieu.mockResolvedValue({ id: 3 });
+
+      await modifyPlot({ params: { id: '5' }, body: donnees }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(409);
+      expect(modele.updatePlot).not.toHaveBeenCalled();
+    });
+
+    it('retourne 409 si la base refuse un doublon créé en même temps (code 23505)', async () => {
+      const doublon = Object.assign(new Error('duplicate key'), { code: '23505' });
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
+      modele.updatePlot.mockRejectedValue(doublon);
+
+      await modifyPlot({ params: { id: '5' }, body: donnees }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(409);
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
+    it('retourne 404 si l’emplacement n’existe pas', async () => {
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
+      modele.updatePlot.mockResolvedValue(undefined);
+
+      await modifyPlot({ params: { id: '99' }, body: donnees }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(404);
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
+    it('transmet l’erreur à next si le modèle échoue', async () => {
+      const erreur = new Error('DB down');
+      modele.findPlotByComposanteAndLieu.mockResolvedValue(null);
+      modele.updatePlot.mockRejectedValue(erreur);
+
+      await modifyPlot({ params: { id: '5' }, body: donnees }, res, next);
 
       expect(next).toHaveBeenCalledWith(erreur);
       expect(res.json).not.toHaveBeenCalled();

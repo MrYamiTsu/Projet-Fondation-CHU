@@ -1,12 +1,7 @@
-/* ------------------------------------------------------------------ */
-/* Règles de validation                                                */
-/* ------------------------------------------------------------------ */
-
 const CHAMPS_ID = ["composante_id", "fl_id", "ff_id"];
 const CHAMPS_SUPERFICIE = ["superficie", "superficie_ajuste"];
 const CHAMPS_ENTIERS = ["poid_relatif", "valeur_toponymique", "valeur_toponymique_ancien"];
 
-// Longueur maximale de chaque champ texte
 const LONGUEURS_MAX = {
   no_local_pavillon: 100,
   categorie: 100,
@@ -17,53 +12,42 @@ const LONGUEURS_MAX = {
   statut: 50,
 };
 
-/* ------------------------------------------------------------------ */
-/* Fonctions utilitaires                                               */
-/* ------------------------------------------------------------------ */
-
-function erreur400(message) {
+function badRequest(message) {
   const erreur = new Error(message);
   erreur.status = 400;
   return erreur;
 }
 
-// Un nombre peut arriver en JSON sous forme de number ou de chaîne ("12")
-const estNombre = (valeur) =>
+const isNumber = (valeur) =>
   (typeof valeur === "number" || typeof valeur === "string") &&
   String(valeur).trim() !== "" &&
   Number.isFinite(Number(valeur));
 
-const estEntier = (valeur) => estNombre(valeur) && Number.isSafeInteger(Number(valeur));
-const estEntierPositif = (valeur) => estEntier(valeur) && Number(valeur) > 0;
-const estPositifOuNul = (valeur) => estNombre(valeur) && Number(valeur) >= 0;
-
-// Un champ facultatif peut être absent ou null
-const facultatif = (valeur, estValide) => valeur == null || estValide(valeur);
-
-/* ------------------------------------------------------------------ */
-/* Middlewares                                                         */
-/* ------------------------------------------------------------------ */
+const isInteger = (valeur) => isNumber(valeur) && Number.isSafeInteger(Number(valeur));
+const isPositiveInteger = (valeur) => isInteger(valeur) && Number(valeur) > 0;
+const isNonNegative = (valeur) => isNumber(valeur) && Number(valeur) >= 0;
+const isOptional = (valeur, isValid) => valeur == null || isValid(valeur);
 
 export function validatePlot(req, res, next) {
   const body = req.body ?? {};
 
-  if (!CHAMPS_ID.every((champ) => estEntierPositif(body[champ]))) {
-    return next(erreur400("composante_id, fl_id et ff_id doivent être des entiers positifs valides"));
+  if (!CHAMPS_ID.every((champ) => isPositiveInteger(body[champ]))) {
+    return next(badRequest("composante_id, fl_id et ff_id doivent être des entiers positifs valides"));
   }
 
-  if (!CHAMPS_SUPERFICIE.every((champ) => facultatif(body[champ], estPositifOuNul))) {
-    return next(erreur400("Les superficies doivent être des nombres positifs ou nuls"));
+  if (!CHAMPS_SUPERFICIE.every((champ) => isOptional(body[champ], isNonNegative))) {
+    return next(badRequest("Les superficies doivent être des nombres positifs ou nuls"));
   }
 
-  if (!CHAMPS_ENTIERS.every((champ) => facultatif(body[champ], estEntier))) {
-    return next(erreur400("Les champs numériques entiers doivent contenir des entiers valides"));
+  if (!CHAMPS_ENTIERS.every((champ) => isOptional(body[champ], isInteger))) {
+    return next(badRequest("Les champs numériques entiers doivent contenir des entiers valides"));
   }
 
   for (const [champ, longueurMax] of Object.entries(LONGUEURS_MAX)) {
     const valeur = body[champ];
 
     if (valeur != null && (typeof valeur !== "string" || valeur.length > longueurMax)) {
-      return next(erreur400(`${champ} doit être un texte de ${longueurMax} caractères maximum`));
+      return next(badRequest(`${champ} doit être un texte de ${longueurMax} caractères maximum`));
     }
   }
 
@@ -71,8 +55,8 @@ export function validatePlot(req, res, next) {
 }
 
 export function validatePlotId(req, res, next) {
-  if (!estEntierPositif(req.params.id)) {
-    return next(erreur400("Identifiant d'emplacement invalide"));
+  if (!isPositiveInteger(req.params.id)) {
+    return next(badRequest("Identifiant d'emplacement invalide"));
   }
 
   next();

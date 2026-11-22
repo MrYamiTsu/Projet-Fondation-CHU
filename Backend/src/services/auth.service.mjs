@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { findUserByEmail, createUser } from '../models/auth.mjs';
+import * as AuthRepository from '../repository/auth.repository.mjs';
 
 const BCRYPT_ROUNDS = 12;
 const TOKEN_EXPIRATION = '1h';
@@ -25,7 +25,7 @@ function genererToken(utilisateur) {
 }
 
 export async function login(email, password) {
-  const utilisateur = await findUserByEmail(email);
+  const utilisateur = await AuthRepository.findUserByEmail(email);
 
   if (!utilisateur) {
     throw creerErreur('Identifiants invalides', 401);
@@ -59,7 +59,7 @@ export async function register({ nom, prenom, email, password }) {
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
   try {
-    return await createUser(
+    return await AuthRepository.createUser(
       nom.trim(),
       prenom.trim(),
       emailNettoye.toLowerCase(),
@@ -71,4 +71,29 @@ export async function register({ nom, prenom, email, password }) {
     }
     throw erreur;
   }
+}
+
+export async function updateProfile(userId, { nom, prenom, email, password }) {
+  const utilisateurExistant = await AuthRepository.findUserByEmail(email.trim());
+
+  if (utilisateurExistant && utilisateurExistant.id !== userId) {
+    throw creerErreur(MESSAGE_EMAIL_UTILISE, 409);
+  }
+
+  if (!nom || !prenom || !email || !password) {
+    throw creerErreur('Tous les champs sont requis', 400);
+  }
+
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+  return await AuthRepository.updateProfile(userId, nom.trim(), prenom.trim(), email.trim(), passwordHash);
+}
+
+export async function deleteUser(userId) {
+
+  if (typeof userId !== 'number' || !Number.isInteger(userId) || userId <= 0) {
+    throw creerErreur('Veuillez fournir un id d\'utilisateur entier positif valide', 400);
+  }
+
+  return await AuthRepository.deleteUser(userId);
 }

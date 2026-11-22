@@ -50,7 +50,7 @@ export async function login(email, password) {
 export async function register({ nom, prenom, email, password }) {
   const emailNettoye = email.trim();
 
-  const utilisateurExistant = await findUserByEmail(emailNettoye);
+  const utilisateurExistant = await AuthRepository.findUserByEmail(emailNettoye);
 
   if (utilisateurExistant) {
     throw creerErreur(MESSAGE_EMAIL_UTILISE, 409);

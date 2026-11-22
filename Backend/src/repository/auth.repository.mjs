@@ -1,4 +1,4 @@
-import * as Auth from '../models/auth.model.mjs';
+import * as Auth from '../models/auth.mjs';
 
 export async function findUserByEmail(email) {
     return await Auth.findUserByEmail(email);

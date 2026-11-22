@@ -24,3 +24,24 @@ export async function register(req, res, next) {
     return next(erreur);
   }
 }
+
+export async function updateProfile(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { nom, prenom, email, password } = req.body;
+    const utilisateur = await authService.updateProfile(userId, { nom, prenom, email, password });
+    return envoyerSucces(req, res, 200, 'Profil mis à jour avec succès', { utilisateur });
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
+
+export async function deleteUser(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const utilisateur = await authService.deleteUser(userId);
+    return envoyerSucces(req, res, 200, 'Compte supprimé avec succès', { utilisateur });
+  } catch (erreur) {
+    return next(erreur);
+  }
+}

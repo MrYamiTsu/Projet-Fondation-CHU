@@ -11,6 +11,7 @@ import {
   getMyReservations,
   updateMyReservation,
   cancelMyReservation,
+  cancelReservationAsAdmin
 } from "../controllers/reservation.controller.mjs";
 
 import {
@@ -26,10 +27,7 @@ router.get("/confirmed", obtenirReservationsConfirmees);
 router.get("/", verifyToken, requireAdmin, obtenirToutesLesReservations);
 router.get("/status", verifyToken, requireAdmin, obtenirReservationsParStatut);
 
-router.get(
-  "/emplacement/:emplacementId",
-  obtenirReservationsParEmplacement,
-);
+router.get("/emplacement/:emplacementId", obtenirReservationsParEmplacement);
 
 router.get("/me", verifyToken, getMyReservations);
 
@@ -46,14 +44,19 @@ router.get(
 
 router.post("/", verifyToken, validateReservation, addReservation);
 
-
-
 router.patch(
   "/:id/confirm",
   verifyToken,
   requireAdmin,
   validateReservationId,
   approveReservation,
+);
+router.patch(
+  "/:id/cancel",
+  verifyToken,
+  requireAdmin,
+  validateReservationId,
+  cancelReservationAsAdmin,
 );
 
 export default router;

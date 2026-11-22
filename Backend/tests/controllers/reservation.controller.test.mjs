@@ -6,7 +6,7 @@ import {
   approveReservation,
   getMyReservations,
   updateMyReservation,
-  cancelMyReservation,
+  cancelMyReservation,cancelReservationAsAdmin,
 } from "../../src/controllers/reservation.controller.mjs";
 import {
   createReservation,
@@ -16,7 +16,7 @@ import {
   confirmReservation,
   updateMyPendingReservation,
   cancelMyPendingReservation,
-  getConfirmedReservations,
+  getConfirmedReservations,cancelReservationById,
 } from "../../src/models/reservation.mjs";
 
 vi.mock("../../src/models/reservation.mjs", () => ({
@@ -31,6 +31,7 @@ vi.mock("../../src/models/reservation.mjs", () => ({
   updateMyPendingReservation: vi.fn(),
   cancelMyPendingReservation: vi.fn(),
   getConfirmedReservations: vi.fn(),
+  cancelReservationById: vi.fn(),
 }));
 
 describe("Contrôleur des réservations", () => {
@@ -509,4 +510,114 @@ describe("Contrôleur des réservations", () => {
       );
     });
   });
+
+  // ========================================
+  // TESTS DE L'ANNULATION PAR L'ADMIN
+  // ========================================
+
+  describe("cancelReservationAsAdmin – la réservation est annulable", () => {
+    beforeEach(() => {
+      requete = { params: { id: "2" } };
+
+      cancelReservationById.mockResolvedValue({
+        ...maReservationEnAttente,
+        statut: "cancelled",
+      });
+    });
+
+    it("annule la réservation demandée", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(cancelReservationById).toHaveBeenCalledWith(2);
+    });
+
+    it("renvoie le statut HTTP 200", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(reponse.status).toHaveBeenCalledWith(200);
+    });
+
+    it("retourne la réservation annulée", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(reponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: {
+            reservation: {
+              ...maReservationEnAttente,
+              statut: "cancelled",
+            },
+          },
+        }),
+      );
+    });
+
+    it("termine la requête sans appeler next", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("cancelReservationAsAdmin – la réservation n'est pas annulable", () => {
+    beforeEach(() => {
+      requete = { params: { id: "2" } };
+
+      cancelReservationById.mockResolvedValue(null);
+    });
+
+    it("transmet une erreur 409 à next", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(next).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 409,
+        }),
+      );
+    });
+
+    it("n'envoie aucune réponse de succès", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(reponse.json).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("cancelReservationAsAdmin – l'identifiant est invalide", () => {
+    beforeEach(() => {
+      requete = { params: { id: "abc" } };
+    });
+
+    it("transmet une erreur 400 à next", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(next).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 400,
+        }),
+      );
+    });
+
+    it("ne tente aucune annulation", async () => {
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(cancelReservationById).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("cancelReservationAsAdmin – erreur du modèle", () => {
+    it("transmet une erreur PostgreSQL à next", async () => {
+      requete = { params: { id: "2" } };
+
+      const erreur = new Error("Erreur de connexion DB");
+      cancelReservationById.mockRejectedValue(erreur);
+
+      await cancelReservationAsAdmin(requete, reponse, next);
+
+      expect(next).toHaveBeenCalledWith(erreur);
+      expect(reponse.json).not.toHaveBeenCalled();
+    });
+  });
+
 });

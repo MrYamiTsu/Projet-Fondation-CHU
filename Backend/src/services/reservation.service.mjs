@@ -9,6 +9,7 @@ import {
   updateMyPendingReservation,
   cancelMyPendingReservation,
   getConfirmedReservations,
+  cancelReservationById
 } from "../models/reservation.mjs";
 
 const STATUTS_BLOQUANTS = ["pending", "confirmed"];
@@ -175,6 +176,16 @@ export async function approveReservation(id) {
 
   if (!reservation) {
     throw creerErreur("Cette réservation n'est pas en attente", 409);
+  }
+
+  return reservation;
+}
+export async function cancelReservationAsAdmin(id) {
+  const idReservation = validerId(id, MESSAGE_ID_RESERVATION);
+  const reservation = await cancelReservationById(idReservation);
+
+  if (!reservation) {
+    throw creerErreur("Réservation introuvable ou non annulable", 409);
   }
 
   return reservation;

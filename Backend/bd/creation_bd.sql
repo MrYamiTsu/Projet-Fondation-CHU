@@ -11,156 +11,169 @@
 -- ------------------------------------------------------------
 -- 1. Table HOPITAL (table de référence, aucune dépendance)
 -- ------------------------------------------------------------
-CREATE TABLE Hopital (
-    id        SERIAL PRIMARY KEY,
-    acronyme  VARCHAR(50),
-    nom       VARCHAR(255)
+create table hopital (
+   id       serial primary key,
+   acronyme varchar(50),
+   nom      varchar(255)
 );
 
 -- ------------------------------------------------------------
 -- 2. Table FL (Facteur de Localisation)
 -- ------------------------------------------------------------
-CREATE TABLE FL (
-    id         SERIAL PRIMARY KEY,
-    fl         DOUBLE PRECISION,
-    type_lieu  VARCHAR(100)
+create table fl (
+   id        serial primary key,
+   fl        double precision,
+   type_lieu varchar(100)
 );
 
 -- ------------------------------------------------------------
 -- 3. Table FF (Facteur de Fréquentation)
 -- ------------------------------------------------------------
-CREATE TABLE FF (
-    id            SERIAL PRIMARY KEY,
-    ff            DOUBLE PRECISION,
-    nbr_personnes DOUBLE PRECISION
+create table ff (
+   id            serial primary key,
+   ff            double precision,
+   nbr_personnes double precision
 );
 
 -- ------------------------------------------------------------
 -- 4. Table EMPLACEMENT (dépend de Hopital, FL, FF)
 -- ------------------------------------------------------------
-CREATE TABLE Emplacement (
-    id                          SERIAL PRIMARY KEY,
-    composante_id               INTEGER NOT NULL,
-    No_local_pavillon           VARCHAR(100),
-    categorie                   VARCHAR(100),
-    type_lieu                   VARCHAR(100),
-    lieu_specifique             VARCHAR(255),
-    description                 VARCHAR(255),
-    superficie                  DOUBLE PRECISION,
-    fl_id                       INTEGER NOT NULL,
-    ff_id                       INTEGER NOT NULL,
-    superficie_ajuste           DOUBLE PRECISION,
-    poid_relatif                INTEGER,
-    valeur_toponymique          INTEGER,
-    valeur_toponymique_ancien   INTEGER,
-    commentaire                 VARCHAR(255),
-    statut                      VARCHAR(50),
-    CONSTRAINT fk_emplacement_hopital
-        FOREIGN KEY (composante_id) REFERENCES Hopital(id),
-    CONSTRAINT fk_emplacement_fl
-        FOREIGN KEY (fl_id) REFERENCES FL(id),
-    CONSTRAINT fk_emplacement_ff
-        FOREIGN KEY (ff_id) REFERENCES FF(id),
-    CONSTRAINT uq_emplacement_hopital UNIQUE (id, composante_id)
+create table emplacement (
+   id                        serial primary key,
+   composante_id             integer not null,
+   no_local_pavillon         varchar(100),
+   categorie                 varchar(100),
+   type_lieu                 varchar(100),
+   lieu_specifique           varchar(255),
+   description               varchar(255),
+   superficie                double precision,
+   fl_id                     integer not null,
+   ff_id                     integer not null,
+   superficie_ajuste         double precision,
+   poid_relatif              integer,
+   valeur_toponymique        integer,
+   valeur_toponymique_ancien integer,
+   commentaire               varchar(255),
+   statut                    varchar(50),
+   constraint fk_emplacement_hopital foreign key ( composante_id )
+      references hopital ( id ),
+   constraint fk_emplacement_fl foreign key ( fl_id )
+      references fl ( id ),
+   constraint fk_emplacement_ff foreign key ( ff_id )
+      references ff ( id ),
+   constraint uq_emplacement_hopital unique ( id,
+                                              composante_id )
 );
 
 -- ------------------------------------------------------------
 -- 5. Table ACHALANDAGE (dépend de Hopital)
 -- ------------------------------------------------------------
-CREATE TABLE Achalandage (
-    id                SERIAL PRIMARY KEY,
-    hopital_id        INTEGER NOT NULL,
-    type_achalandage  VARCHAR(100),
-    annee             INTEGER,
-    valeur            INTEGER,
-    CONSTRAINT fk_achalandage_hopital
-        FOREIGN KEY (hopital_id) REFERENCES Hopital(id)
+create table achalandage (
+   id               serial primary key,
+   hopital_id       integer not null,
+   type_achalandage varchar(100),
+   annee            integer,
+   valeur           integer,
+   constraint fk_achalandage_hopital foreign key ( hopital_id )
+      references hopital ( id )
 );
 
 -- ------------------------------------------------------------
 -- 6. Table SOMMAIRE (dépend de Hopital)
 -- ------------------------------------------------------------
-CREATE TABLE Sommaire (
-    id                                   SERIAL PRIMARY KEY,
-    hopital_id                           INTEGER NOT NULL,
-    avant_actifs_externe                 DOUBLE PRECISION,
-    avant_actifs_interne_toponymiques    DOUBLE PRECISION,
-    avant_actifs_interne_publicitaires   DOUBLE PRECISION,
-    avant_valorisation                   DOUBLE PRECISION,
-    apres_actifs_externe                 DOUBLE PRECISION,
-    apres_actifs_interne_toponymiques    DOUBLE PRECISION,
-    apres_actifs_interne_publicitaires   DOUBLE PRECISION,
-    apres_valorisation                   DOUBLE PRECISION,
-    CONSTRAINT fk_sommaire_hopital
-        FOREIGN KEY (hopital_id) REFERENCES Hopital(id)
+create table sommaire (
+   id                                 serial primary key,
+   hopital_id                         integer not null,
+   avant_actifs_externe               double precision,
+   avant_actifs_interne_toponymiques  double precision,
+   avant_actifs_interne_publicitaires double precision,
+   avant_valorisation                 double precision,
+   apres_actifs_externe               double precision,
+   apres_actifs_interne_toponymiques  double precision,
+   apres_actifs_interne_publicitaires double precision,
+   apres_valorisation                 double precision,
+   constraint fk_sommaire_hopital foreign key ( hopital_id )
+      references hopital ( id )
 );
 
 -- ------------------------------------------------------------
 -- 7. Table UTILISATEUR (table de référence, aucune dépendance)
 -- ------------------------------------------------------------
-CREATE TABLE utilisateur (
-    id SERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL DEFAULT 'user',
-    actif BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT check_user_role
-        CHECK (role IN ('user', 'admin'))
+create table utilisateur (
+   id            serial primary key,
+   nom           varchar(100) not null,
+   prenom        varchar(100) not null,
+   email         varchar(255) not null unique,
+   password_hash varchar(255) not null,
+   role          varchar(20) not null default 'user',
+   actif         boolean not null default true,
+   created_at    timestamptz not null default current_timestamp,
+   updated_at    timestamptz not null default current_timestamp,
+   constraint check_user_role check ( role in ( 'user',
+                                                'admin' ) )
 );
-CREATE UNIQUE INDEX utilisateur_email_unique_lower
-ON utilisateur (LOWER(email));
+create unique index utilisateur_email_unique_lower on
+   utilisateur ( lower(email) );
 
 -- ------------------------------------------------------------
 -- 8. Table RESERVATION (dépend de Emplacement et Utilisateur)
 -- ------------------------------------------------------------
-CREATE TABLE Reservation (
-    id             SERIAL PRIMARY KEY,
-    emplacement_id INTEGER NOT NULL,
-    utilisateur_id INTEGER NOT NULL,
-    statut         VARCHAR(50),
-    date_debut     TIMESTAMP,
-    date_fin       TIMESTAMP,
-    CONSTRAINT fk_reservation_emplacement
-        FOREIGN KEY (emplacement_id) REFERENCES Emplacement(id),
-    CONSTRAINT fk_reservation_utilisateur
-        FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id)
+create table reservation (
+   id             serial primary key,
+   emplacement_id integer not null,
+   utilisateur_id integer not null,
+   statut         varchar(50),
+   date_debut     timestamp,
+   date_fin       timestamp,
+   constraint fk_reservation_emplacement foreign key ( emplacement_id )
+      references emplacement ( id ),
+   constraint fk_reservation_utilisateur foreign key ( utilisateur_id )
+      references utilisateur ( id ),
+   constraint check_reservation_statut
+      check ( statut in ( 'pending',
+                          'confirmed',
+                          'cancelled' ) )
 );
 
 -- ------------------------------------------------------------
 -- 9. Table Étages
 -- ------------------------------------------------------------
-CREATE TABLE Etage (
-    id          SERIAL PRIMARY KEY,
-    hopital_id  INTEGER NOT NULL REFERENCES Hopital(id),
-    niveau      INTEGER NOT NULL,          
-    nom         VARCHAR(100) NOT NULL,
-    image_url   VARCHAR(255),              
-    image_public_id  VARCHAR(255),
-    CONSTRAINT uq_etage_niveau UNIQUE (hopital_id, niveau),
-    CONSTRAINT uq_etage_hopital UNIQUE (id, hopital_id)
+create table etage (
+   id              serial primary key,
+   hopital_id      integer not null
+      references hopital ( id ),
+   niveau          integer not null,
+   nom             varchar(100) not null,
+   image_url       varchar(255),
+   image_public_id varchar(255),
+   constraint uq_etage_niveau unique ( hopital_id,
+                                       niveau ),
+   constraint uq_etage_hopital unique ( id,
+                                        hopital_id )
 );
 
 -- ------------------------------------------------------------
 -- 10. Table Pins d'Emplacement
 -- ------------------------------------------------------------
-CREATE TABLE Pin_Emplacement (
-    id              SERIAL PRIMARY KEY,
-    hopital_id      INTEGER NOT NULL,
-    etage_id        INTEGER NOT NULL,
-    emplacement_id  INTEGER NOT NULL UNIQUE,
-    x               REAL NOT NULL CHECK (x BETWEEN 0 AND 1),
-    y               REAL NOT NULL CHECK (y BETWEEN 0 AND 1),
-    CONSTRAINT fk_pin_etage
-        FOREIGN KEY (etage_id, hopital_id)
-        REFERENCES Etage(id, hopital_id) ON DELETE CASCADE,
-    CONSTRAINT fk_pin_emplacement
-        FOREIGN KEY (emplacement_id, hopital_id)
-        REFERENCES Emplacement(id, composante_id) ON DELETE CASCADE
+create table pin_emplacement (
+   id             serial primary key,
+   hopital_id     integer not null,
+   etage_id       integer not null,
+   emplacement_id integer not null unique,
+   x              real not null check ( x between 0 and 1 ),
+   y              real not null check ( y between 0 and 1 ),
+   constraint fk_pin_etage
+      foreign key ( etage_id,
+                    hopital_id )
+         references etage ( id,
+                            hopital_id )
+            on delete cascade,
+   constraint fk_pin_emplacement
+      foreign key ( emplacement_id,
+                    hopital_id )
+         references emplacement ( id,
+                                  composante_id )
+            on delete cascade
 );
 -- ============================================================
 -- Fin du script

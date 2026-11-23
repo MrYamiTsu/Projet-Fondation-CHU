@@ -94,7 +94,7 @@
         </div>
 
         <div class="flex items-center gap-2.5">
-          <button @click="openAddModal"
+          <button @click="router.push({ name: 'ajouter-emplacement' })"
             class="px-4 py-2.5 bg-[#0a1526] hover:bg-[#132238] text-white font-bold text-xs rounded-xl transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-plus text-xs text-teal-400"></i>
             <span>Ajouter un emplacement</span>

@@ -71,6 +71,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/admin/emplacements/ajouter',
+      name: 'ajouter-emplacement',
+      component: () => import('../views/AddPlotView.vue'),
+      meta: { requiresAdmin: true },
+    },
+    {
       path: '/profil',
       name: 'profil',
       component: ProfilView,

@@ -43,15 +43,35 @@ export async function findPlotById(id) {
   return result.rows[0];
 }
 
-export async function findAllPlots(){
-  const request=`
+export async function findAllPlots() {
+  const requete = `
     SELECT emplacement.*, hopital.acronyme
     FROM emplacement
     LEFT JOIN hopital ON emplacement.composante_id = hopital.id
   `;
-    const result = await pool.query(request,);
-    return result.rows;
 
+  const result = await pool.query(requete);
+
+  return result.rows;
+}
+
+export async function findPlotByComposanteAndLieu(composanteId, lieu, ignoredId = null) {
+  const requete = `
+    SELECT id
+    FROM emplacement
+    WHERE composante_id = $1
+      AND LOWER(TRIM(lieu_specifique)) = LOWER(TRIM($2))
+      AND ($3::int IS NULL OR id <> $3)
+    LIMIT 1
+  `;
+
+  const result = await pool.query(requete, [composanteId, lieu, ignoredId]);
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return result.rows[0];
 }
 
 export async function createPlot(emplacement) {
@@ -119,7 +139,6 @@ export async function createPlot(emplacement) {
 
   return result.rows[0];
 }
-
 
 export async function updatePlot(id, emplacement) {
   const {

@@ -3,7 +3,7 @@ import pool from '../db.mjs';
 export async function findHospitalById(id) {
   const request = `
     SELECT *
-    FROM hospital
+    FROM hopital
     WHERE id = $1
   `;
 
@@ -15,7 +15,7 @@ const result = await pool.query(request, [id]);
 export async function findAllHospitals() {
   const request = `
     SELECT *
-    FROM hospital
+    FROM hopital
     ORDER BY id
   `;
 

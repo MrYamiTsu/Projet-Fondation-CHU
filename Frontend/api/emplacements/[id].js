@@ -1,4 +1,5 @@
 import pool from '../_db.js';
+import { requireAdmin, sendError } from '../_http.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,6 +8,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  if (req.method !== 'GET') {
+    try {
+      requireAdmin(req);
+    } catch (err) {
+      return sendError(res, err);
+    }
   }
 
   const { id } = req.query;
@@ -78,7 +87,10 @@ export default async function handler(req, res) {
         valeur_toponymique, valeur_toponymique_ancien, commentaire, statut, id
       ]);
 
-      return res.status(200).json(result.rows[0]);
+      if (!result.rows[0]) {
+        return res.status(404).json({ erreur: 'Emplacement introuvable' });
+      }
+      return res.status(200).json({ ...result.rows[0], success: true, message: 'Emplacement modifié avec succès', data: { emplacement: result.rows[0] } });
     } catch (err) {
       console.error('Error updating plot:', err);
       return res.status(500).json({ erreur: 'Erreur mise à jour', details: err.message });

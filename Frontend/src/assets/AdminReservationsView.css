@@ -1,0 +1,379 @@
+/*
+  Vue d’administration des réservations.
+  Les tons suivent l’en-tête du site : ardoise pour le texte, sarcelle pour l’accent.
+*/
+
+.reservations-page {
+  --ink: #17212b;
+  --muted: #5d6874;
+  --line: #dfe3e8;
+  --line-strong: #c4ccd5;
+  --canvas: #f6f7f9;
+  --surface: #ffffff;
+
+  --accent: #0f766e;
+  --accent-strong: #0b5a54;
+  --accent-soft: #e8f3f1;
+  --danger: #9f2f2a;
+  --danger-strong: #7d2420;
+  --danger-soft: #fbecea;
+  --pending: #b7791f;
+
+  min-height: 70vh;
+  padding: 40px 24px 72px;
+  background: var(--canvas);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.page-content {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* En-tête */
+
+.back-link {
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.back-link:hover,
+td a:hover {
+  text-decoration: underline;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 24px 0 28px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.description {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+/* Boutons */
+
+.btn {
+  --tone: var(--ink);
+  --tone-strong: #000000;
+  --tone-soft: #eef0f3;
+  --tone-line: var(--line-strong);
+
+  padding: 7px 14px;
+  border: 1px solid var(--tone-line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--tone);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--tone-soft);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.btn--confirm {
+  --tone: var(--accent-strong);
+  --tone-strong: var(--accent-strong);
+  --tone-soft: var(--accent-soft);
+  --tone-line: #9ccbc6;
+}
+
+.btn--cancel {
+  --tone: var(--danger);
+  --tone-strong: var(--danger-strong);
+  --tone-soft: var(--danger-soft);
+  --tone-line: #dcb4b1;
+}
+
+/* Bouton plein : réservé à l’étape de validation. À garder après les règles ci-dessus. */
+.btn--solid {
+  border-color: var(--tone);
+  background: var(--tone);
+  color: #ffffff;
+}
+
+.btn--confirm.btn--solid {
+  --tone: var(--accent);
+}
+
+.btn--solid:hover:not(:disabled) {
+  border-color: var(--tone-strong);
+  background: var(--tone-strong);
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-strong);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+:is(.btn, .filter, .link-button, a):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Filtres */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.filter {
+  margin-bottom: -1px;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.filter:hover {
+  color: var(--ink);
+}
+
+.filter--active {
+  border-bottom-color: var(--accent);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.filter-count {
+  margin-left: 6px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+/* Messages */
+
+.notice {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border: 1px solid;
+  border-radius: 6px;
+}
+
+.notice p {
+  margin: 0 0 10px;
+}
+
+.notice--success {
+  border-color: #b5d8d3;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.notice--error {
+  border-color: #e3bcb8;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.state {
+  margin: 0;
+  padding: 56px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.state-title {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Tableau */
+
+.table-wrapper {
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 14px 16px;
+  white-space: nowrap;
+}
+
+thead th {
+  padding-block: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+tbody th {
+  font-weight: 600;
+}
+
+tbody tr + tr {
+  border-top: 1px solid var(--line);
+}
+
+.row--validation {
+  background: var(--accent-soft);
+}
+
+td a {
+  color: var(--accent-strong);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.cell-actions {
+  text-align: right;
+}
+
+.actions,
+.validation {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.validation-question {
+  margin-right: 4px;
+  font-weight: 500;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Statut : un point de couleur, le texte porte le sens. */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot, #9aa4af);
+  content: '';
+}
+
+.status--pending {
+  --dot: var(--pending);
+}
+
+.status--confirmed {
+  --dot: var(--accent);
+}
+
+.status--cancelled {
+  color: var(--muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Mobile : une réservation par bloc */
+
+@media (max-width: 640px) {
+  .reservations-page {
+    padding: 28px 16px 48px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  table,
+  tbody {
+    display: block;
+  }
+
+  tbody tr {
+    display: block;
+    padding: 10px 0;
+  }
+
+  tbody th,
+  tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 16px;
+    white-space: normal;
+    text-align: right;
+  }
+
+  tbody th::before,
+  tbody td::before {
+    color: var(--muted);
+    font-weight: 400;
+    text-align: left;
+    content: attr(data-label);
+  }
+}

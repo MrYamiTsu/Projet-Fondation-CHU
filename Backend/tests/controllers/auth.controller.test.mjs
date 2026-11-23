@@ -1,314 +1,630 @@
-
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach
-} from 'vitest';
-
-import * as modele from '../../src/models/auth.mjs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
 import {
-  register,
-  login
-} from '../../src/controllers/auth.controller.mjs';
+  createUser,
+  deleteUser as deleteUserRepository,
+  findUserByEmail,
+  updateProfile as updateProfileRepository
+} from '../../src/models/auth.mjs';
+import * as AuthController from '../../src/controllers/auth.controller.mjs';
 
-// Simuler le modèle PostgreSQL
 vi.mock('../../src/models/auth.mjs', () => ({
   findUserByEmail: vi.fn(),
-  createUser: vi.fn()
+  createUser: vi.fn(),
+  updateProfile: vi.fn(),
+  deleteUser: vi.fn()
 }));
 
-// Simuler bcrypt
 vi.mock('bcrypt', () => ({
-  default: {
-    hash: vi.fn(),
-    compare: vi.fn()
-  }
+  default: { hash: vi.fn(), compare: vi.fn() }
 }));
 
-// Simuler jsonwebtoken
 vi.mock('jsonwebtoken', () => ({
-  default: {
-    sign: vi.fn()
-  }
+  default: { sign: vi.fn() }
 }));
 
-// Créer une fausse réponse Express
-function creerRes() {
-  const res = {};
+const identifiants = {
+  email: 'jean.dupont@example.com',
+  password: 'MotDePasse123!'
+};
+const formulaireInscription = { nom: 'Dupont', prenom: 'Jean', ...identifiants };
+const motDePasseHache = 'hachage-de-test';
+const secretJwt = 'secret-de-test';
+const jetonSigne = 'jeton-de-test';
 
-  res.status = vi.fn().mockReturnValue(res);
-  res.json = vi.fn().mockReturnValue(res);
-
-  return res;
-}
+const profilPublic = { id: 1, email: identifiants.email, role: 'user' };
+const utilisateurCree = { ...profilPublic, nom: 'Dupont', prenom: 'Jean', actif: true };
+const utilisateurEnBase = { ...profilPublic, password_hash: motDePasseHache };
 
 describe('auth.controller', () => {
-
-  let req;
-  let res;
+  let requete;
+  let reponse;
   let next;
-
-  const ancienSecret = process.env.JWT_SECRET;
 
   beforeEach(() => {
     vi.resetAllMocks();
-
-    req = {
-      body: {
-        nom: 'Dupont',
-        prenom: 'Jean',
-        email: 'jean@example.com',
-        password: 'MotDePasse123!'
-      },
-      originalUrl: '/auth/register',
-      method: 'POST'
+    vi.stubEnv('JWT_SECRET', secretJwt);
+    reponse = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis()
     };
-
-    res = creerRes();
     next = vi.fn();
-
-    process.env.JWT_SECRET = 'secret-de-test';
   });
 
   afterEach(() => {
-    if (ancienSecret === undefined) {
-      delete process.env.JWT_SECRET;
-    } else {
-      process.env.JWT_SECRET = ancienSecret;
-    }
+    vi.unstubAllEnvs();
   });
-
-  // ========================================
-  // TESTS DE REGISTER
-  // ========================================
 
   describe('register', () => {
-
-    it('201 si le compte est créé', async () => {
-      const utilisateur = {
-        id: 1,
-        nom: 'Dupont',
-        prenom: 'Jean',
-        email: 'jean@example.com',
-        role: 'user',
-        actif: true
+    beforeEach(() => {
+      requete = {
+        body: { ...formulaireInscription },
+        originalUrl: '/auth/register',
+        method: 'POST'
       };
-
-      modele.findUserByEmail.mockResolvedValue(undefined);
-      bcrypt.hash.mockResolvedValue('password-hache');
-      modele.createUser.mockResolvedValue(utilisateur);
-
-      await register(req, res, next);
-
-      expect(modele.findUserByEmail)
-        .toHaveBeenCalledWith('jean@example.com');
-
-      expect(bcrypt.hash)
-        .toHaveBeenCalledWith('MotDePasse123!', 12);
-
-      expect(modele.createUser).toHaveBeenCalledWith(
-        'Dupont',
-        'Jean',
-        'jean@example.com',
-        'password-hache'
-      );
-
-      expect(res.status).toHaveBeenCalledWith(201);
-
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: true,
-          statusCode: 201,
-          data: {
-            utilisateur
-          }
-        })
-      );
-
-      expect(next).not.toHaveBeenCalled();
     });
 
-    it('409 si l’email existe déjà', async () => {
-      modele.findUserByEmail.mockResolvedValue({
-        id: 1,
-        email: 'jean@example.com'
+    describe('quand l’inscription réussit', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(undefined);
+        bcrypt.hash.mockResolvedValue(motDePasseHache);
+        createUser.mockResolvedValue(utilisateurCree);
+
+        await AuthController.register(requete, reponse, next);
       });
 
-      await register(req, res, next);
+      it('envoie le statut HTTP 201', () => {
+        expect(reponse.status).toHaveBeenCalledWith(201);
+      });
 
-      expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 409
-        })
-      );
+      it('indique le succès dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.success).toBe(true);
+      });
 
-      expect(modele.createUser).not.toHaveBeenCalled();
-      expect(res.json).not.toHaveBeenCalled();
+      it('indique le code 201 dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.statusCode).toBe(201);
+      });
+
+      it('retourne l’utilisateur créé', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.data).toStrictEqual({ utilisateur: utilisateurCree });
+      });
+
+      it('termine la requête sans appeler next', () => {
+        expect(next).not.toHaveBeenCalled();
+      });
+
+      it('recherche le compte avec le courriel fourni', () => {
+        expect(findUserByEmail).toHaveBeenCalledWith(identifiants.email);
+      });
+
+      it('hache le mot de passe avec un coût de 12', () => {
+        expect(bcrypt.hash).toHaveBeenCalledWith(identifiants.password, 12);
+      });
+
+      it('crée le compte avec le mot de passe haché', () => {
+        expect(createUser).toHaveBeenCalledWith(
+          formulaireInscription.nom,
+          formulaireInscription.prenom,
+          identifiants.email,
+          motDePasseHache
+        );
+      });
     });
 
-    it('transmet une erreur PostgreSQL à next', async () => {
-      const erreur = new Error('Erreur de connexion DB');
+    describe('quand le courriel est déjà utilisé', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(utilisateurEnBase);
 
-      modele.findUserByEmail.mockRejectedValue(erreur);
+        await AuthController.register(requete, reponse, next);
+      });
 
-      await register(req, res, next);
+      it('transmet une erreur 409 à next', () => {
+        expect(next.mock.lastCall?.[0]?.status).toBe(409);
+      });
 
-      expect(next).toHaveBeenCalledWith(erreur);
-      expect(res.json).not.toHaveBeenCalled();
+      it('évite de créer un deuxième compte', () => {
+        expect(createUser).not.toHaveBeenCalled();
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
     });
 
-    it('409 si PostgreSQL détecte un email dupliqué', async () => {
-      const erreur = new Error('Email dupliqué');
-      erreur.code = '23505';
+    describe('quand PostgreSQL signale un doublon', () => {
+      beforeEach(async () => {
+        const erreurDoublon = new Error('Courriel déjà utilisé');
+        erreurDoublon.code = '23505';
 
-      modele.findUserByEmail.mockResolvedValue(undefined);
-      bcrypt.hash.mockResolvedValue('password-hache');
-      modele.createUser.mockRejectedValue(erreur);
+        findUserByEmail.mockResolvedValue(undefined);
+        bcrypt.hash.mockResolvedValue(motDePasseHache);
+        createUser.mockRejectedValue(erreurDoublon);
 
-      await register(req, res, next);
+        await AuthController.register(requete, reponse, next);
+      });
 
-      expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 409
-        })
-      );
+      it('transmet une erreur 409 à next', () => {
+        expect(next.mock.lastCall?.[0]?.status).toBe(409);
+      });
 
-      expect(res.json).not.toHaveBeenCalled();
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('quand la recherche du compte échoue', () => {
+      const erreurConnexion = new Error('Base de données indisponible');
+
+      beforeEach(async () => {
+        findUserByEmail.mockRejectedValue(erreurConnexion);
+
+        await AuthController.register(requete, reponse, next);
+      });
+
+      it('transmet l’erreur du modèle à next', () => {
+        expect(next.mock.lastCall?.[0]).toBe(erreurConnexion);
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
     });
   });
 
-  // ========================================
-  // TESTS DE LOGIN
-  // ========================================
-
   describe('login', () => {
+    beforeEach(() => {
+      requete = {
+        body: { ...identifiants },
+        originalUrl: '/auth/login',
+        method: 'POST'
+      };
+    });
+
+    describe('quand les identifiants sont valides', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(utilisateurEnBase);
+        bcrypt.compare.mockResolvedValue(true);
+        jwt.sign.mockReturnValue(jetonSigne);
+
+        await AuthController.login(requete, reponse, next);
+      });
+
+      it('envoie le statut HTTP 200', () => {
+        expect(reponse.status).toHaveBeenCalledWith(200);
+      });
+
+      it('indique le succès dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.success).toBe(true);
+      });
+
+      it('indique le code 200 dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.statusCode).toBe(200);
+      });
+
+      it('retourne uniquement les champs publics de l’utilisateur', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.data?.utilisateur).toStrictEqual(profilPublic);
+      });
+
+      it('retourne le jeton signé', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.data?.token).toBe(jetonSigne);
+      });
+
+      it('termine la requête sans appeler next', () => {
+        expect(next).not.toHaveBeenCalled();
+      });
+
+      it('compare le mot de passe fourni au hachage enregistré', () => {
+        expect(bcrypt.compare).toHaveBeenCalledWith(identifiants.password, motDePasseHache);
+      });
+
+      it('signe un jeton valable une heure avec l’identifiant et le rôle du compte', () => {
+        expect(jwt.sign).toHaveBeenCalledWith(
+          { id: utilisateurEnBase.id, role: utilisateurEnBase.role },
+          secretJwt,
+          { expiresIn: '1h' }
+        );
+      });
+    });
+
+    describe('quand le courriel est inconnu', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(undefined);
+
+        await AuthController.login(requete, reponse, next);
+      });
+
+      it('transmet une erreur 401 à next', () => {
+        expect(next.mock.lastCall?.[0]?.status).toBe(401);
+      });
+
+      it('évite la comparaison du mot de passe', () => {
+        expect(bcrypt.compare).not.toHaveBeenCalled();
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('quand le mot de passe est incorrect', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(utilisateurEnBase);
+        bcrypt.compare.mockResolvedValue(false);
+
+        await AuthController.login(requete, reponse, next);
+      });
+
+      it('transmet une erreur 401 à next', () => {
+        expect(next.mock.lastCall?.[0]?.status).toBe(401);
+      });
+
+      it('ne signe aucun jeton', () => {
+        expect(jwt.sign).not.toHaveBeenCalled();
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('quand la recherche du compte échoue', () => {
+      const erreurConnexion = new Error('Base de données indisponible');
+
+      beforeEach(async () => {
+        findUserByEmail.mockRejectedValue(erreurConnexion);
+
+        await AuthController.login(requete, reponse, next);
+      });
+
+      it('transmet l’erreur du modèle à next', () => {
+        expect(next.mock.lastCall?.[0]).toBe(erreurConnexion);
+      });
+    });
+
+    describe('quand le secret JWT est absent', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(utilisateurEnBase);
+        bcrypt.compare.mockResolvedValue(true);
+        delete process.env.JWT_SECRET;
+
+        await AuthController.login(requete, reponse, next);
+      });
+
+      it('transmet une erreur à next', () => {
+        expect(next.mock.lastCall?.[0]).toBeInstanceOf(Error);
+      });
+
+      it('ne signe aucun jeton', () => {
+        expect(jwt.sign).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('updateProfile', () => {
+    const donneesModification = {
+      nom: 'Dupont',
+      prenom: 'Jean',
+      email: 'jean.dupont@example.com',
+      password: 'NouveauMotDePasse456!'
+    };
+    const utilisateurModifie = {
+      id: 1,
+      nom: donneesModification.nom,
+      prenom: donneesModification.prenom,
+      email: donneesModification.email,
+      role: 'user'
+    };
 
     beforeEach(() => {
-      req.body = {
-        email: 'jean@example.com',
-        password: 'MotDePasse123!'
+      requete = {
+        user: { id: 1 },
+        body: { ...donneesModification },
+        originalUrl: '/auth/profile',
+        method: 'PUT'
       };
-
-      req.originalUrl = '/auth/login';
     });
 
-    it('200 et retourne un JWT si les identifiants sont valides', async () => {
-      const utilisateur = {
-        id: 1,
-        email: 'jean@example.com',
-        password_hash: 'password-hache',
-        role: 'user'
-      };
+    describe('quand tous les paramètres sont valides, la modification réussit', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue(undefined);
+        bcrypt.hash.mockResolvedValue(motDePasseHache);
+        updateProfileRepository.mockResolvedValue(utilisateurModifie);
 
-      modele.findUserByEmail.mockResolvedValue(utilisateur);
-      bcrypt.compare.mockResolvedValue(true);
-      jwt.sign.mockReturnValue('token-jwt-test');
-
-      await login(req, res, next);
-
-      expect(bcrypt.compare).toHaveBeenCalledWith(
-        'MotDePasse123!',
-        'password-hache'
-      );
-
-      expect(jwt.sign).toHaveBeenCalledWith(
-        { id: 1, role: 'user' },
-        'secret-de-test',
-        { expiresIn: '1h' }
-      );
-
-      expect(res.status).toHaveBeenCalledWith(200);
-
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: true,
-          statusCode: 200,
-          data: {
-            utilisateur: {
-              id: 1,
-              email: 'jean@example.com',
-              role: 'user'
-            },
-            token: 'token-jwt-test'
-          }
-        })
-      );
-
-      expect(next).not.toHaveBeenCalled();
-    });
-
-    it('401 si l’email est inexistant', async () => {
-      modele.findUserByEmail.mockResolvedValue(undefined);
-
-      await login(req, res, next);
-
-      expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 401
-        })
-      );
-
-      expect(bcrypt.compare).not.toHaveBeenCalled();
-      expect(res.json).not.toHaveBeenCalled();
-    });
-
-    it('401 si le mot de passe est incorrect', async () => {
-      modele.findUserByEmail.mockResolvedValue({
-        id: 1,
-        email: 'jean@example.com',
-        password_hash: 'password-hache',
-        role: 'user'
+        await AuthController.updateProfile(requete, reponse, next);
       });
 
-      bcrypt.compare.mockResolvedValue(false);
-
-      await login(req, res, next);
-
-      expect(next).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: 401
-        })
-      );
-
-      expect(jwt.sign).not.toHaveBeenCalled();
-      expect(res.json).not.toHaveBeenCalled();
-    });
-
-    it('transmet une erreur du modèle à next', async () => {
-      const erreur = new Error('Base de données indisponible');
-
-      modele.findUserByEmail.mockRejectedValue(erreur);
-
-      await login(req, res, next);
-
-      expect(next).toHaveBeenCalledWith(erreur);
-    });
-
-    it('transmet une erreur si JWT_SECRET est absent', async () => {
-      delete process.env.JWT_SECRET;
-
-      modele.findUserByEmail.mockResolvedValue({
-        id: 1,
-        email: 'jean@example.com',
-        password_hash: 'password-hache',
-        role: 'user'
+      it('envoie le statut HTTP 200', () => {
+        expect(reponse.status).toHaveBeenCalledWith(200);
       });
 
-      bcrypt.compare.mockResolvedValue(true);
+      it('indique le succès dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.success).toBe(true);
+      });
 
-      await login(req, res, next);
+      it('indique le code 200 dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.statusCode).toBe(200);
+      });
 
-      expect(next).toHaveBeenCalledWith(
-        expect.any(Error)
-      );
+      it('retourne l’utilisateur modifié', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.data).toStrictEqual({ utilisateur: utilisateurModifie });
+      });
 
-      expect(jwt.sign).not.toHaveBeenCalled();
+      it('termine la requête sans appeler next', () => {
+        expect(next).not.toHaveBeenCalled();
+      });
+
+      it('recherche le compte avec le courriel fourni', () => {
+        expect(findUserByEmail).toHaveBeenCalledWith(donneesModification.email);
+      });
+
+      it('hache le nouveau mot de passe avec un coût de 12', () => {
+        expect(bcrypt.hash).toHaveBeenCalledWith(donneesModification.password, 12);
+      });
+
+      it('met à jour le compte de l’utilisateur connecté avec le mot de passe haché', () => {
+        expect(updateProfileRepository).toHaveBeenCalledWith(
+          1,
+          donneesModification.nom,
+          donneesModification.prenom,
+          donneesModification.email,
+          motDePasseHache
+        );
+      });
+    });
+
+    describe('quand les champs contiennent des espaces superflus', () => {
+      beforeEach(async () => {
+        requete.body = {
+          nom: '  Dupont ',
+          prenom: ' Jean  ',
+          email: '  jean.dupont@example.com ',
+          password: donneesModification.password
+        };
+        findUserByEmail.mockResolvedValue(undefined);
+        bcrypt.hash.mockResolvedValue(motDePasseHache);
+        updateProfileRepository.mockResolvedValue(utilisateurModifie);
+
+        await AuthController.updateProfile(requete, reponse, next);
+      });
+
+      it('recherche le compte avec le courriel nettoyé', () => {
+        expect(findUserByEmail).toHaveBeenCalledWith(donneesModification.email);
+      });
+
+      it('enregistre le nom, le prénom et le courriel nettoyés', () => {
+        expect(updateProfileRepository).toHaveBeenCalledWith(
+          1,
+          donneesModification.nom,
+          donneesModification.prenom,
+          donneesModification.email,
+          motDePasseHache
+        );
+      });
+    });
+
+    describe('quand le courriel appartient déjà à l’utilisateur connecté', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue({ ...utilisateurEnBase, id: 1 });
+        bcrypt.hash.mockResolvedValue(motDePasseHache);
+        updateProfileRepository.mockResolvedValue(utilisateurModifie);
+
+        await AuthController.updateProfile(requete, reponse, next);
+      });
+
+      it('envoie le statut HTTP 200', () => {
+        expect(reponse.status).toHaveBeenCalledWith(200);
+      });
+
+      it('termine la requête sans appeler next', () => {
+        expect(next).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('quand le courriel est déjà utilisé par un autre utilisateur', () => {
+      beforeEach(async () => {
+        findUserByEmail.mockResolvedValue({ ...utilisateurEnBase, id: 2 });
+
+        await AuthController.updateProfile(requete, reponse, next);
+      });
+
+      it('transmet une erreur 409 à next', () => {
+        expect(next.mock.lastCall?.[0]?.status).toBe(409);
+      });
+
+      it('évite de modifier le compte', () => {
+        expect(updateProfileRepository).not.toHaveBeenCalled();
+      });
+
+      it('évite de hacher le mot de passe', () => {
+        expect(bcrypt.hash).not.toHaveBeenCalled();
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
+    });
+
+    describe.each([
+      ['absent', undefined],
+      ['vide', '']
+    ])('quand un paramètre est %s', (_etat, valeur) => {
+      describe.each(['nom', 'prenom', 'password'])('le champ %s', (champ) => {
+        beforeEach(async () => {
+          requete.body[champ] = valeur;
+          findUserByEmail.mockResolvedValue(undefined);
+
+          await AuthController.updateProfile(requete, reponse, next);
+        });
+
+        it('transmet une erreur 400 à next', () => {
+          expect(next.mock.lastCall?.[0]?.status).toBe(400);
+        });
+
+        it('évite de hacher le mot de passe', () => {
+          expect(bcrypt.hash).not.toHaveBeenCalled();
+        });
+
+        it('évite de modifier le compte', () => {
+          expect(updateProfileRepository).not.toHaveBeenCalled();
+        });
+
+        it('laisse le middleware d’erreur envoyer la réponse', () => {
+          expect(reponse.json).not.toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('quand le courriel est invalide', () => {
+      describe('parce qu’il est absent', () => {
+        beforeEach(async () => {
+          delete requete.body.email;
+
+          await AuthController.updateProfile(requete, reponse, next);
+        });
+
+        it('transmet une erreur à next', () => {
+          expect(next.mock.lastCall?.[0]).toBeInstanceOf(Error);
+        });
+
+        it('évite de modifier le compte', () => {
+          expect(updateProfileRepository).not.toHaveBeenCalled();
+        });
+      });
+
+      // Le service ne valide pas le format du courriel (probablement fait dans un middleware de validation).
+      it.todo('rejette un courriel mal formé avec une erreur 400');
+    });
+
+    describe('quand le mot de passe est invalide', () => {
+      // Le service ne vérifie que la présence du mot de passe (testée plus haut), pas sa complexité ni sa longueur.
+      it.todo('rejette un mot de passe qui ne respecte pas les règles avec une erreur 400');
+    });
+
+    describe('quand la base de données échoue', () => {
+      const erreurConnexion = new Error('Base de données indisponible');
+
+      describe('pendant la recherche du courriel', () => {
+        beforeEach(async () => {
+          findUserByEmail.mockRejectedValue(erreurConnexion);
+
+          await AuthController.updateProfile(requete, reponse, next);
+        });
+
+        it('transmet l’erreur du modèle à next', () => {
+          expect(next.mock.lastCall?.[0]).toBe(erreurConnexion);
+        });
+
+        it('laisse le middleware d’erreur envoyer la réponse', () => {
+          expect(reponse.json).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('pendant la mise à jour du compte', () => {
+        beforeEach(async () => {
+          findUserByEmail.mockResolvedValue(undefined);
+          bcrypt.hash.mockResolvedValue(motDePasseHache);
+          updateProfileRepository.mockRejectedValue(erreurConnexion);
+
+          await AuthController.updateProfile(requete, reponse, next);
+        });
+
+        it('transmet l’erreur du modèle à next', () => {
+          expect(next.mock.lastCall?.[0]).toBe(erreurConnexion);
+        });
+
+        it('laisse le middleware d’erreur envoyer la réponse', () => {
+          expect(reponse.json).not.toHaveBeenCalled();
+        });
+      });
+    });
+  });
+
+  describe('deleteUser', () => {
+    const utilisateurSupprime = { ...profilPublic, nom: 'Dupont', prenom: 'Jean' };
+
+    beforeEach(() => {
+      requete = {
+        user: { id: 1 },
+        originalUrl: '/auth/profile',
+        method: 'DELETE'
+      };
+    });
+
+    describe('quand le compte existe, la suppression réussit', () => {
+      beforeEach(async () => {
+        deleteUserRepository.mockResolvedValue(utilisateurSupprime);
+
+        await AuthController.deleteUser(requete, reponse, next);
+      });
+
+      it('envoie le statut HTTP 200', () => {
+        expect(reponse.status).toHaveBeenCalledWith(200);
+      });
+
+      it('indique le succès dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.success).toBe(true);
+      });
+
+      it('indique le code 200 dans le corps de la réponse', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.statusCode).toBe(200);
+      });
+
+      it('retourne l’utilisateur supprimé', () => {
+        expect(reponse.json.mock.lastCall?.[0]?.data).toStrictEqual({ utilisateur: utilisateurSupprime });
+      });
+
+      it('termine la requête sans appeler next', () => {
+        expect(next).not.toHaveBeenCalled();
+      });
+
+      it('supprime le compte de l’utilisateur connecté', () => {
+        expect(deleteUserRepository).toHaveBeenCalledWith(1);
+      });
+    });
+
+    describe.each([
+      ['une chaîne de caractères', '1'],
+      ['zéro', 0],
+      ['un nombre négatif', -5],
+      ['un nombre décimal', 1.5],
+      ['une valeur absente', undefined]
+    ])('quand l’identifiant est %s', (_description, idInvalide) => {
+      beforeEach(async () => {
+        requete.user.id = idInvalide;
+
+        await AuthController.deleteUser(requete, reponse, next);
+      });
+
+      it('transmet une erreur 400 à next', () => {
+        expect(next.mock.lastCall?.[0]?.status).toBe(400);
+      });
+
+      it('évite de supprimer un compte', () => {
+        expect(deleteUserRepository).not.toHaveBeenCalled();
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('quand la base de données échoue', () => {
+      const erreurConnexion = new Error('Base de données indisponible');
+
+      beforeEach(async () => {
+        deleteUserRepository.mockRejectedValue(erreurConnexion);
+
+        await AuthController.deleteUser(requete, reponse, next);
+      });
+
+      it('transmet l’erreur du modèle à next', () => {
+        expect(next.mock.lastCall?.[0]).toBe(erreurConnexion);
+      });
+
+      it('laisse le middleware d’erreur envoyer la réponse', () => {
+        expect(reponse.json).not.toHaveBeenCalled();
+      });
     });
   });
 });

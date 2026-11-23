@@ -28,3 +28,24 @@ export async function createUser(nom, prenom, email, passwordHash) {
 
   return result.rows[0];
 }
+
+export async function updateProfile(userId, nom, prenom, email, passwordHash) {
+  const requete = `
+    UPDATE utilisateur
+    SET nom = $1, prenom = $2, email = $3, password_hash = $4, updated_at = NOW()
+    WHERE id = $5
+    RETURNING id, nom, prenom, email, role, actif, created_at, updated_at
+  `;
+  const result = await pool.query(requete, [nom, prenom, email, passwordHash, userId]);
+  return result.rows[0];
+}
+
+export async function deleteUser(userId) {
+  const requete = `
+    DELETE FROM utilisateur
+    WHERE id = $1
+    RETURNING id, nom, prenom, email, role, actif, created_at, updated_at
+  `;
+  const result = await pool.query(requete, [userId]);
+  return result.rows[0];
+}

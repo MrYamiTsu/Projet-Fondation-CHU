@@ -1,32 +1,45 @@
+import * as reservationService from "../services/reservation.service.mjs";
+import { envoyerSucces } from "../utils/reponse.mjs";
 
-import {
-  getAllReservations,
-  createReservation,
-  getReservationById,
-  getReservationsByEmplacementId,
-  getReservationsByStatus,
-  updateReservation,
-  confirmReservation
-} from '../models/reservation.mjs';
-
+function envoyerReservations(req, res, message, reservations) {
+  return envoyerSucces(req, res, 200, message, {
+    reservations,
+    count: reservations.length,
+  });
+}
 
 export async function obtenirToutesLesReservations(req, res, next) {
   try {
-    const reservations = await getAllReservations();
+    const reservations = await reservationService.obtenirToutesLesReservations();
 
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservations récupérées avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservations,
-        count: reservations.length
-      }
-    });
+    return envoyerReservations(req, res, "Réservations récupérées avec succès", reservations);
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
 
+export async function obtenirReservationsConfirmees(req, res, next) {
+  try {
+    const reservations = await reservationService.obtenirReservationsConfirmees();
+
+    return envoyerReservations(
+      req,
+      res,
+      "Réservations confirmées récupérées avec succès",
+      reservations,
+    );
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
+
+export const getConfirmedReservations = obtenirReservationsConfirmees;
+
+export async function getMyReservations(req, res, next) {
+  try {
+    const reservations = await reservationService.getMyReservations(req.user.id);
+
+    return envoyerReservations(req, res, "Réservations récupérées avec succès", reservations);
   } catch (erreur) {
     return next(erreur);
   }
@@ -35,206 +48,94 @@ export async function obtenirToutesLesReservations(req, res, next) {
 
 export async function addReservation(req, res, next) {
   try {
-    const { emplacementId, dateDebut, dateFin } = req.body;
+    const reservation = await reservationService.addReservation(req.user.id, req.body);
 
-    const reservation = await createReservation(
-      Number(emplacementId),
-      dateDebut,
-      dateFin
-    );
-
-    return res.status(201).json({
-      success: true,
-      statusCode: 201,
-      message: "Réservation créée avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservation
-      }
-    });
-
+    return envoyerSucces(req, res, 201, "Réservation créée avec succès", { reservation });
   } catch (erreur) {
     return next(erreur);
   }
 }
-
 
 export async function obtenirReservationParId(req, res, next) {
-  const { id } = req.params;
-
-  if (
-    id.trim() === '' ||
-    !Number.isSafeInteger(Number(id)) ||
-    Number(id) <= 0
-  ) {
-    const erreur = new Error("Identifiant de réservation invalide");
-    erreur.status = 400;
-    return next(erreur);
-  }
-
   try {
-    const reservation = await getReservationById(Number(id));
+    const reservation = await reservationService.obtenirReservationParId(req.params.id);
 
-    if (!reservation) {
-      const erreur = new Error("Réservation introuvable");
-      erreur.status = 404;
-      return next(erreur);
-    }
-
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservation récupérée avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservation
-      }
-    });
-
+    return envoyerSucces(req, res, 200, "Réservation récupérée avec succès", { reservation });
   } catch (erreur) {
     return next(erreur);
   }
 }
-
 
 export async function obtenirReservationsParEmplacement(req, res, next) {
-  const { emplacementId } = req.params;
-
-  if (
-    emplacementId.trim() === '' ||
-    !Number.isSafeInteger(Number(emplacementId)) ||
-    Number(emplacementId) <= 0
-  ) {
-    const erreur = new Error("Identifiant d'emplacement invalide");
-    erreur.status = 400;
-    return next(erreur);
-  }
-
   try {
-    const reservations = await getReservationsByEmplacementId(
-      Number(emplacementId)
+    const reservations = await reservationService.obtenirReservationsParEmplacement(
+      req.params.emplacementId,
     );
 
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservations de l'emplacement récupérées avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservations,
-        count: reservations.length
-      }
-    });
-
+    return envoyerReservations(
+      req,
+      res,
+      "Réservations de l'emplacement récupérées avec succès",
+      reservations,
+    );
   } catch (erreur) {
     return next(erreur);
   }
 }
-
 
 export async function obtenirReservationsParStatut(req, res, next) {
-  const { status } = req.query;
-
-  if (typeof status !== 'string' || status.trim() === '') {
-    const erreur = new Error("Statut invalide");
-    erreur.status = 400;
-    return next(erreur);
-  }
-
   try {
-    const reservations = await getReservationsByStatus(status.trim());
+    const reservations = await reservationService.obtenirReservationsParStatut(req.query.status);
 
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservations par statut récupérées avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservations,
-        count: reservations.length
-      }
-    });
-
+    return envoyerReservations(
+      req,
+      res,
+      "Réservations par statut récupérées avec succès",
+      reservations,
+    );
   } catch (erreur) {
     return next(erreur);
   }
 }
 
-
-export async function modifyReservation(req, res, next) {
-  const { id } = req.params;
-
+export async function updateMyReservation(req, res, next) {
   try {
-    const { emplacementId, dateDebut, dateFin } = req.body;
-
-    const reservation = await updateReservation(
-      Number(id),
-      Number(emplacementId),
-      dateDebut,
-      dateFin
+    const reservation = await reservationService.updateMyReservation(
+      req.user.id,
+      req.params.id,
+      req.body,
     );
 
-    if (!reservation) {
-      const erreur = new Error("Réservation introuvable");
-      erreur.status = 404;
-      return next(erreur);
-    }
-
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservation modifiée avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservation
-      }
-    });
-
+    return envoyerSucces(req, res, 200, "Réservation modifiée avec succès", { reservation });
   } catch (erreur) {
     return next(erreur);
   }
 }
 
+export async function cancelMyReservation(req, res, next) {
+  try {
+    const reservation = await reservationService.cancelMyReservation(req.user.id, req.params.id);
+
+    return envoyerSucces(req, res, 200, "Réservation annulée avec succès", { reservation });
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
 
 export async function approveReservation(req, res, next) {
-  const { id } = req.params;
-
   try {
-    const reservation = await confirmReservation(Number(id));
+    const reservation = await reservationService.approveReservation(req.params.id);
 
-    if (!reservation) {
-      const existingReservation = await getReservationById(Number(id));
+    return envoyerSucces(req, res, 200, "Réservation confirmée avec succès", { reservation });
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
+export async function cancelReservationAsAdmin(req, res, next) {
+  try {
+    const reservation = await reservationService.cancelReservationAsAdmin(req.params.id);
 
-      const erreur = existingReservation
-        ? new Error("Cette réservation n'est pas en attente")
-        : new Error("Réservation introuvable");
-
-      erreur.status = existingReservation ? 409 : 404;
-      return next(erreur);
-    }
-
-    return res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Réservation confirmée avec succès",
-      timestamp: new Date().toISOString(),
-      path: req.originalUrl,
-      method: req.method,
-      data: {
-        reservation
-      }
-    });
-
+    return envoyerSucces(req, res, 200, "Réservation annulée avec succès", { reservation });
   } catch (erreur) {
     return next(erreur);
   }

@@ -2,24 +2,27 @@ import pool from '../db.mjs';
 
 export async function getAllReservations() {
   const requete = `
-    SELECT *
-    FROM reservation
-    ORDER BY date_debut ASC
+    SELECT r.*, u.prenom, u.nom, u.email
+    FROM reservation r
+    LEFT JOIN utilisateur u ON u.id = r.utilisateur_id
+    ORDER BY r.date_debut ASC
   `;
 
   const result = await pool.query(requete);
   return result.rows;
 }
 
-export async function createReservation(emplacementId, dateDebut, dateFin) {
+
+export async function createReservation(emplacementId, utilisateurId, dateDebut, dateFin) {
   const requete = `
-    INSERT INTO reservation (emplacement_id, statut, date_debut, date_fin)
-    VALUES ($1, 'pending', $2, $3)
+    INSERT INTO reservation (emplacement_id, utilisateur_id, statut, date_debut, date_fin)
+    VALUES ($1, $2, 'pending', $3, $4)
     RETURNING *
   `;
 
   const result = await pool.query(requete, [
     emplacementId,
+    utilisateurId,
     dateDebut,
     dateFin
   ]);
@@ -27,6 +30,7 @@ export async function createReservation(emplacementId, dateDebut, dateFin) {
   return result.rows[0];
 }
 
+ 
 export async function updateReservation(id, emplacementId, dateDebut, dateFin) {
   const requete = `
     UPDATE reservation
@@ -59,13 +63,25 @@ export async function getReservationById(id) {
 
 export async function getReservationsByEmplacementId(emplacementId) {
   const requete = `
-    SELECT *
+    SELECT id, emplacement_id, statut, date_debut, date_fin
     FROM reservation
     WHERE emplacement_id = $1
     ORDER BY date_debut ASC
   `;
 
   const result = await pool.query(requete, [emplacementId]);
+  return result.rows;
+}
+
+export async function getConfirmedReservations() {
+  const requete = `
+    SELECT id, emplacement_id, statut, date_debut, date_fin
+    FROM reservation
+    WHERE statut = 'confirmed'
+    ORDER BY date_debut ASC
+  `;
+
+  const result = await pool.query(requete);
   return result.rows;
 }
 
@@ -92,4 +108,64 @@ export async function confirmReservation(id) {
   const result = await pool.query(requete, [id]);
 
   return result.rows[0];
+}
+
+export async function getReservationsByUserId(utilisateurId) {
+  const requete = `
+    SELECT
+      r.id,
+      r.emplacement_id,
+      r.statut,
+      r.date_debut,
+      r.date_fin,
+      e.no_local_pavillon,
+      e.lieu_specifique
+    FROM reservation r
+    LEFT JOIN emplacement e ON e.id = r.emplacement_id
+    WHERE r.utilisateur_id = $1
+    ORDER BY r.date_debut DESC
+  `;
+
+  const result = await pool.query(requete, [utilisateurId]);
+
+  return result.rows;
+}
+
+
+export async function updateMyPendingReservation(id, userId, dateDebut, dateFin) {
+  const result = await pool.query(
+    `UPDATE reservation
+     SET date_debut = $1, date_fin = $2
+     WHERE id = $3
+       AND utilisateur_id = $4
+       AND statut = 'pending'
+     RETURNING *`,
+    [dateDebut, dateFin, id, userId]
+  )
+
+  return result.rows[0]
+}
+
+export async function cancelMyPendingReservation(id, userId) {
+  const result = await pool.query(
+    `UPDATE reservation
+     SET statut = 'cancelled'
+     WHERE id = $1
+       AND utilisateur_id = $2
+       AND statut = 'pending'
+     RETURNING *`,
+    [id, userId]
+  )
+
+  return result.rows[0]
+}
+export async function cancelReservationById(id) {
+  const result = await pool.query(
+    `UPDATE reservation
+        SET statut = 'cancelled'
+      WHERE id = $1 AND statut IN ('pending', 'confirmed')
+      RETURNING *`,
+    [id],
+  );
+  return result.rows[0] ?? null;
 }

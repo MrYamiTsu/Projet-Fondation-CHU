@@ -82,6 +82,262 @@ export const useEtagesStore = defineStore('etages', () => {
     selectedPin.value = null
   }
 
+  async function uploadEtageImage(etageId, file) {
+    if (!etageId || !file) {
+      throw new Error('Identifiant d\'étage et fichier image requis')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const headers = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      let res = await fetch(`${API_BASE}/api/etages/${etageId}/image`, {
+        method: 'PUT',
+        headers,
+        body: formData,
+      })
+
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_BASE}/etages/${etageId}/image`, {
+          method: 'PUT',
+          headers,
+          body: formData,
+        })
+      }
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Erreur lors du téléversement de l\'image')
+      }
+
+      const index = etages.value.findIndex((e) => Number(e.id) === Number(etageId))
+      if (index !== -1) {
+        etages.value[index] = { ...etages.value[index], ...data }
+      }
+
+      if (currentEtage.value && Number(currentEtage.value.id) === Number(etageId)) {
+        currentEtage.value = { ...currentEtage.value, ...data }
+      }
+
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function deleteEtageImage(etageId) {
+    if (!etageId) {
+      throw new Error('Identifiant d\'étage requis')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+      const headers = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      let res = await fetch(`${API_BASE}/api/etages/${etageId}/image`, {
+        method: 'DELETE',
+        headers,
+      })
+
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_BASE}/etages/${etageId}/image`, {
+          method: 'DELETE',
+          headers,
+        })
+      }
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Erreur lors de la suppression de l\'image')
+      }
+
+      const index = etages.value.findIndex((e) => Number(e.id) === Number(etageId))
+      if (index !== -1) {
+        etages.value[index] = {
+          ...etages.value[index],
+          image_url: null,
+          image_public_id: null,
+          pins: [],
+        }
+      }
+
+      if (currentEtage.value && Number(currentEtage.value.id) === Number(etageId)) {
+        currentEtage.value = {
+          ...currentEtage.value,
+          image_url: null,
+          image_public_id: null,
+          pins: [],
+        }
+      }
+
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function createPin(etageId, emplacementId, x, y) {
+    if (!etageId || !emplacementId || x === undefined || y === undefined) {
+      throw new Error('Données du pin incomplètes')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+      const headers = { 'Content-Type': 'application/json' }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      let res = await fetch(`${API_BASE}/api/pins`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          etage_id: Number(etageId),
+          emplacement_id: Number(emplacementId),
+          x: Number(x),
+          y: Number(y),
+        }),
+      })
+
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_BASE}/pins`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            etage_id: Number(etageId),
+            emplacement_id: Number(emplacementId),
+            x: Number(x),
+            y: Number(y),
+          }),
+        })
+      }
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Erreur lors du placement du pin')
+      }
+
+      // Si cet emplacement était déjà placé sur un étage, le retirer de son ancienne position
+      for (const etage of etages.value) {
+        if (Array.isArray(etage.pins)) {
+          etage.pins = etage.pins.filter(
+            (p) => Number(p.emplacement_id) !== Number(emplacementId),
+          )
+        }
+      }
+
+      if (currentEtage.value) {
+        if (!Array.isArray(currentEtage.value.pins)) {
+          currentEtage.value.pins = []
+        }
+        currentEtage.value.pins = currentEtage.value.pins.filter(
+          (p) => Number(p.emplacement_id) !== Number(emplacementId),
+        )
+        if (Number(currentEtage.value.id) === Number(etageId)) {
+          currentEtage.value.pins.push(data)
+        }
+      }
+
+      const etage = etages.value.find((e) => Number(e.id) === Number(etageId))
+      if (etage) {
+        if (!Array.isArray(etage.pins)) {
+          etage.pins = []
+        }
+        if (!etage.pins.some((p) => Number(p.id) === Number(data.id))) {
+          etage.pins.push(data)
+        }
+      }
+
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function deletePin(pinId) {
+    if (!pinId) {
+      throw new Error('Identifiant de pin requis')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const token = localStorage.getItem('token')
+      const headers = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      let res = await fetch(`${API_BASE}/api/pins/${pinId}`, {
+        method: 'DELETE',
+        headers,
+      })
+
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_BASE}/pins/${pinId}`, {
+          method: 'DELETE',
+          headers,
+        })
+      }
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Erreur lors de la suppression du pin')
+      }
+
+      if (currentEtage.value && Array.isArray(currentEtage.value.pins)) {
+        currentEtage.value.pins = currentEtage.value.pins.filter(
+          (p) => Number(p.id) !== Number(pinId),
+        )
+      }
+
+      for (const etage of etages.value) {
+        if (Array.isArray(etage.pins)) {
+          etage.pins = etage.pins.filter((p) => Number(p.id) !== Number(pinId))
+        }
+      }
+
+      if (selectedPin.value && Number(selectedPin.value.id) === Number(pinId)) {
+        selectedPin.value = null
+      }
+
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     etages,
     currentEtage,
@@ -92,6 +348,10 @@ export const useEtagesStore = defineStore('etages', () => {
     selectEtage,
     selectPin,
     clearSelection,
+    uploadEtageImage,
+    deleteEtageImage,
+    createPin,
+    deletePin,
   }
 })
 

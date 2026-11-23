@@ -9,6 +9,7 @@ import { hospitals } from '../src/data/mockData.js'
 import { usePlotsStore } from '../src/stores/plots.js'
 import { useEtagesStore } from '../src/stores/etages.js'
 import { useReservationStore } from '../src/stores/reservations.js'
+import { useToastStore } from '../src/stores/toast.js'
 
 vi.mock('../src/stores/plots.js', () => ({
   usePlotsStore: vi.fn(),
@@ -20,6 +21,10 @@ vi.mock('../src/stores/etages.js', () => ({
 
 vi.mock('../src/stores/reservations.js', () => ({
   useReservationStore: vi.fn(),
+}))
+
+vi.mock('../src/stores/toast.js', () => ({
+  useToastStore: vi.fn(() => ({ show: vi.fn(), close: vi.fn() })),
 }))
 
 describe('MapComponent (Map.vue)', () => {
@@ -89,6 +94,8 @@ describe('MapComponent (Map.vue)', () => {
       fetchEtagesByHospital: vi.fn(),
       selectEtage: vi.fn(),
       selectPin: vi.fn(),
+      createPin: vi.fn(),
+      deletePin: vi.fn(),
     }
 
     useEtagesStore.mockReturnValue(mockEtagesStore)

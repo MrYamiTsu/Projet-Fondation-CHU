@@ -13,6 +13,11 @@ export async function createPin(hopitalId, etageId, emplacementId, x, y) {
   const requete = `
     INSERT INTO pin_emplacement (hopital_id, etage_id, emplacement_id, x, y)
     VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT (emplacement_id) DO UPDATE SET
+      hopital_id = EXCLUDED.hopital_id,
+      etage_id = EXCLUDED.etage_id,
+      x = EXCLUDED.x,
+      y = EXCLUDED.y
     RETURNING *
   `;
   const result = await pool.query(requete, [hopitalId, etageId, emplacementId, x, y]);

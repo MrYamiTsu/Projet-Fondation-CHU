@@ -16,15 +16,44 @@
         </p>
       </div>
 
-      <button
-        type="button"
-        @click="$emit('close')"
-        class="self-start sm:self-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5"
-        title="Fermer le plan d'étage"
-      >
-        <span>Fermer le plan</span>
-        <i class="fa-solid fa-xmark text-slate-400"></i>
-      </button>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          v-if="authStore?.isAdmin && currentEtage?.image_url"
+          type="button"
+          @click="togglePinPlacementMode"
+          :class="[
+            'self-start sm:self-center px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shadow-2xs',
+            isPinPlacementModeActive
+              ? 'bg-amber-600 hover:bg-amber-700 text-white ring-2 ring-amber-400/50'
+              : 'bg-emerald-700 hover:bg-emerald-800 text-white',
+          ]"
+          :title="isPinPlacementModeActive ? 'Quitter le mode placement' : 'Positionner un local sur le plan (Admin)'"
+        >
+          <i class="fa-solid fa-location-dot text-xs"></i>
+          <span>{{ isPinPlacementModeActive ? 'Annuler placement' : 'Placer un pin' }}</span>
+        </button>
+
+        <button
+          v-if="authStore?.isAdmin"
+          type="button"
+          @click="isImageModalOpen = true"
+          class="self-start sm:self-center px-3 py-1.5 rounded-lg bg-[#002855] hover:bg-[#001e40] text-white text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 shadow-2xs"
+          title="Modifier le plan d'étage (Admin)"
+        >
+          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+          <span>Modifier le plan</span>
+        </button>
+
+        <button
+          type="button"
+          @click="$emit('close')"
+          class="self-start sm:self-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5"
+          title="Fermer le plan d'étage"
+        >
+          <span>Fermer le plan</span>
+          <i class="fa-solid fa-xmark text-slate-400"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Barre d'actions : Filtre par dates & Légende dynamique -->
@@ -121,10 +150,34 @@
       </div>
     </div>
 
+    <!-- Bannière informative si le mode placement de pin est actif -->
+    <div
+      v-if="isPinPlacementModeActive"
+      class="bg-amber-50 border border-amber-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-xs"
+    >
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping shrink-0"></span>
+        <span class="font-bold">Mode placement actif :</span>
+        <span>Cliquez directement sur l'image du plan ci-dessous à l'endroit exact où vous souhaitez positionner un local.</span>
+      </div>
+      <button
+        type="button"
+        @click="isPinPlacementModeActive = false"
+        class="self-start sm:self-center px-2.5 py-1 bg-amber-200 hover:bg-amber-300 rounded-lg font-bold text-amber-950 transition-colors cursor-pointer text-[11px]"
+      >
+        Quitter le mode
+      </button>
+    </div>
+
     <!-- Plan d'étage avec l'image réelle et les pins positionnés -->
     <div
       v-if="currentEtage"
-      class="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[400px]"
+      ref="planContainer"
+      @click="handlePlanClick"
+      :class="[
+        'relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[400px]',
+        isPinPlacementModeActive ? 'cursor-crosshair ring-2 ring-amber-400' : '',
+      ]"
     >
       <!-- Image réelle de l'étage (Cloudinary ou local) -->
       <img
@@ -227,6 +280,18 @@
           </p>
         </div>
         <button
+          v-if="authStore?.isAdmin"
+          type="button"
+          @click="confirmDeletePin(selectedPin)"
+          :disabled="isDeletingPin"
+          class="px-3.5 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+          title="Supprimer ce pin (Admin)"
+        >
+          <i class="fa-solid fa-trash-can text-[11px]"></i>
+          <span>Supprimer ce pin</span>
+        </button>
+
+        <button
           type="button"
           @click="viewPlotDetails(selectedPin)"
           class="px-3.5 py-2 rounded-lg bg-[#002855] hover:bg-[#001e40] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
@@ -236,14 +301,37 @@
         </button>
       </div>
     </div>
+
+    <!-- Modal d'administration de l'image de plan -->
+    <EtageImageModal
+      :is-open="isImageModalOpen"
+      :etage="currentEtage"
+      :hospital-name="hospitalInfo?.shortName || hospitalInfo?.name || hospitalCode"
+      @close="isImageModalOpen = false"
+    />
+
+    <!-- Modal d'association d'un emplacement à un pin -->
+    <PinPlacementModal
+      :is-open="isPinPlacementModalOpen"
+      :etage="currentEtage"
+      :hospital-code="hospitalCode"
+      :coords="pendingPinCoords"
+      @close="isPinPlacementModalOpen = false"
+      @created="handlePinCreated"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import EtageImageModal from './EtageImageModal.vue'
+import PinPlacementModal from './PinPlacementModal.vue'
 import { useReservationStore } from '../stores/reservations.js'
+import { useAuthStore } from '../stores/auth.js'
+import { useEtagesStore } from '../stores/etages.js'
+import { useToastStore } from '../stores/toast.js'
 
 const props = defineProps({
   hospitalCode: { type: String, required: true },
@@ -255,6 +343,34 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select-etage', 'select-pin', 'view-plot', 'close', 'update:date-range'])
+
+const planContainer = ref(null)
+const isImageModalOpen = ref(false)
+const isPinPlacementModeActive = ref(false)
+const isPinPlacementModalOpen = ref(false)
+const pendingPinCoords = ref({ x: 0.5, y: 0.5 })
+const isDeletingPin = ref(false)
+
+let authStore
+try {
+  authStore = useAuthStore()
+} catch {
+  authStore = { isAdmin: false }
+}
+
+let etagesStore
+try {
+  etagesStore = useEtagesStore()
+} catch {
+  etagesStore = { deletePin: async () => {} }
+}
+
+let toastStore
+try {
+  toastStore = useToastStore()
+} catch {
+  toastStore = { show: () => {} }
+}
 
 let reservationStore
 try {
@@ -366,5 +482,51 @@ function viewPlotDetails(pin) {
 
 function formatPrice(amount) {
   return `${new Intl.NumberFormat('fr-CA').format(amount)} $ CAD`
+}
+
+function togglePinPlacementMode() {
+  isPinPlacementModeActive.value = !isPinPlacementModeActive.value
+}
+
+function handlePlanClick(event) {
+  if (!isPinPlacementModeActive.value) return
+  const container = planContainer.value
+  if (!container) return
+
+  const rect = container.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return
+
+  const clickX = (event.clientX - rect.left) / rect.width
+  const clickY = (event.clientY - rect.top) / rect.height
+
+  pendingPinCoords.value = {
+    x: Math.max(0, Math.min(1, Math.round(clickX * 1000) / 1000)),
+    y: Math.max(0, Math.min(1, Math.round(clickY * 1000) / 1000)),
+  }
+
+  isPinPlacementModalOpen.value = true
+}
+
+function handlePinCreated() {
+  isPinPlacementModeActive.value = false
+  isPinPlacementModalOpen.value = false
+}
+
+async function confirmDeletePin(pin) {
+  if (!pin?.id) return
+  const confirmed = window.confirm(
+    `Êtes-vous sûr de vouloir supprimer le pin pour "${pin.no_local_pavillon || pin.lieu_specifique || 'cet emplacement'}" ?`,
+  )
+  if (!confirmed) return
+
+  isDeletingPin.value = true
+  try {
+    await etagesStore.deletePin(pin.id)
+    toastStore.show('Pin supprimé du plan avec succès.')
+  } catch (err) {
+    alert(err.message || 'Erreur lors de la suppression du pin')
+  } finally {
+    isDeletingPin.value = false
+  }
 }
 </script>

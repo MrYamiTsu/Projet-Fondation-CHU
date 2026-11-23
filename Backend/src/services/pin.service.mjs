@@ -60,13 +60,24 @@ export async function createPin(etage_id, emplacement_id, x, y) {
     throw erreur;
   }
 
-  return await PinRepository.createPin(
+  const pin = await PinRepository.createPin(
     etage.hopital_id,
     etage.id,
     emplacement_id,
     x,
     y,
   );
+
+  return {
+    ...pin,
+    no_local_pavillon: emplacement.no_local_pavillon,
+    lieu_specifique: emplacement.lieu_specifique,
+    description: emplacement.description,
+    valeur_toponymique: emplacement.valeur_toponymique,
+    type_lieu: emplacement.type_lieu,
+    categorie: emplacement.categorie,
+    superficie: emplacement.superficie,
+  };
 }
 
 export async function deletePin(id) {

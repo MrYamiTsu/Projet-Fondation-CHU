@@ -190,6 +190,15 @@
           <i class="fa-solid fa-users text-xs"></i>
           <span>Gestion des utilisateurs ({{ authStore.users.length }})</span>
         </button>
+        <button @click="activeTab = 'etages'" :class="[
+          'pb-3 text-xs font-bold transition-all border-b-2 -mb-px flex items-center gap-2 cursor-pointer',
+          activeTab === 'etages'
+            ? 'border-[#0a1526] text-[#0a1526]'
+            : 'border-transparent text-slate-400 hover:text-slate-700',
+        ]">
+          <i class="fa-solid fa-map-location-dot text-xs"></i>
+          <span>Plans d'étages</span>
+        </button>
       </div>
 
       <!-- ONGLET 1: GESTION DES EMPLACEMENTS -->
@@ -415,6 +424,116 @@
           </table>
         </div>
       </div>
+
+      <!-- ONGLET 3: GESTION DES PLANS D'ÉTAGES -->
+      <div v-if="activeTab === 'etages'" class="space-y-6">
+        <!-- Sélecteur d'hôpital -->
+        <div class="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-[#002855] text-white flex items-center justify-center text-xs font-bold">
+              <i class="fa-solid fa-hospital"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">
+                Établissement sélectionné
+              </h3>
+              <p class="text-xs text-slate-500">
+                Gérez et mettez à jour les plans architecturaux de chaque étage
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button
+              v-for="h in adminHospitals"
+              :key="h.code"
+              type="button"
+              @click="selectAdminHospital(h.code)"
+              :class="[
+                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5',
+                selectedAdminHospitalCode === h.code
+                  ? 'bg-[#002855] text-white border-[#002855] shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50',
+              ]"
+            >
+              <span>{{ h.code }}</span>
+              <span class="text-[10px] font-medium opacity-80">&bull; {{ h.shortName }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Grille des étages de l'hôpital -->
+        <div v-if="adminEtages.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div
+            v-for="etage in adminEtages"
+            :key="etage.id"
+            class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow"
+          >
+            <!-- Aperçu de l'image -->
+            <div class="relative h-44 bg-slate-100 flex items-center justify-center border-b border-slate-100 p-2 overflow-hidden">
+              <img
+                v-if="etage.image_url"
+                :src="etage.image_url"
+                :alt="etage.nom"
+                class="w-full h-full object-contain"
+                loading="lazy"
+              />
+              <div v-else class="text-center p-4 space-y-1">
+                <i class="fa-solid fa-image text-slate-300 text-3xl"></i>
+                <p class="text-xs font-semibold text-slate-500">Aucun plan configuré</p>
+                <p class="text-[10px] text-slate-400">Grille architecturale affichée</p>
+              </div>
+
+              <!-- Badge niveau -->
+              <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-[#002855]/90 text-white text-[10px] font-black tracking-wider">
+                Niveau {{ etage.niveau }}
+              </span>
+
+              <!-- Badge Cloudinary si présent -->
+              <span
+                v-if="etage.image_url"
+                class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[10px] font-bold flex items-center gap-1 shadow-2xs"
+              >
+                <i class="fa-solid fa-cloud-arrow-up text-[9px]"></i>
+                <span>En ligne</span>
+              </span>
+            </div>
+
+            <!-- Infos étage -->
+            <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
+              <div>
+                <h4 class="text-sm font-bold text-slate-900 leading-snug">
+                  {{ etage.nom }}
+                </h4>
+                <p v-if="etage.description" class="text-xs text-slate-500 mt-1 line-clamp-2">
+                  {{ etage.description }}
+                </p>
+                <div class="flex items-center gap-2 mt-2 text-[11px] text-slate-500">
+                  <i class="fa-solid fa-location-dot text-[#002855]"></i>
+                  <span>{{ etage.pins?.length || 0 }} emplacement(s) positionné(s)</span>
+                </div>
+              </div>
+
+              <!-- Bouton d'action -->
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  @click="openEtageModal(etage)"
+                  class="flex-1 px-3 py-2 bg-[#002855] hover:bg-[#001e40] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                >
+                  <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                  <span>{{ etage.image_url ? 'Changer le plan' : 'Téléverser un plan' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-12 bg-white rounded-2xl border border-slate-200 p-6 space-y-2">
+          <i class="fa-solid fa-spinner fa-spin text-slate-400 text-xl"></i>
+          <p class="text-xs text-slate-500 font-medium">Chargement des étages...</p>
+        </div>
+      </div>
     </main>
 
     <!-- MODAL AJOUT (TEMPLATE) / MODIFICATION D'EMPLACEMENT -->
@@ -629,6 +748,15 @@
         </form>
       </div>
     </div>
+
+    <!-- MODAL MODIFICATION DU PLAN D'ÉTAGE -->
+    <EtageImageModal
+      :is-open="isEtageModalOpen"
+      :etage="selectedEtageForModal"
+      :hospital-name="selectedAdminHospitalCode"
+      @close="isEtageModalOpen = false"
+      @updated="handleEtageUpdated"
+    />
   </div>
 </template>
 
@@ -637,16 +765,46 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
+import { useEtagesStore } from '../stores/etages.js'
+import EtageImageModal from '../components/EtageImageModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const plotsStore = usePlotsStore()
+const etagesStore = useEtagesStore()
+
+const adminHospitals = [
+  { code: 'CHUL', shortName: 'CHUL' },
+  { code: 'NCH', shortName: 'Nouveau Complexe' },
+  { code: 'HSFA', shortName: 'Saint-François' },
+  { code: 'HSS', shortName: 'Saint-Sacrement' },
+]
+const selectedAdminHospitalCode = ref('CHUL')
+const selectedEtageForModal = ref(null)
+const isEtageModalOpen = ref(false)
+
+const adminEtages = computed(() => etagesStore.etages)
+
+async function selectAdminHospital(code) {
+  selectedAdminHospitalCode.value = code
+  await etagesStore.fetchEtagesByHospital(code)
+}
+
+function openEtageModal(etage) {
+  selectedEtageForModal.value = etage
+  isEtageModalOpen.value = true
+}
+
+function handleEtageUpdated() {
+  selectAdminHospital(selectedAdminHospitalCode.value)
+}
 
 onMounted(() => {
   if (!authStore.isAdmin) {
     router.replace({ path: '/', query: { reason: 'admin_forbidden' } })
   }
   plotsStore.getPlots()
+  selectAdminHospital('CHUL')
 })
 
 const activeTab = ref('plots')

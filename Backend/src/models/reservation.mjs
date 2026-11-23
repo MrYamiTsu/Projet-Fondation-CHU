@@ -2,9 +2,10 @@ import pool from '../db.mjs';
 
 export async function getAllReservations() {
   const requete = `
-    SELECT *
-    FROM reservation
-    ORDER BY date_debut ASC
+    SELECT r.*, u.prenom, u.nom, u.email
+    FROM reservation r
+    LEFT JOIN utilisateur u ON u.id = r.utilisateur_id
+    ORDER BY r.date_debut ASC
   `;
 
   const result = await pool.query(requete);
@@ -158,4 +159,13 @@ export async function cancelMyPendingReservation(id, userId) {
 
   return result.rows[0]
 }
-
+export async function cancelReservationById(id) {
+  const result = await pool.query(
+    `UPDATE reservation
+        SET statut = 'cancelled'
+      WHERE id = $1 AND statut IN ('pending', 'confirmed')
+      RETURNING *`,
+    [id],
+  );
+  return result.rows[0] ?? null;
+}

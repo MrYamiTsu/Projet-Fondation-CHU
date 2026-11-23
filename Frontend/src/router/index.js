@@ -8,9 +8,9 @@ import { useAuthStore } from '../stores/auth.js'
 import MyReservationsView from '../views/MyReservationsView.vue'
 
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
 
-    scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     }
@@ -41,10 +41,10 @@ const router = createRouter({
       component: HomeView,
     },
     {
-     path: '/mes-reservations',
-     name: 'my-reservations',
-     component: MyReservationsView,
-     meta: { requiresAuth: true },
+      path: '/mes-reservations',
+      name: 'my-reservations',
+      component: MyReservationsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/emplacement/:id',
@@ -58,35 +58,62 @@ const router = createRouter({
       meta: { requiresAdmin: true },
     },
     {
+      path: '/admin/reservations',
+      name: 'admin-reservations',
+      component: () => import('../views/AdminReservationsView.vue'),
+      meta: { requiresAdmin: true },
+    },
+  
+    {
       path: '/reservation/:id',
       name: 'reservation',
       component: ReservationView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/admin/emplacements/ajouter',
+      name: 'ajouter-emplacement',
+      component: () => import('../views/AddPlotView.vue'),
+      meta: { requiresAdmin: true },
     },
     {
       path: '/profil',
       name: 'profil',
       component: ProfilView,
       meta: { requiresAuth: true },
-    }
+    },
   ],
 })
-
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return { path: '/', query: { authModal: '1', reason: 'login_required' } }
+  const isAdminPath = to.path === '/admin' || to.path.startsWith('/admin/')
+
+  const requiresAdmin = isAdminPath || to.matched.some((route) => route.meta.requiresAdmin)
+
+  const requiresAuth = requiresAdmin || to.matched.some((route) => route.meta.requiresAuth)
+
+  if (requiresAuth && !authStore.isAuthenticated) {
+    return {
+      path: '/',
+      query: {
+        authModal: '1',
+        reason: 'login_required',
+      },
+    }
   }
 
-  if (to.meta.requiresAdmin) {
-    if (!authStore.isAuthenticated) {
-      return { path: '/', query: { authModal: '1', reason: 'login_required' } }
-    }
-    if (!authStore.isAdmin) {
-      return { path: '/', query: { reason: 'admin_forbidden' } }
+  if (requiresAdmin && !authStore.isAdmin) {
+    return {
+      path: '/',
+      query: {
+        reason: 'admin_forbidden',
+      },
     }
   }
+
+  return true
 })
 
 export default router

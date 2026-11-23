@@ -72,8 +72,8 @@
           : 'bg-red-900 text-red-100 border-red-600/50'
           ">
         <i :class="toastType === 'success'
-            ? 'fa-solid fa-circle-check text-emerald-300 text-sm'
-            : 'fa-solid fa-circle-exclamation text-red-300 text-sm'
+          ? 'fa-solid fa-circle-check text-emerald-300 text-sm'
+          : 'fa-solid fa-circle-exclamation text-red-300 text-sm'
           "></i>
         <span>{{ toastMessage }}</span>
       </div>
@@ -94,7 +94,7 @@
         </div>
 
         <div class="flex items-center gap-2.5">
-          <button @click="openAddModal"
+          <button @click="router.push({ name: 'ajouter-emplacement' })"
             class="px-4 py-2.5 bg-[#0a1526] hover:bg-[#132238] text-white font-bold text-xs rounded-xl transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-plus text-xs text-teal-400"></i>
             <span>Ajouter un emplacement</span>
@@ -749,17 +749,34 @@ function openEditModal(plot) {
   isPlotModalOpen.value = true
 }
 
-function savePlot() {
-  if (editingPlotId.value) {
-    plotsStore.updatePlot(editingPlotId.value, { ...plotForm })
-    showToast(`L'emplacement "${plotForm.name}" a été modifié.`)
-  } else {
-    plotsStore.addPlot({ ...plotForm })
-    showToast(`L'emplacement "${plotForm.name}" a été créé.`)
-  }
-  isPlotModalOpen.value = false
-}
+async function savePlot() {
+  try {
+    if (editingPlotId.value) {
+      const originalPlot = plotsStore.plots.find(
+        (p) => Number(p.id) === Number(editingPlotId.value)
+      )
+      const payload = {
+        ...originalPlot,
+        lieu_specifique: plotForm.name,
+        type_lieu: plotForm.sector,
+        valeur_toponymique: Number(plotForm.price),
+        statut: plotForm.available ? 'Disponible' : 'Réservé',
+        description: plotForm.description,
+        image: plotForm.image,
+      }
 
+      await plotsStore.updatePlot(editingPlotId.value, payload)
+      showToast(`L'emplacement "${plotForm.name}" a été modifié.`)
+    } else {
+      await plotsStore.addPlot({ ...plotForm })
+      showToast(`L'emplacement "${plotForm.name}" a été créé.`)
+    }
+    editingPlotId.value = null
+    isPlotModalOpen.value = false
+  } catch (error) {
+    showToast(error.message || "Erreur lors de l'enregistrement.")
+  }
+}
 function resetPlotsData() {
   if (confirm('Réinitialiser tous les emplacements aux données par défaut ?')) {
     plotsStore.resetToDefault()

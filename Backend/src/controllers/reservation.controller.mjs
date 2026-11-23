@@ -131,3 +131,12 @@ export async function approveReservation(req, res, next) {
     return next(erreur);
   }
 }
+export async function cancelReservationAsAdmin(req, res, next) {
+  try {
+    const reservation = await reservationService.cancelReservationAsAdmin(req.params.id);
+
+    return envoyerSucces(req, res, 200, "Réservation annulée avec succès", { reservation });
+  } catch (erreur) {
+    return next(erreur);
+  }
+}

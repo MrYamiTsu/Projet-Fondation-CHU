@@ -25,31 +25,20 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       <div>
         <label
-          class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between"
-        >
+          class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
           <span class="flex items-center gap-1.5">
             <i class="fa-regular fa-calendar-days text-teal-600 text-[10px]"></i>
             <span>Dates souhaitées</span>
           </span>
-          <span
-            v-if="hasActiveDateFilter"
-            class="text-[9px] font-semibold text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200"
-          >
+          <span v-if="hasActiveDateFilter"
+            class="text-[9px] font-semibold text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
             Période active
           </span>
         </label>
         <div class="filter-datepicker-wrapper">
-          <VueDatePicker
-            v-model="dateRangeModel"
-            :range="{ noDisabledRange: false, partialRange: false }"
-            :time-config="{ enableTimePicker: false }"
-            :enable-time-picker="false"
-            :format="formatRange"
-            :min-date="today"
-            placeholder="Choisir des dates"
-            auto-apply
-            :clearable="true"
-          />
+          <VueDatePicker v-model="dateRangeModel" :range="{ noDisabledRange: false, partialRange: false }"
+            :time-config="{ enableTimePicker: false }" :enable-time-picker="false" :format="formatRange"
+            :min-date="today" placeholder="Choisir des dates" auto-apply :clearable="true" />
         </div>
       </div>
       <div>

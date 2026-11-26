@@ -3,6 +3,18 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/reservations/:route*",
+      "destination": "/api/reservations?route=:route*"
+    },
+    {
+      "source": "/api/hopitaux/:route*",
+      "destination": "/api/hopitaux?route=:route*"
+    },
+    {
+      "source": "/api/etages/:route*",
+      "destination": "/api/etages?route=:route*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

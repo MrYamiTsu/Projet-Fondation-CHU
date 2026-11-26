@@ -48,7 +48,7 @@ export const useReservationStore = defineStore('reservations', () => {
         throw new Error('Utilisateur non authentifié')
       }
 
-      const response = await fetch(`${API_BASE}/reservations`, {
+      const response = await fetch(`${API_BASE}/api/reservations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export const useReservationStore = defineStore('reservations', () => {
         throw new Error('Utilisateur non authentifié')
       }
 
-      const response = await fetch(`${API_BASE}/reservations/me`, {
+      const response = await fetch(`${API_BASE}/api/reservations/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -130,7 +130,7 @@ export const useReservationStore = defineStore('reservations', () => {
         headers.Authorization = `Bearer ${token}`
       }
 
-      const response = await fetch(`${API_BASE}/reservations/emplacement/${emplacementId}`, {
+      const response = await fetch(`${API_BASE}/api/reservations/emplacement/${emplacementId}`, {
         method: 'GET',
         headers,
       })
@@ -171,7 +171,7 @@ export const useReservationStore = defineStore('reservations', () => {
   async function getAllConfirmedReservations() {
     loading.value = true
     try {
-      const response = await fetch(`${API_BASE}/reservations/confirmed`)
+      const response = await fetch(`${API_BASE}/api/reservations/confirmed`)
       if (!response.ok) return []
       const result = await response.json()
       const list = result.data?.reservations || []
@@ -214,7 +214,7 @@ export const useReservationStore = defineStore('reservations', () => {
       throw new Error('Utilisateur non authentifié')
     }
 
-    const response = await fetch(`${API_BASE}/reservations/me/${id}`, {
+    const response = await fetch(`${API_BASE}/api/reservations/me/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ export const useReservationStore = defineStore('reservations', () => {
 
     if (!token) throw new Error('Utilisateur non authentifié')
 
-    const response = await fetch(`${API_BASE}/reservations/me/${id}/cancel`, {
+    const response = await fetch(`${API_BASE}/api/reservations/me/${id}/cancel`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -276,7 +276,7 @@ export const useReservationStore = defineStore('reservations', () => {
     let response
 
     try {
-      response = await fetch(`${API_BASE}/reservations${path}`, {
+      response = await fetch(`${API_BASE}/api/reservations${path}`, {
         ...options,
         headers: {
           Authorization: `Bearer ${token}`,

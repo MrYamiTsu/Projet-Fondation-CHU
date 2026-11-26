@@ -1,4 +1,5 @@
 import pool from '../_db.js';
+import { requireAdmin, sendError } from '../_http.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,6 +8,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  if (req.method !== 'GET') {
+    try {
+      requireAdmin(req);
+    } catch (err) {
+      return sendError(res, err);
+    }
   }
 
   if (req.method === 'GET') {
@@ -61,7 +70,7 @@ export default async function handler(req, res) {
         valeur_toponymique, valeur_toponymique_ancien, commentaire, statut
       ]);
 
-      return res.status(201).json(result.rows[0]);
+      return res.status(201).json({ ...result.rows[0], success: true, message: 'Emplacement ajouté avec succès', data: { emplacement: result.rows[0] } });
     } catch (err) {
       console.error('Error creating emplacement:', err);
       return res.status(500).json({ erreur: "Erreur lors de la création de l'emplacement.", details: err.message });

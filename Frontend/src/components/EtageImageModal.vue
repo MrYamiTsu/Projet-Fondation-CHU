@@ -76,7 +76,7 @@
         <!-- Zone de sélection / Drag and drop d'un nouveau fichier -->
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-            Nouvelle image de plan (JPEG, PNG ou WebP, max 5 Mo)
+            Nouvelle image de plan (JPEG, PNG ou WebP, max 4 Mo)
           </label>
 
           <div
@@ -131,7 +131,7 @@
                 <span class="text-slate-500"> ou glissez-déposez ici</span>
               </div>
               <p class="text-[11px] text-slate-400">
-                Formats : PNG, JPG, WebP jusqu'à 5 Mo
+                Formats : PNG, JPG, WebP jusqu'à 4 Mo
               </p>
             </div>
           </div>
@@ -257,8 +257,8 @@ function validateAndSetFile(file) {
     return
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    errorMessage.value = "La taille de l'image ne doit pas dépasser 5 Mo"
+  if (file.size > 4 * 1024 * 1024) {
+    errorMessage.value = "La taille de l'image ne doit pas dépasser 4 Mo"
     return
   }
 

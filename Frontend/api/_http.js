@@ -81,3 +81,46 @@ export function routeSegments(req) {
   const valeur = Array.isArray(brut) ? brut.join('/') : brut || '';
   return String(valeur).split('/').filter(Boolean);
 }
+
+// Lit un fichier envoyé en multipart/form-data (champ `champ`).
+// On lit le flux brut sans toucher à req.body : Vercel ne parse pas le multipart,
+// et accéder à req.body consommerait le flux.
+export async function readMultipartFile(req, champ, tailleMax) {
+  const type = req.headers?.['content-type'] || '';
+  if (!type.startsWith('multipart/form-data')) {
+    throw new HttpError(400, 'Veuillez fournir une image');
+  }
+
+  const morceaux = [];
+  let taille = 0;
+  for await (const morceau of req) {
+    taille += morceau.length;
+    if (taille > tailleMax + 64 * 1024) {
+      throw new HttpError(413, "L'image est trop volumineuse");
+    }
+    morceaux.push(morceau);
+  }
+
+  let form;
+  try {
+    form = await new Request('http://localhost/', {
+      method: 'POST',
+      headers: { 'content-type': type },
+      body: Buffer.concat(morceaux),
+    }).formData();
+  } catch {
+    throw new HttpError(400, 'Formulaire multipart invalide');
+  }
+
+  const fichier = form.get(champ);
+  if (!fichier || typeof fichier === 'string') {
+    throw new HttpError(400, 'Veuillez fournir une image');
+  }
+
+  return {
+    buffer: Buffer.from(await fichier.arrayBuffer()),
+    type: fichier.type,
+    size: fichier.size,
+    name: fichier.name,
+  };
+}

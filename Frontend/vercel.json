@@ -15,6 +15,10 @@
       "destination": "/api/etages?route=:route*"
     },
     {
+      "source": "/api/pins/:route*",
+      "destination": "/api/pins?route=:route*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

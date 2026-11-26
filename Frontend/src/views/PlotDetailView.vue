@@ -1,14 +1,24 @@
 <template>
   <div>
-    <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="authStore.logout">
+    <Header
+      :current-user="authStore.currentUser"
+      @open-auth="isAuthModalOpen = true"
+      @logout="authStore.logout"
+    >
       <template #auth>
-        <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false" />
+        <Auth
+          :is-open="isAuthModalOpen"
+          :users="authStore.users"
+          @close="isAuthModalOpen = false"
+        />
       </template>
     </Header>
   </div>
 
-  <div v-if="plotsStore.isLoading && !plot"
-    class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-3">
+  <div
+    v-if="plotsStore.isLoading && !plot"
+    class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-3"
+  >
     <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600"></i>
     <p class="text-sm font-medium">Chargement des détails de l'emplacement...</p>
   </div>
@@ -17,27 +27,38 @@
     <div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
       <!-- Barre supérieure : Bouton Retour et Fil d'Ariane -->
       <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <button @click="goBack"
-          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors cursor-pointer group">
+        <button
+          @click="goBack"
+          class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors cursor-pointer group"
+        >
           <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
           <span>Retour aux emplacements</span>
         </button>
 
         <!-- Fil d'Ariane -->
         <nav class="flex items-center gap-2 text-xs text-slate-400" aria-label="Fil d'Ariane">
-          <router-link to="/#recherche" class="hover:text-teal-600 transition-colors hover:underline">
+          <router-link
+            to="/#recherche"
+            class="hover:text-teal-600 transition-colors hover:underline"
+          >
             Accueil
           </router-link>
           <span>/</span>
-          <button v-if="plot?.hospital" @click="navigateToHospital(plot.hospital)"
+          <button
+            v-if="plot?.hospital"
+            @click="navigateToHospital(plot.hospital)"
             class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
-            :title="`Filtrer par l'hôpital ${plot.hospital}`">
+            :title="`Filtrer par l'hôpital ${plot.hospital}`"
+          >
             {{ plot.hospital }}
           </button>
           <span v-if="plot?.hospital && plot?.sector">/</span>
-          <button v-if="plot?.sector" @click="navigateToSector(plot.sector)"
+          <button
+            v-if="plot?.sector"
+            @click="navigateToSector(plot.sector)"
             class="hover:text-teal-600 font-medium transition-colors hover:underline cursor-pointer"
-            :title="`Filtrer par le secteur ${plot.sector}`">
+            :title="`Filtrer par le secteur ${plot.sector}`"
+          >
             {{ plot.sector }}
           </button>
           <span>/</span>
@@ -63,8 +84,16 @@
                 isAvailableForSelectedRange ? 'bg-emerald-600' : 'bg-red-600',
               ]"
             >
-              <i :class="isAvailableForSelectedRange ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
-              <span>{{ isAvailableForSelectedRange ? 'Disponible pour ces dates' : 'Occupé pour ces dates' }}</span>
+              <i
+                :class="
+                  isAvailableForSelectedRange
+                    ? 'fa-solid fa-circle-check'
+                    : 'fa-solid fa-circle-xmark'
+                "
+              ></i>
+              <span>{{
+                isAvailableForSelectedRange ? 'Disponible pour ces dates' : 'Occupé pour ces dates'
+              }}</span>
             </span>
             <span
               v-else
@@ -76,9 +105,11 @@
           </div>
 
           <div>
-            <p @click="navigateToHospital(plot.hospital)"
+            <p
+              @click="navigateToHospital(plot.hospital)"
               class="text-sm font-semibold text-blue-600 uppercase tracking-wide cursor-pointer hover:underline inline-block"
-              :title="`Filtrer par l'hôpital ${plot.hospital} sur la page principale`">
+              :title="`Filtrer par l'hôpital ${plot.hospital} sur la page principale`"
+            >
               {{ plot?.hospital }}
             </p>
             <h1 class="text-3xl font-bold text-slate-900 mt-1">
@@ -89,9 +120,11 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
               <p class="text-sm text-slate-500">Secteur de soins</p>
-              <p @click="navigateToSector(plot.sector)"
+              <p
+                @click="navigateToSector(plot.sector)"
                 class="text-base font-medium text-slate-800 cursor-pointer hover:underline inline-block hover:text-blue-600 transition-colors"
-                :title="`Filtrer par le secteur ${plot.sector} sur la page principale`">
+                :title="`Filtrer par le secteur ${plot.sector} sur la page principale`"
+              >
                 {{ plot?.sector }}
               </p>
             </div>
@@ -105,9 +138,7 @@
           </div>
 
           <div class="border-t border-slate-200 pt-6">
-            <h2 class="text-lg font-bold text-slate-900 mb-4">
-              Détails de l'espace
-            </h2>
+            <h2 class="text-lg font-bold text-slate-900 mb-4">Détails de l'espace</h2>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div class="border border-slate-200 rounded-xl p-4">
                 <p class="text-sm text-slate-500">Dimensions</p>
@@ -122,8 +153,26 @@
                 </p>
               </div>
               <div class="border border-slate-200 rounded-xl p-4">
-                <p class="text-sm text-slate-500">Achalandage</p>
-                <p class="text-base font-semibold text-slate-800">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-sm text-slate-500">Achalandage</p>
+                  <div class="relative">
+                    <button
+                      type="button"
+                      @click.stop="isAchalandageOpen = !isAchalandageOpen"
+                      aria-label="En savoir plus sur les niveaux d'achalandage"
+                      title="Voir les niveaux d'achalandage"
+                      class="w-5 h-5 rounded-full bg-slate-100 hover:bg-teal-100 text-slate-500 hover:text-teal-700 flex items-center justify-center text-[11px] transition-colors cursor-pointer"
+                    >
+                      <i class="fa-solid fa-info"></i>
+                    </button>
+                    <AchalandageInfo
+                      :is-open="isAchalandageOpen"
+                      :current-level="plot?.ff_id"
+                      @close="isAchalandageOpen = false"
+                    />
+                  </div>
+                </div>
+                <p class="text-base font-semibold text-slate-800 mt-0.5">
                   {{ plot?.achalandage || 'Achalandage non disponible' }}
                 </p>
               </div>
@@ -132,9 +181,13 @@
         </div>
 
         <div class="lg:col-span-1">
-          <div class="border border-slate-200 rounded-2xl p-6 sticky top-6 space-y-5 shadow-sm bg-white">
+          <div
+            class="border border-slate-200 rounded-2xl p-6 sticky top-6 space-y-5 shadow-sm bg-white"
+          >
             <div>
-              <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Valeur de l'espace</p>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Valeur de l'espace
+              </p>
               <p class="text-3xl font-black text-slate-900 font-mono mt-0.5">
                 {{ plot?.formattedPrice || 'Prix non disponible' }}
               </p>
@@ -143,7 +196,9 @@
             <!-- Section Disponibilité & Calendrier -->
             <div class="border-t border-slate-100 pt-4 space-y-3">
               <div class="flex items-center justify-between">
-                <label class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <label
+                  class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5"
+                >
                   <i class="fa-regular fa-calendar-days text-teal-600"></i>
                   <span>Vérifier les dates</span>
                 </label>
@@ -195,13 +250,16 @@
               </div>
 
               <!-- Résumé des disponibilités -->
-              <div class="text-[11px] text-slate-500 space-y-1.5 bg-teal-50/50 p-3 rounded-xl border border-teal-100">
+              <div
+                class="text-[11px] text-slate-500 space-y-1.5 bg-teal-50/50 p-3 rounded-xl border border-teal-100"
+              >
                 <p class="font-bold text-teal-900 flex items-center gap-1.5">
                   <i class="fa-solid fa-circle-info text-teal-600"></i>
                   <span>Statut des réservations</span>
                 </p>
                 <p v-if="reservationStore.reservedPeriods.length === 0">
-                  Aucune réservation confirmée pour le moment. L'emplacement est libre immédiatement.
+                  Aucune réservation confirmée pour le moment. L'emplacement est libre
+                  immédiatement.
                 </p>
                 <div v-else class="space-y-1">
                   <p>
@@ -214,7 +272,8 @@
                     {{ reservationStore.reservedPeriods.length }} période{{
                       reservationStore.reservedPeriods.length > 1 ? 's' : ''
                     }}
-                    déjà réservée{{ reservationStore.reservedPeriods.length > 1 ? 's' : '' }} (dates grisées au calendrier).
+                    déjà réservée{{ reservationStore.reservedPeriods.length > 1 ? 's' : '' }} (dates
+                    grisées au calendrier).
                   </p>
                 </div>
               </div>
@@ -226,7 +285,11 @@
               class="w-full bg-[#0A1526] hover:bg-[#132238] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 text-sm shadow-sm"
             >
               <i class="fa-solid fa-calendar-check"></i>
-              <span>{{ isRangeSelected && !isAvailableForSelectedRange ? 'Période occupée' : 'Réserver l\'emplacement' }}</span>
+              <span>{{
+                isRangeSelected && !isAvailableForSelectedRange
+                  ? 'Période occupée'
+                  : "Réserver l'emplacement"
+              }}</span>
             </button>
           </div>
         </div>
@@ -236,8 +299,10 @@
 
   <div v-else class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-4">
     <p class="text-base font-medium">Emplacement introuvable.</p>
-    <button @click="goBack"
-      class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors cursor-pointer">
+    <button
+      @click="goBack"
+      class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors cursor-pointer"
+    >
       <i class="fa-solid fa-arrow-left"></i>
       <span>Retour aux emplacements</span>
     </button>
@@ -249,6 +314,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from '../components/Header.vue'
 import Auth from '../components/Auth.vue'
+import AchalandageInfo from '../components/AchalandageInfo.vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { usePlotsStore } from '../stores/plots.js'
@@ -262,6 +328,7 @@ const authStore = useAuthStore()
 const reservationStore = useReservationStore()
 
 const isAuthModalOpen = ref(false)
+const isAchalandageOpen = ref(false)
 const selectedRange = ref(null)
 const today = new Date()
 
@@ -315,7 +382,7 @@ const isAvailableForSelectedRange = computed(() => {
   const startStr = formatDate(selectedRange.value[0])
   const endStr = formatDate(selectedRange.value[1])
   return !reservationStore.reservedPeriods.some(
-    (period) => period.start <= endStr && period.end >= startStr
+    (period) => period.start <= endStr && period.end >= startStr,
   )
 })
 
@@ -329,7 +396,7 @@ const disabledDates = computed(() => {
   return (date) => {
     const dStr = formatDate(date)
     return reservationStore.reservedPeriods.some(
-      (period) => dStr >= period.start && dStr <= period.end
+      (period) => dStr >= period.start && dStr <= period.end,
     )
   }
 })
@@ -338,7 +405,7 @@ const firstAvailableDate = computed(() => {
   const candidate = new Date(today)
   candidate.setHours(0, 0, 0, 0)
   const periods = [...reservationStore.reservedPeriods].sort((a, b) =>
-    a.start.localeCompare(b.start)
+    a.start.localeCompare(b.start),
   )
   for (const period of periods) {
     const day = formatDate(candidate)
@@ -357,9 +424,7 @@ async function loadPlotAndReservations() {
     await plotsStore.getPlotById(id)
     try {
       await reservationStore.getReservedPeriods(id)
-    } catch {
-      // Ignoré si indisponible
-    }
+    } catch {}
   }
 }
 
@@ -375,7 +440,7 @@ watch(
   () => route.params.id,
   async () => {
     await loadPlotAndReservations()
-  }
+  },
 )
 
 function goBack() {

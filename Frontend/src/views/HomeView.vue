@@ -196,6 +196,13 @@ function checkRouteAlerts() {
       message:
         'Votre compte actuel ne dispose pas des privilèges administrateur pour accéder à cette vue.',
     }
+  } else if (route.query.reason === 'session_expired') {
+    accessAlert.value = {
+      type: 'warning',
+      title: 'Session expirée',
+      message: 'Votre session a expiré. Veuillez vous reconnecter pour continuer.',
+    }
+    isAuthModalOpen.value = true
   } else if (route.query.reason === 'login_required' || route.query.authModal === '1') {
     accessAlert.value = {
       type: 'warning',

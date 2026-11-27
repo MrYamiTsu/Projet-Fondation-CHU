@@ -6,6 +6,7 @@ import ReservationView from '../views/ReservationView.vue'
 import ProfilView from '../views/ProfilView.vue'
 import { useAuthStore } from '../stores/auth.js'
 import MyReservationsView from '../views/MyReservationsView.vue'
+import { SESSION_EXPIRED_QUERY } from '../session.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +94,14 @@ router.beforeEach((to) => {
   const requiresAdmin = isAdminPath || to.matched.some((route) => route.meta.requiresAdmin)
 
   const requiresAuth = requiresAdmin || to.matched.some((route) => route.meta.requiresAuth)
+
+  // Jeton expiré : on ferme la session avant d'entrer sur une page protégée.
+  if (authStore.hasExpiredSession()) {
+    authStore.logout()
+    if (requiresAuth) {
+      return { path: '/', query: SESSION_EXPIRED_QUERY }
+    }
+  }
 
   if (requiresAuth && !authStore.isAuthenticated) {
     return {

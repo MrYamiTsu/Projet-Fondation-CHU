@@ -106,86 +106,88 @@ onUnmounted(store.clearMessages)
 </script>
 
 <template>
-  <main class="mx-auto max-w-3xl px-4 py-8 text-slate-900">
+  <main class="mx-auto max-w-7xl px-4 py-8 text-slate-900">
     <RouterLink to="/admin" class="text-sm text-teal-800 underline">Retour à l’administration</RouterLink>
     <h1 class="mt-4 text-3xl font-bold">Ajouter un emplacement</h1>
     <p class="mt-2 text-sm text-slate-600">Les champs marqués d’un astérisque (*) sont obligatoires.</p>
 
     <form class="mt-6 space-y-6" @submit.prevent="submit">
-      <fieldset
-        v-for="section in sections"
-        :key="section.titre"
-        :disabled="envoiEnCours"
-        class="rounded-xl border border-slate-200 bg-white px-5 pb-5"
-      >
-        <legend class="px-2 text-lg font-semibold">{{ section.titre }}</legend>
+      <div class="grid items-start gap-6 lg:grid-cols-2">
+        <fieldset
+          v-for="section in sections"
+          :key="section.titre"
+          :disabled="envoiEnCours"
+          class="rounded-xl border border-slate-200 bg-white px-5 pb-5"
+        >
+          <legend class="px-2 text-lg font-semibold">{{ section.titre }}</legend>
 
-        <div class="mt-3 grid gap-4 sm:grid-cols-2">
-          <div
-            v-for="champ in section.champs"
-            :key="champ.cle"
-            :class="{ 'sm:col-span-2': champ.type === 'textarea' }"
-          >
-            <label :for="champ.cle" class="mb-1 block text-sm font-medium">
-              {{ champ.libelle }}<span v-if="champ.requis"> *</span>
-              <span v-if="champ.facultatif" class="font-normal text-slate-500">(facultatif)</span>
-            </label>
+          <div class="mt-3 grid gap-4 sm:grid-cols-2">
+            <div
+              v-for="champ in section.champs"
+              :key="champ.cle"
+              :class="{ 'sm:col-span-2': champ.type === 'textarea' }"
+            >
+              <label :for="champ.cle" class="mb-1 block text-sm font-medium">
+                {{ champ.libelle }}<span v-if="champ.requis"> *</span>
+                <span v-if="champ.facultatif" class="font-normal text-slate-500"> (facultatif)</span>
+              </label>
 
-            <select
-              v-if="champ.type === 'hopital'"
-              :id="champ.cle"
-              v-model="formulaire[champ.cle]"
-              :required="champ.requis"
-            >
-              <option value="" disabled>Choisir un hôpital</option>
-              <option v-for="hopital in hopitaux" :key="hopital.id" :value="hopital.id">
-                {{ hopital.nom }}
-              </option>
-            </select>
-            <select
-              v-else-if="champ.type === 'fl' || champ.type === 'ff'"
-              :id="champ.cle"
-              v-model="formulaire[champ.cle]"
-              :required="champ.requis"
-            >
-              <option value="" disabled>Choisir un facteur</option>
-              <option v-for="facteur in facteurs[champ.type]" :key="facteur.id" :value="facteur.id">
-                {{ formatNombre.format(facteur[champ.type]) }} —
-                {{ champ.type === 'fl' ? facteur.type_lieu : `${formatNombre.format(facteur.nbr_personnes)} personnes` }}
-              </option>
-            </select>
-            <div v-else-if="champ.type === 'calcule'">
-              <output
+              <select
+                v-if="champ.type === 'hopital'"
                 :id="champ.cle"
-                for="superficie fl_id ff_id"
-                aria-live="polite"
-                class="calcule"
-                :class="{ 'calcule--vide': valeursCalculees[champ.cle] === null }"
+                v-model="formulaire[champ.cle]"
+                :required="champ.requis"
               >
-                {{ valeursCalculees[champ.cle] ?? 'Calculé automatiquement' }}
-              </output>
-              <p class="mt-1 text-xs text-slate-500">{{ champ.formule }}</p>
+                <option value="" disabled>Choisir un hôpital</option>
+                <option v-for="hopital in hopitaux" :key="hopital.id" :value="hopital.id">
+                  {{ hopital.nom }}
+                </option>
+              </select>
+              <select
+                v-else-if="champ.type === 'fl' || champ.type === 'ff'"
+                :id="champ.cle"
+                v-model="formulaire[champ.cle]"
+                :required="champ.requis"
+              >
+                <option value="" disabled>Choisir un facteur</option>
+                <option v-for="facteur in facteurs[champ.type]" :key="facteur.id" :value="facteur.id">
+                  {{ formatNombre.format(facteur[champ.type]) }} —
+                  {{ champ.type === 'fl' ? facteur.type_lieu : `${formatNombre.format(facteur.nbr_personnes)} personnes` }}
+                </option>
+              </select>
+              <div v-else-if="champ.type === 'calcule'">
+                <output
+                  :id="champ.cle"
+                  for="superficie fl_id ff_id"
+                  aria-live="polite"
+                  class="calcule"
+                  :class="{ 'calcule--vide': valeursCalculees[champ.cle] === null }"
+                >
+                  {{ valeursCalculees[champ.cle] ?? 'Calculé automatiquement' }}
+                </output>
+                <p class="mt-1 text-xs text-slate-500">{{ champ.formule }}</p>
+              </div>
+              <textarea
+                v-else-if="champ.type === 'textarea'"
+                :id="champ.cle"
+                v-model.trim="formulaire[champ.cle]"
+                rows="3"
+              />
+              <input
+                v-else
+                :id="champ.cle"
+                v-model.trim="formulaire[champ.cle]"
+                :type="champ.type || 'text'"
+                :min="champ.entier ? 1 : undefined"
+                :step="champ.entier ? 1 : 'any'"
+                :required="champ.requis"
+                :aria-describedby="champ.aide ? `${champ.cle}-aide` : undefined"
+              >
+              <p v-if="champ.aide" :id="`${champ.cle}-aide`" class="mt-1 text-xs text-slate-500">{{ champ.aide }}</p>
             </div>
-            <textarea
-              v-else-if="champ.type === 'textarea'"
-              :id="champ.cle"
-              v-model.trim="formulaire[champ.cle]"
-              rows="3"
-            />
-            <input
-              v-else
-              :id="champ.cle"
-              v-model.trim="formulaire[champ.cle]"
-              :type="champ.type || 'text'"
-              :min="champ.entier ? 1 : undefined"
-              :step="champ.entier ? 1 : 'any'"
-              :required="champ.requis"
-              :aria-describedby="champ.aide ? `${champ.cle}-aide` : undefined"
-            >
-            <p v-if="champ.aide" :id="`${champ.cle}-aide`" class="mt-1 text-xs text-slate-500">{{ champ.aide }}</p>
           </div>
-        </div>
-      </fieldset>
+        </fieldset>
+      </div>
 
       <p v-if="erreur" role="alert" class="text-red-700">{{ erreur }}</p>
 

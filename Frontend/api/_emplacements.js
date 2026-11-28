@@ -1,22 +1,31 @@
 import pool from './_db.js';
 
-export const SELECT_EMPLACEMENT = `
+const CALCULS = `
   WITH ajuste AS (
     SELECT e.id, fl.fl * ff.ff * e.superficie AS superficie_ajuste
     FROM emplacement e
     LEFT JOIN fl ON fl.id = e.fl_id
     LEFT JOIN ff ON ff.id = e.ff_id
   ),
-  calcul AS (
+  calculs AS (
     SELECT id,
            superficie_ajuste,
            superficie_ajuste / NULLIF(SUM(superficie_ajuste) OVER (), 0) AS poid_relatif
     FROM ajuste
   )
-  SELECT emplacement.*, hopital.acronyme, calcul.superficie_ajuste, calcul.poid_relatif
+`;
+
+export const SELECT_EMPLACEMENT = `
+  ${CALCULS}
+  SELECT emplacement.*, hopital.acronyme, calculs.superficie_ajuste, calculs.poid_relatif
   FROM emplacement
-  JOIN calcul ON calcul.id = emplacement.id
+  JOIN calculs ON calculs.id = emplacement.id
   LEFT JOIN hopital ON emplacement.composante_id = hopital.id
+`;
+
+export const TOTAL_SUPERFICIE_AJUSTEE = `
+  ${CALCULS}
+  SELECT COALESCE(SUM(superficie_ajuste), 0) AS total FROM calculs
 `;
 
 export async function emplacementParId(id) {

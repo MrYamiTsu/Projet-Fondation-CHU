@@ -1,21 +1,25 @@
 import pool from '../db.mjs';
 
-const SELECT_EMPLACEMENT = `
+const CALCULS = `
   WITH ajuste AS (
     SELECT e.id, fl.fl * ff.ff * e.superficie AS superficie_ajuste
     FROM emplacement e
     LEFT JOIN fl ON fl.id = e.fl_id
     LEFT JOIN ff ON ff.id = e.ff_id
   ),
-  calcul AS (
+  calculs AS (
     SELECT id,
            superficie_ajuste,
            superficie_ajuste / NULLIF(SUM(superficie_ajuste) OVER (), 0) AS poid_relatif
     FROM ajuste
   )
-  SELECT emplacement.*, hopital.acronyme, calcul.superficie_ajuste, calcul.poid_relatif
+`;
+
+const SELECT_EMPLACEMENT = `
+  ${CALCULS}
+  SELECT emplacement.*, hopital.acronyme, calculs.superficie_ajuste, calculs.poid_relatif
   FROM emplacement
-  JOIN calcul ON calcul.id = emplacement.id
+  JOIN calculs ON calculs.id = emplacement.id
   LEFT JOIN hopital ON emplacement.composante_id = hopital.id
 `;
 
@@ -195,12 +199,7 @@ export async function findFacteurs() {
   const [fl, ff, total] = await Promise.all([
     pool.query('SELECT id, fl, type_lieu FROM fl ORDER BY fl, id'),
     pool.query('SELECT id, ff, nbr_personnes FROM ff ORDER BY ff, id'),
-    pool.query(`
-      SELECT COALESCE(SUM(fl.fl * ff.ff * e.superficie), 0) AS total
-      FROM emplacement e
-      LEFT JOIN fl ON fl.id = e.fl_id
-      LEFT JOIN ff ON ff.id = e.ff_id
-    `),
+    pool.query(`${CALCULS} SELECT COALESCE(SUM(superficie_ajuste), 0) AS total FROM calculs`),
   ]);
 
   return {
@@ -209,6 +208,7 @@ export async function findFacteurs() {
     totalSuperficieAjustee: Number(total.rows[0].total),
   };
 }
+
 export async function deletePlot(id) {
   const client = await pool.connect();
 

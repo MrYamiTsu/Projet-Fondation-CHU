@@ -33,7 +33,7 @@ describe('emplacement.model', () => {
         'superficie_ajuste / NULLIF(SUM(superficie_ajuste) OVER (), 0) AS poid_relatif',
       );
       expect(propre).toContain(
-        'emplacement.*, hopital.acronyme, calcul.superficie_ajuste, calcul.poid_relatif',
+        'emplacement.*, hopital.acronyme, calculs.superficie_ajuste, calculs.poid_relatif',
       );
     };
 

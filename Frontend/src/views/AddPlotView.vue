@@ -1,14 +1,11 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive } from 'vue'
+import { onMounted, onUnmounted, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useEmplacementsStore } from '../stores/emplacements'
 import { useToastStore } from '../stores/toast'
-import {
-  calculerSuperficieAjustee,
-  calculerPoidsRelatif,
-  calculerValeurToponymique,
-} from '../utils/calculEmplacement'
+import ValeurCalculee from '../components/ValeurCalculee.vue'
+import { useCalculsEmplacement, libelleFacteur, FORMULES } from '../composables/useCalculsEmplacement'
 
 const sections = [
   {
@@ -29,10 +26,10 @@ const sections = [
       { cle: 'superficie', libelle: 'Superficie (m²)', type: 'number' },
       { cle: 'fl_id', libelle: 'Facteur de localisation (FL)', type: 'fl', requis: true },
       { cle: 'ff_id', libelle: 'Facteur de fréquentation (FF)', type: 'ff', requis: true },
-      { cle: 'superficie_ajuste', libelle: 'Superficie ajustée', type: 'calcule', formule: 'FL × FF × superficie' },
-      { cle: 'poid_relatif', libelle: 'Poids relatif', type: 'calcule', formule: 'Superficie ajustée ÷ total des superficies ajustées' },
+      { cle: 'superficie_ajuste', libelle: 'Superficie ajustée', type: 'calcule' },
+      { cle: 'poid_relatif', libelle: 'Poids relatif', type: 'calcule' },
       { cle: 'valorisation_totale', libelle: 'Valorisation totale ($)', type: 'number', horsBd: true, aide: 'Sert uniquement au calcul, n’est pas enregistrée.' },
-      { cle: 'valeur_toponymique', libelle: 'Valeur toponymique', type: 'calcule', formule: 'Poids relatif × valorisation totale' },
+      { cle: 'valeur_toponymique', libelle: 'Valeur toponymique', type: 'calcule' },
       { cle: 'valeur_toponymique_ancien', libelle: 'Ancienne valeur toponymique', type: 'number', facultatif: true },
       { cle: 'commentaire', libelle: 'Commentaire', type: 'textarea' },
     ],
@@ -49,33 +46,7 @@ const store = useEmplacementsStore()
 const { hopitaux, facteurs, envoiEnCours, erreur } = storeToRefs(store)
 const formulaire = reactive(emptyValues())
 
-const facteurChoisi = (liste, id, cle) => liste.find(item => String(item.id) === String(id))?.[cle]
-
-const superficieAjustee = computed(() =>
-  calculerSuperficieAjustee(
-    formulaire.superficie,
-    facteurChoisi(facteurs.value.fl, formulaire.fl_id, 'fl'),
-    facteurChoisi(facteurs.value.ff, formulaire.ff_id, 'ff'),
-  ),
-)
-
-const poidsRelatif = computed(() =>
-  calculerPoidsRelatif(superficieAjustee.value, facteurs.value.totalSuperficieAjustee),
-)
-
-const valeurToponymique = computed(() =>
-  calculerValeurToponymique(poidsRelatif.value, formulaire.valorisation_totale),
-)
-
-const formatNombre = new Intl.NumberFormat('fr-CA', { maximumFractionDigits: 2 })
-const formatMonetaire = new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })
-const formatPourcent = new Intl.NumberFormat('fr-CA', { style: 'percent', maximumFractionDigits: 2 })
-
-const valeursCalculees = computed(() => ({
-  superficie_ajuste: superficieAjustee.value === null ? null : `${formatNombre.format(superficieAjustee.value)} m²`,
-  poid_relatif: poidsRelatif.value === null ? null : formatPourcent.format(poidsRelatif.value),
-  valeur_toponymique: valeurToponymique.value === null ? null : formatMonetaire.format(valeurToponymique.value),
-}))
+const { valeurToponymique, affichage } = useCalculsEmplacement(formulaire, facteurs)
 
 function goBack() {
   if (window.history.state?.back) router.back()
@@ -151,22 +122,15 @@ onUnmounted(store.clearMessages)
               >
                 <option value="" disabled>Choisir un facteur</option>
                 <option v-for="facteur in facteurs[champ.type]" :key="facteur.id" :value="facteur.id">
-                  {{ formatNombre.format(facteur[champ.type]) }} —
-                  {{ champ.type === 'fl' ? facteur.type_lieu : `${formatNombre.format(facteur.nbr_personnes)} personnes` }}
+                  {{ libelleFacteur(champ.type, facteur) }}
                 </option>
               </select>
-              <div v-else-if="champ.type === 'calcule'">
-                <output
-                  :id="champ.cle"
-                  for="superficie fl_id ff_id"
-                  aria-live="polite"
-                  class="calcule"
-                  :class="{ 'calcule--vide': valeursCalculees[champ.cle] === null }"
-                >
-                  {{ valeursCalculees[champ.cle] ?? 'Calculé automatiquement' }}
-                </output>
-                <p class="mt-1 text-xs text-slate-500">{{ champ.formule }}</p>
-              </div>
+              <ValeurCalculee
+                v-else-if="champ.type === 'calcule'"
+                :id="champ.cle"
+                :valeur="affichage[champ.cle]"
+                :formule="FORMULES[champ.cle]"
+              />
               <textarea
                 v-else-if="champ.type === 'textarea'"
                 :id="champ.cle"
@@ -210,27 +174,6 @@ textarea {
   padding: 0.55rem 0.75rem;
   border: 1px solid #94a3b8;
   border-radius: 0.4rem;
-}
-
-.calcule {
-  display: flex;
-  align-items: center;
-  min-height: 2.45rem;
-  padding: 0.55rem 0.75rem;
-  border: 1px dashed #cbd5e1;
-  border-radius: 0.4rem;
-  background: #f8fafc;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: #0f172a;
-  cursor: default;
-  user-select: text;
-}
-
-.calcule--vide {
-  font-weight: 400;
-  font-style: italic;
-  color: #94a3b8;
 }
 
 input:focus-visible,

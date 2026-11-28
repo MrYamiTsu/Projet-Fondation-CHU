@@ -1,24 +1,21 @@
-function nombre(valeur) {
-  if (valeur === '' || valeur == null) return null
-  const n = Number(valeur)
-  return Number.isFinite(n) ? n : null
-}
+const enNombre = (valeur) =>
+  valeur === '' || valeur == null || !Number.isFinite(Number(valeur)) ? null : Number(valeur)
 
 export function calculerSuperficieAjustee(superficie, fl, ff) {
-  const [s, f, g] = [nombre(superficie), nombre(fl), nombre(ff)]
-  if (s === null || f === null || g === null) return null
-  return f * g * s
+  const valeurs = [superficie, fl, ff].map(enNombre)
+  return valeurs.includes(null) ? null : valeurs.reduce((produit, valeur) => produit * valeur)
 }
 
 export function calculerPoidsRelatif(superficieAjustee, totalAutresEmplacements) {
-  const ajustee = nombre(superficieAjustee)
+  const ajustee = enNombre(superficieAjustee)
   if (ajustee === null) return null
-  const total = (nombre(totalAutresEmplacements) ?? 0) + ajustee
+
+  const total = (enNombre(totalAutresEmplacements) ?? 0) + ajustee
   return total > 0 ? ajustee / total : null
 }
 
 export function calculerValeurToponymique(poidsRelatif, valorisationTotale) {
-  const [poids, valorisation] = [nombre(poidsRelatif), nombre(valorisationTotale)]
-  if (poids === null || valorisation === null) return null
-  return Math.round(poids * valorisation)
+  const poids = enNombre(poidsRelatif)
+  const valorisation = enNombre(valorisationTotale)
+  return poids === null || valorisation === null ? null : Math.round(poids * valorisation)
 }

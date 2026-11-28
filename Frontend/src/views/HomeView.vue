@@ -27,7 +27,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button v-if="!authStore.isAuthenticated" @click="isAuthModalOpen = true"
+            <button v-if="!authStore.isAuthenticated" type="button" @click.stop="isAuthModalOpen = true"
               class="px-3 py-1.5 bg-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg cursor-pointer hover:bg-teal-400 transition-colors">
               Se connecter
             </button>

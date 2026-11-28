@@ -649,14 +649,72 @@
                   class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600" />
               </div>
 
-              <!-- Prix / Valeur -->
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">
-                  Valeur philanthropique ($ CAD) *
+                <label for="superficie" class="block text-xs font-bold text-slate-700 mb-1">
+                  Superficie (m²)
                 </label>
-                <input v-model.number="plotForm.price" type="number" min="0" step="5000" required
-                  placeholder="Ex: 250000"
+                <input id="superficie" v-model="plotForm.superficie" type="number" min="0" step="any"
                   class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600" />
+              </div>
+
+              <div>
+                <label for="fl_id" class="block text-xs font-bold text-slate-700 mb-1">
+                  Facteur de localisation (FL) *
+                </label>
+                <select id="fl_id" v-model="plotForm.fl_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600">
+                  <option value="" disabled>Choisir un facteur</option>
+                  <option v-for="f in emplacementsStore.facteurs.fl" :key="f.id" :value="f.id">
+                    {{ libelleFacteur('fl', f) }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label for="ff_id" class="block text-xs font-bold text-slate-700 mb-1">
+                  Facteur de fréquentation (FF) *
+                </label>
+                <select id="ff_id" v-model="plotForm.ff_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600">
+                  <option value="" disabled>Choisir un facteur</option>
+                  <option v-for="f in emplacementsStore.facteurs.ff" :key="f.id" :value="f.id">
+                    {{ libelleFacteur('ff', f) }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label for="superficie_ajuste" class="block text-xs font-bold text-slate-700 mb-1">
+                  Superficie ajustée
+                </label>
+                <ValeurCalculee id="superficie_ajuste" :valeur="valeursCalculees.superficie_ajuste"
+                  :formule="FORMULES.superficie_ajuste" />
+              </div>
+
+              <div>
+                <label for="poid_relatif" class="block text-xs font-bold text-slate-700 mb-1">
+                  Poids relatif
+                </label>
+                <ValeurCalculee id="poid_relatif" :valeur="valeursCalculees.poid_relatif"
+                  :formule="FORMULES.poid_relatif" />
+              </div>
+
+              <div>
+                <label for="valorisation_totale" class="block text-xs font-bold text-slate-700 mb-1">
+                  Valorisation totale ($)
+                </label>
+                <input id="valorisation_totale" v-model="plotForm.valorisation_totale" type="number" min="0"
+                  step="any" aria-describedby="valorisation_totale-aide" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600" />
+                <p id="valorisation_totale-aide" class="mt-1 text-xs text-slate-500">
+                  Sert uniquement au calcul. Laisser vide pour garder la valeur actuelle.
+                </p>
+              </div>
+
+              <div>
+                <label for="valeur_toponymique" class="block text-xs font-bold text-slate-700 mb-1">
+                  Valeur toponymique
+                </label>
+                <ValeurCalculee id="valeur_toponymique" :valeur="valeursCalculees.valeur_toponymique"
+                  :formule="FORMULES.valeur_toponymique"
+                  :vide="`Inchangée : ${formatMontant.format(plotEnEdition?.price ?? 0)}`" />
               </div>
 
               <!-- Statut Disponibilité -->
@@ -781,13 +839,22 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
 import { useEtagesStore } from '../stores/etages.js'
+import { useEmplacementsStore } from '../stores/emplacements.js'
 import EtageImageModal from '../components/EtageImageModal.vue'
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue'
+import ValeurCalculee from '../components/ValeurCalculee.vue'
+import {
+  useCalculsEmplacement,
+  libelleFacteur,
+  FORMULES,
+  formatMontant,
+} from '../composables/useCalculsEmplacement'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const plotsStore = usePlotsStore()
 const etagesStore = useEtagesStore()
+const emplacementsStore = useEmplacementsStore()
 
 const adminHospitals = [
   { code: 'CHUL', shortName: 'CHUL' },
@@ -913,7 +980,13 @@ const defaultPlotForm = {
     'Espace stratégique à fort achalandage offrant une reconnaissance durable pour un donateur majeur au sein du CHU de Québec.',
 }
 
-const plotForm = reactive({ ...defaultPlotForm })
+const plotForm = reactive({ ...defaultPlotForm, superficie: '', fl_id: '', ff_id: '', valorisation_totale: '' })
+const plotEnEdition = ref(null)
+const { affichage: valeursCalculees, valeurToponymique } = useCalculsEmplacement(
+  plotForm,
+  () => emplacementsStore.facteurs,
+  () => plotEnEdition.value?.superficie_ajuste,
+)
 
 function openAddModal() {
   editingPlotId.value = null
@@ -928,6 +1001,7 @@ function saveTemplatePlot() {
 
 function openEditModal(plot) {
   editingPlotId.value = plot.id
+  plotEnEdition.value = plot
   Object.assign(plotForm, {
     name: plot.name,
     hospital: plot.hospital,
@@ -936,7 +1010,12 @@ function openEditModal(plot) {
     available: plot.available,
     image: plot.image,
     description: plot.description || '',
+    superficie: plot.superficie ?? '',
+    fl_id: plot.fl_id ?? '',
+    ff_id: plot.ff_id ?? '',
+    valorisation_totale: '',
   })
+  emplacementsStore.fetchFacteurs()
   isPlotModalOpen.value = true
 }
 
@@ -950,7 +1029,10 @@ async function savePlot() {
         ...originalPlot,
         lieu_specifique: plotForm.name,
         type_lieu: plotForm.sector,
-        valeur_toponymique: Number(plotForm.price),
+        superficie: plotForm.superficie === '' ? null : Number(plotForm.superficie),
+        fl_id: Number(plotForm.fl_id),
+        ff_id: Number(plotForm.ff_id),
+        valeur_toponymique: valeurToponymique.value ?? originalPlot.valeur_toponymique,
         statut: plotForm.available ? 'Disponible' : 'Réservé',
         description: plotForm.description,
         image: plotForm.image,

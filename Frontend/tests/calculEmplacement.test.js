@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { reactive } from 'vue'
+import { useCalculsEmplacement } from '../src/composables/useCalculsEmplacement.js'
 import {
   calculerSuperficieAjustee,
   calculerPoidsRelatif,
@@ -45,5 +47,16 @@ describe('calculerValeurToponymique', () => {
     expect(calculerValeurToponymique(null, 1_000_000)).toBeNull()
     expect(calculerValeurToponymique(0.2, '')).toBeNull()
     expect(calculerValeurToponymique(0.2, 'abc')).toBeNull()
+  })
+})
+
+describe('useCalculsEmplacement en modification', () => {
+  it('retire la superficie actuelle de l’emplacement du total, pour ne pas la compter deux fois', () => {
+    const facteurs = { fl: [{ id: 6, fl: 1.75 }], ff: [{ id: 8, ff: 2 }], totalSuperficieAjustee: 3883.75 }
+    const formulaire = reactive({ superficie: 250, fl_id: 6, ff_id: 8, valorisation_totale: '' })
+
+    const { poidsRelatif } = useCalculsEmplacement(formulaire, facteurs, 875)
+
+    expect(poidsRelatif.value).toBeCloseTo(875 / 3883.75)
   })
 })

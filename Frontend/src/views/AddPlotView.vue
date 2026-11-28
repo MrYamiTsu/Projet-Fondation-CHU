@@ -4,6 +4,8 @@ import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useEmplacementsStore } from '../stores/emplacements'
 import { useToastStore } from '../stores/toast'
+import ValeurCalculee from '../components/ValeurCalculee.vue'
+import { useCalculsEmplacement, libelleFacteur, FORMULES } from '../composables/useCalculsEmplacement'
 
 const sections = [
   {
@@ -21,26 +23,30 @@ const sections = [
   {
     titre: 'Superficie et évaluation',
     champs: [
-      { cle: 'superficie', libelle: 'Superficie', type: 'number' },
-      { cle: 'superficie_ajuste', libelle: 'Superficie ajustée', type: 'number' },
-      { cle: 'fl_id', libelle: 'Identifiant FL', type: 'number', entier: true, requis: true },
-      { cle: 'ff_id', libelle: 'Identifiant FF', type: 'number', entier: true, requis: true },
-      { cle: 'poid_relatif', libelle: 'Poids relatif', type: 'number' },
-      { cle: 'valeur_toponymique', libelle: 'Valeur toponymique', type: 'number' },
-      { cle: 'valeur_toponymique_ancien', libelle: 'Ancienne valeur toponymique', type: 'number' },
+      { cle: 'superficie', libelle: 'Superficie (m²)', type: 'number' },
+      { cle: 'fl_id', libelle: 'Facteur de localisation (FL)', type: 'fl', requis: true },
+      { cle: 'ff_id', libelle: 'Facteur de fréquentation (FF)', type: 'ff', requis: true },
+      { cle: 'superficie_ajuste', libelle: 'Superficie ajustée', type: 'calcule' },
+      { cle: 'poid_relatif', libelle: 'Poids relatif', type: 'calcule' },
+      { cle: 'valorisation_totale', libelle: 'Valorisation totale ($)', type: 'number', horsBd: true, aide: 'Sert uniquement au calcul, n’est pas enregistrée.' },
+      { cle: 'valeur_toponymique', libelle: 'Valeur toponymique', type: 'calcule' },
+      { cle: 'valeur_toponymique_ancien', libelle: 'Ancienne valeur toponymique', type: 'number', facultatif: true },
       { cle: 'commentaire', libelle: 'Commentaire', type: 'textarea' },
     ],
   },
 ]
 
-const champs = sections.flatMap(section => section.champs)
+const champs = sections.flatMap(section => section.champs).filter(champ => champ.type !== 'calcule')
+const champsHorsBd = new Set(champs.filter(champ => champ.horsBd).map(champ => champ.cle))
 const emptyValues = () => Object.fromEntries(champs.map(({ cle }) => [cle, '']))
 
 const router = useRouter()
 const toast = useToastStore()
 const store = useEmplacementsStore()
-const { hopitaux, envoiEnCours, erreur } = storeToRefs(store)
+const { hopitaux, facteurs, envoiEnCours, erreur } = storeToRefs(store)
 const formulaire = reactive(emptyValues())
+
+const { valeurToponymique, affichage } = useCalculsEmplacement(formulaire, facteurs)
 
 function goBack() {
   if (window.history.state?.back) router.back()
@@ -49,8 +55,11 @@ function goBack() {
 
 async function submit() {
   const donnees = Object.fromEntries(
-    Object.entries(formulaire).map(([cle, valeur]) => [cle, valeur === '' ? null : valeur]),
+    Object.entries(formulaire)
+      .filter(([cle]) => !champsHorsBd.has(cle))
+      .map(([cle, valeur]) => [cle, valeur === '' ? null : valeur]),
   )
+  donnees.valeur_toponymique = valeurToponymique.value
 
   const reussi = await store.addPlot(donnees)
   if (!reussi) return
@@ -59,65 +68,90 @@ async function submit() {
   goBack()
 }
 
-onMounted(store.fetchHospitals)
+onMounted(() => {
+  store.fetchHospitals()
+  store.fetchFacteurs()
+})
 
 onUnmounted(store.clearMessages)
 </script>
 
 <template>
-  <main class="mx-auto max-w-3xl px-4 py-8 text-slate-900">
+  <main class="mx-auto max-w-7xl px-4 py-8 text-slate-900">
     <RouterLink to="/admin" class="text-sm text-teal-800 underline">Retour à l’administration</RouterLink>
     <h1 class="mt-4 text-3xl font-bold">Ajouter un emplacement</h1>
     <p class="mt-2 text-sm text-slate-600">Les champs marqués d’un astérisque (*) sont obligatoires.</p>
 
     <form class="mt-6 space-y-6" @submit.prevent="submit">
-      <fieldset
-        v-for="section in sections"
-        :key="section.titre"
-        :disabled="envoiEnCours"
-        class="rounded-xl border border-slate-200 bg-white px-5 pb-5"
-      >
-        <legend class="px-2 text-lg font-semibold">{{ section.titre }}</legend>
+      <div class="grid items-start gap-6 lg:grid-cols-2">
+        <fieldset
+          v-for="section in sections"
+          :key="section.titre"
+          :disabled="envoiEnCours"
+          class="rounded-xl border border-slate-200 bg-white px-5 pb-5"
+        >
+          <legend class="px-2 text-lg font-semibold">{{ section.titre }}</legend>
 
-        <div class="mt-3 grid gap-4 sm:grid-cols-2">
-          <div
-            v-for="champ in section.champs"
-            :key="champ.cle"
-            :class="{ 'sm:col-span-2': champ.type === 'textarea' }"
-          >
-            <label :for="champ.cle" class="mb-1 block text-sm font-medium">
-              {{ champ.libelle }}<span v-if="champ.requis"> *</span>
-            </label>
+          <div class="mt-3 grid gap-4 sm:grid-cols-2">
+            <div
+              v-for="champ in section.champs"
+              :key="champ.cle"
+              :class="{ 'sm:col-span-2': champ.type === 'textarea' }"
+            >
+              <label :for="champ.cle" class="mb-1 block text-sm font-medium">
+                {{ champ.libelle }}<span v-if="champ.requis"> *</span>
+                <span v-if="champ.facultatif" class="font-normal text-slate-500"> (facultatif)</span>
+              </label>
 
-            <select
-              v-if="champ.type === 'hopital'"
-              :id="champ.cle"
-              v-model="formulaire[champ.cle]"
-              :required="champ.requis"
-            >
-              <option value="" disabled>Choisir un hôpital</option>
-              <option v-for="hopital in hopitaux" :key="hopital.id" :value="hopital.id">
-                {{ hopital.nom }}
-              </option>
-            </select>
-            <textarea
-              v-else-if="champ.type === 'textarea'"
-              :id="champ.cle"
-              v-model.trim="formulaire[champ.cle]"
-              rows="3"
-            />
-            <input
-              v-else
-              :id="champ.cle"
-              v-model.trim="formulaire[champ.cle]"
-              :type="champ.type || 'text'"
-              :min="champ.entier ? 1 : undefined"
-              :step="champ.entier ? 1 : 'any'"
-              :required="champ.requis"
-            >
+              <select
+                v-if="champ.type === 'hopital'"
+                :id="champ.cle"
+                v-model="formulaire[champ.cle]"
+                :required="champ.requis"
+              >
+                <option value="" disabled>Choisir un hôpital</option>
+                <option v-for="hopital in hopitaux" :key="hopital.id" :value="hopital.id">
+                  {{ hopital.nom }}
+                </option>
+              </select>
+              <select
+                v-else-if="champ.type === 'fl' || champ.type === 'ff'"
+                :id="champ.cle"
+                v-model="formulaire[champ.cle]"
+                :required="champ.requis"
+              >
+                <option value="" disabled>Choisir un facteur</option>
+                <option v-for="facteur in facteurs[champ.type]" :key="facteur.id" :value="facteur.id">
+                  {{ libelleFacteur(champ.type, facteur) }}
+                </option>
+              </select>
+              <ValeurCalculee
+                v-else-if="champ.type === 'calcule'"
+                :id="champ.cle"
+                :valeur="affichage[champ.cle]"
+                :formule="FORMULES[champ.cle]"
+              />
+              <textarea
+                v-else-if="champ.type === 'textarea'"
+                :id="champ.cle"
+                v-model.trim="formulaire[champ.cle]"
+                rows="3"
+              />
+              <input
+                v-else
+                :id="champ.cle"
+                v-model.trim="formulaire[champ.cle]"
+                :type="champ.type || 'text'"
+                :min="champ.entier ? 1 : undefined"
+                :step="champ.entier ? 1 : 'any'"
+                :required="champ.requis"
+                :aria-describedby="champ.aide ? `${champ.cle}-aide` : undefined"
+              >
+              <p v-if="champ.aide" :id="`${champ.cle}-aide`" class="mt-1 text-xs text-slate-500">{{ champ.aide }}</p>
+            </div>
           </div>
-        </div>
-      </fieldset>
+        </fieldset>
+      </div>
 
       <p v-if="erreur" role="alert" class="text-red-700">{{ erreur }}</p>
 

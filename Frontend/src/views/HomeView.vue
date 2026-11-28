@@ -2,13 +2,6 @@
   <div
     class="min-h-screen flex flex-col justify-between bg-slate-100 text-slate-800 selection:bg-blue-500 selection:text-white">
     <div>
-      <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="handleLogout">
-        <template #auth>
-          <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false"
-            @login="handleLoginSuccess" @signup="handleSignUpSuccess" />
-        </template>
-      </Header>
-
       <div v-if="accessAlert" class="max-w-[1600px] mx-auto px-4 lg:px-8 pt-6">
         <div class="p-4 rounded-2xl flex items-center justify-between gap-4 border shadow-lg" :class="accessAlert.type === 'danger'
           ? 'bg-red-950/90 text-red-100 border-red-500/50'
@@ -27,7 +20,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button v-if="!authStore.isAuthenticated" @click="isAuthModalOpen = true"
+            <button v-if="!authStore.isAuthenticated" type="button" @click.stop="authStore.openLogin()"
               class="px-3 py-1.5 bg-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-lg cursor-pointer hover:bg-teal-400 transition-colors">
               Se connecter
             </button>
@@ -76,12 +69,10 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import Header from '../components/Header.vue'
 import Map from '../components/Map.vue'
 import Valuation from '../components/Valuation.vue'
 import PlotList from '../components/PlotList.vue'
 import PlotFilters from '../components/PlotFilter.vue'
-import Auth from '../components/Auth.vue'
 
 import { hospitals, hospitalPins } from '../data/mockData.js'
 import { useAuthStore } from '../stores/auth.js'
@@ -94,7 +85,6 @@ const authStore = useAuthStore()
 const plotsStore = usePlotsStore()
 const reservationStore = useReservationStore()
 
-const isAuthModalOpen = ref(false)
 const accessAlert = ref(null)
 
 const defaultFilters = {
@@ -196,6 +186,13 @@ function checkRouteAlerts() {
       message:
         'Votre compte actuel ne dispose pas des privilèges administrateur pour accéder à cette vue.',
     }
+  } else if (route.query.reason === 'session_expired') {
+    accessAlert.value = {
+      type: 'warning',
+      title: 'Session expirée',
+      message: 'Votre session a expiré. Veuillez vous reconnecter pour continuer.',
+    }
+    authStore.openLogin()
   } else if (route.query.reason === 'login_required' || route.query.authModal === '1') {
     accessAlert.value = {
       type: 'warning',
@@ -203,7 +200,7 @@ function checkRouteAlerts() {
       message:
         'Veuillez vous connecter avec un compte administrateur pour accéder au panneau de gestion.',
     }
-    isAuthModalOpen.value = true
+    authStore.openLogin()
   }
 }
 
@@ -339,20 +336,12 @@ function openPlotDetail(plotOrId) {
   }
 }
 
-function handleLoginSuccess(user) {
-  isAuthModalOpen.value = false
-  accessAlert.value = null
-  if (user?.admin && route.query.reason) {
-    router.push('/admin')
-  }
-}
-
-function handleSignUpSuccess() {
-  isAuthModalOpen.value = false
-  accessAlert.value = null
-}
-
-function handleLogout() {
-  authStore.logout()
-}
+watch(
+  () => authStore.currentUser,
+  (user) => {
+    if (!user) return
+    accessAlert.value = null
+    if (user.admin && route.query.reason) router.push('/admin')
+  },
+)
 </script>

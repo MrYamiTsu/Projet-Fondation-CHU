@@ -1,18 +1,40 @@
-import express from 'express';
-import { getPlotByLieu, getPlotById, getAllPlots, addPlot, modifyPlot } from '../controllers/emplacement.controller.mjs';
-import { validatePlot, validatePlotId } from '../middlewares/emplacement.middleware.mjs';
-import { verifyToken, requireAdmin } from '../middlewares/auth.middleware.mjs';
+import express from "express";
+import {
+  getPlotByLieu,
+  getPlotById,
+  getAllPlots,
+  addPlot,
+  modifyPlot,
+  deletePlot,
+  getFacteurs,
+} from "../controllers/emplacement.controller.mjs";
+import {
+  validatePlot,
+  validatePlotId,
+} from "../middlewares/emplacement.middleware.mjs";
+import { verifyToken, requireAdmin } from "../middlewares/auth.middleware.mjs";
 
 const router = express.Router();
 
-router.get('/', getAllPlots);
+router.get("/", getAllPlots);
 
-router.get('/recherche', getPlotByLieu);
+router.get("/recherche", getPlotByLieu);
 
-router.get('/:id', validatePlotId, getPlotById);
+router.get("/facteurs", verifyToken, requireAdmin, getFacteurs);
 
-router.post('/', verifyToken, requireAdmin, validatePlot, addPlot);
+router.get("/:id", validatePlotId, getPlotById);
 
-router.put('/:id', verifyToken, requireAdmin, validatePlotId, validatePlot, modifyPlot);
+router.post("/", verifyToken, requireAdmin, validatePlot, addPlot);
+
+router.put(
+  "/:id",
+  verifyToken,
+  requireAdmin,
+  validatePlotId,
+  validatePlot,
+  modifyPlot,
+);
+
+router.delete("/:id", verifyToken, requireAdmin, validatePlotId, deletePlot);
 
 export default router;

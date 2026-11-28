@@ -8,15 +8,35 @@ const API_BASE = (rawApi && (!String(rawApi).includes('localhost') || isDev))
   : (isDev ? 'http://localhost:3000' : '')
 const API_URL = `${API_BASE}/api/auth`
 
+export function getTokenExpiry(jwt) {
+  if (typeof jwt !== 'string') return null
+  const payload = jwt.split('.')[1]
+  if (!payload) return null
+  try {
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const { exp } = JSON.parse(atob(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')))
+    return Number.isFinite(exp) ? exp * 1000 : null
+  } catch {
+    return null
+  }
+}
+
+export function isTokenExpired(jwt, now = Date.now()) {
+  const expiry = getTokenExpiry(jwt)
+  return expiry !== null && expiry <= now
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const savedUser = localStorage.getItem('chu_current_user')
   const currentUser = ref(savedUser ? JSON.parse(savedUser) : null)
   const token = ref(localStorage.getItem('token') || null)
   const isLoading = ref(false)
+  const isLoginOpen = ref(false)
 
   const users = ref(JSON.parse(localStorage.getItem('chu_users') || '[]'))
 
   const isAuthenticated = computed(() => !!currentUser.value)
+  const tokenExpiry = computed(() => getTokenExpiry(token.value))
   const isAdmin = computed(() => currentUser.value?.role === 'admin' || currentUser.value?.admin === true)
 
   function setSession(user, authToken) {
@@ -93,11 +113,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function openLogin() {
+    isLoginOpen.value = true
+  }
+
+  function closeLogin() {
+    isLoginOpen.value = false
+  }
+
   function logout() {
     currentUser.value = null
     token.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('chu_current_user')
+  }
+
+  function hasExpiredSession(now = Date.now()) {
+    if (!currentUser.value) return false
+    return !token.value || isTokenExpired(token.value, now)
   }
 
   function toggleUserAdmin(email) {
@@ -126,13 +159,18 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     currentUser,
     token,
+    tokenExpiry,
     users,
     isLoading,
+    isLoginOpen,
     isAuthenticated,
     isAdmin,
     login,
     signup,
     logout,
+    openLogin,
+    closeLogin,
+    hasExpiredSession,
     toggleUserAdmin,
     deleteUser,
     addUser,

@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-// Même valeur de repli que api/auth/login.js et api/auth/register.js,
-// sinon les jetons signés à la connexion ne seraient pas vérifiables ici.
+// Doit rester identique à la valeur de repli de api/auth/login.js et register.js.
 const JWT_SECRET_PAR_DEFAUT = 'fondation_chu_secret_jwt_key_2026_super_secure';
 
 export class HttpError extends Error {
@@ -75,16 +74,13 @@ export function parseId(value, message) {
   return nombre;
 }
 
-// Segments du chemin passés par la réécriture de vercel.json (?route=a/b/c).
 export function routeSegments(req) {
   const brut = req.query?.route;
   const valeur = Array.isArray(brut) ? brut.join('/') : brut || '';
   return String(valeur).split('/').filter(Boolean);
 }
 
-// Lit un fichier envoyé en multipart/form-data (champ `champ`).
-// On lit le flux brut sans toucher à req.body : Vercel ne parse pas le multipart,
-// et accéder à req.body consommerait le flux.
+// Ne pas toucher à req.body ici : le getter de Vercel consommerait le flux.
 export async function readMultipartFile(req, champ, tailleMax) {
   const type = req.headers?.['content-type'] || '';
   if (!type.startsWith('multipart/form-data')) {

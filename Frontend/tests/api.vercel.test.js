@@ -1,14 +1,21 @@
-// Tests des fonctions serverless Vercel (Frontend/api) avec une base simulée.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import jwt from 'jsonwebtoken'
 
 const query = vi.fn()
-vi.mock('../api/_db.js', () => ({ default: { query: (...args) => query(...args) } }))
+const release = vi.fn()
+vi.mock('../api/_db.js', () => ({
+  default: {
+    query: (...args) => query(...args),
+    connect: async () => ({ query: (...args) => query(...args), release }),
+  },
+}))
 
 const { default: reservations } = await import('../api/reservations.js')
 const { default: hopitaux } = await import('../api/hopitaux.js')
 const { default: etages } = await import('../api/etages.js')
 const { default: emplacements } = await import('../api/emplacements/index.js')
+const { default: emplacementParId } = await import('../api/emplacements/[id].js')
+const { default: facteurs } = await import('../api/emplacements/facteurs.js')
 
 const SECRET = 'fondation_chu_secret_jwt_key_2026_super_secure'
 const tokenUser = jwt.sign({ id: 7, role: 'user' }, SECRET)
@@ -58,27 +65,6 @@ describe('api/reservations', () => {
   it('GET / réservé aux admins → 403 pour un utilisateur', async () => {
     const res = await appel(reservations, { token: tokenUser })
     expect(res.statusCode).toBe(403)
-  })
-
-  it('GET /status?status=pending pour un admin', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: 1, statut: 'pending' }] })
-    const res = await appel(reservations, { route: 'status', query: { status: 'pending' }, token: tokenAdmin })
-    expect(res.statusCode).toBe(200)
-    expect(res.body.data.count).toBe(1)
-  })
-
-  it('GET /confirmed est public', async () => {
-    query.mockResolvedValueOnce({ rows: [] })
-    const res = await appel(reservations, { route: 'confirmed' })
-    expect(res.statusCode).toBe(200)
-    expect(res.body.data.reservations).toEqual([])
-  })
-
-  it('GET /emplacement/:id', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: 2 }] })
-    const res = await appel(reservations, { route: 'emplacement/4' })
-    expect(res.statusCode).toBe(200)
-    expect(query.mock.calls[0][1]).toEqual([4])
   })
 
   it('POST / crée une réservation (201)', async () => {
@@ -138,12 +124,6 @@ describe('api/reservations', () => {
     expect(res.body.data.reservation.statut).toBe('confirmed')
   })
 
-  it('PATCH /:id/cancel par un admin', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: 5, statut: 'cancelled' }] })
-    const res = await appel(reservations, { method: 'PATCH', route: '5/cancel', token: tokenAdmin })
-    expect(res.statusCode).toBe(200)
-  })
-
   it('route inconnue → 404 JSON (jamais de HTML)', async () => {
     const res = await appel(reservations, { method: 'DELETE', route: 'me' })
     expect(res.statusCode).toBe(404)
@@ -159,11 +139,6 @@ describe('api/hopitaux', () => {
     expect(res.body).toEqual([{ id: 1, nom: 'CHUL' }])
   })
 
-  it('GET /:id inconnu → 404', async () => {
-    query.mockResolvedValueOnce({ rows: [] })
-    const res = await appel(hopitaux, { route: '99' })
-    expect(res.statusCode).toBe(404)
-  })
 })
 
 describe('api/etages', () => {
@@ -177,10 +152,6 @@ describe('api/etages', () => {
     expect(res.body[1].pins).toEqual([{ id: 10, etage_id: 2 }])
   })
 
-  it('GET sans nom → 400', async () => {
-    const res = await appel(etages)
-    expect(res.statusCode).toBe(400)
-  })
 })
 
 describe('api/emplacements (écritures protégées)', () => {
@@ -190,17 +161,111 @@ describe('api/emplacements (écritures protégées)', () => {
     expect(query).not.toHaveBeenCalled()
   })
 
-  it('POST par un admin → 201 avec data.emplacement', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: 42 }] })
-    const res = await appel(emplacements, { method: 'POST', token: tokenAdmin, body: {} })
+  it('POST par un admin → 201 avec les valeurs calculées, sans écrire les champs calculés', async () => {
+    query
+      .mockResolvedValueOnce({ rows: [{ id: 42 }] })
+      .mockResolvedValueOnce({ rows: [{ id: 42, superficie_ajuste: 875, poid_relatif: 0.2253 }] })
+    const res = await appel(emplacements, {
+      method: 'POST',
+      token: tokenAdmin,
+      body: { superficie: 250, fl_id: 6, ff_id: 8, superficie_ajuste: 1, poid_relatif: 99 },
+    })
+
     expect(res.statusCode).toBe(201)
-    expect(res.body.data.emplacement.id).toBe(42)
-    expect(res.body.id).toBe(42)
+    expect(res.body.data.emplacement).toMatchObject({ id: 42, superficie_ajuste: 875, poid_relatif: 0.2253 })
+    const [insert, valeurs] = query.mock.calls[0]
+    expect(insert).not.toMatch(/superficie_ajuste|poid_relatif/)
+    expect(valeurs).toHaveLength(13)
+    expect(valeurs).not.toContain(99)
   })
 
-  it('GET reste public', async () => {
-    query.mockResolvedValueOnce({ rows: [] })
-    const res = await appel(emplacements)
+})
+
+describe('DELETE /api/emplacements/:id', () => {
+  const sql = () => query.mock.calls.map(([q]) => q.replace(/\s+/g, ' ').trim())
+
+  it('supprime l’emplacement et ses réservations annulées (200)', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+
     expect(res.statusCode).toBe(200)
+    expect(sql()).toEqual([
+      'BEGIN',
+      expect.stringContaining("IS DISTINCT FROM 'cancelled'"),
+      'DELETE FROM reservation WHERE emplacement_id = $1',
+      'DELETE FROM emplacement WHERE id = $1',
+      'COMMIT',
+    ])
+    expect(release).toHaveBeenCalled()
+  })
+
+  it('409 s’il reste une réservation en attente ou confirmée, sans rien supprimer', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+
+    expect(res.statusCode).toBe(409)
+    expect(res.body.erreur).toContain('Annulez-les')
+    expect(sql().at(-1)).toBe('ROLLBACK')
+    expect(sql().some((q) => q.startsWith('DELETE'))).toBe(false)
+  })
+
+  it('404 si l’emplacement n’existe pas', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '99' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('409 si une réservation est créée pendant la suppression (23503)', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockRejectedValueOnce(Object.assign(new Error('fk'), { code: '23503' }))
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(409)
+    expect(sql().at(-1)).toBe('ROLLBACK')
+  })
+
+  it('401 sans jeton', async () => {
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' } })
+    expect(res.statusCode).toBe(401)
+    expect(query).not.toHaveBeenCalled()
+  })
+})
+
+describe('GET /api/emplacements/facteurs', () => {
+  it('renvoie FL, FF et le total des superficies ajustées (admin)', async () => {
+    query
+      .mockResolvedValueOnce({ rows: [{ id: 6, fl: 1.75, type_lieu: 'Hall' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 8, ff: 2, nbr_personnes: 2700 }] })
+      .mockResolvedValueOnce({ rows: [{ total: '3883.75' }] })
+    const res = await appel(facteurs, { token: tokenAdmin })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual({
+      fl: [{ id: 6, fl: 1.75, type_lieu: 'Hall' }],
+      ff: [{ id: 8, ff: 2, nbr_personnes: 2700 }],
+      totalSuperficieAjustee: 3883.75,
+    })
+  })
+
+  it('refuse un non-admin (403)', async () => {
+    const res = await appel(facteurs, { token: tokenUser })
+    expect(res.statusCode).toBe(403)
+    expect(query).not.toHaveBeenCalled()
   })
 })

@@ -171,7 +171,6 @@ import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useReservationStore } from '../stores/reservations.js'
-import Header from '../components/Header.vue'
 
 const reservationStore = useReservationStore()
 const { allReservations, allLoading, allError, processingReservationId } =

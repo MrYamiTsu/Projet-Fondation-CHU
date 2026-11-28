@@ -1,14 +1,4 @@
 <template>
-  <Header
-    :current-user="authStore.currentUser"
-    @open-auth="isAuthModalOpen = true"
-    @logout="authStore.logout"
-  >
-    <template #auth>
-      <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false" />
-    </template>
-  </Header>
-
   <main class="min-h-screen bg-gray-50 px-4 py-10 md:px-8">
     <div class="mx-auto max-w-6xl">
       <header class="mb-8">
@@ -215,15 +205,12 @@ import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { format, isValid, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import Header from '../components/Header.vue'
-import Auth from '../components/Auth.vue'
 import { useAuthStore } from '../stores/auth.js'
 import { useReservationStore } from '../stores/reservations.js'
 
 const authStore = useAuthStore()
 const reservationStore = useReservationStore()
 
-const isAuthModalOpen = ref(false)
 const isSubmitting = ref(false)
 const successMessage = ref('')
 

@@ -5,10 +5,15 @@ import {
   findAllPlots,
   findPlotByComposanteAndLieu,
   createPlot,
-  updatePlot
+  updatePlot,
+  deletePlot,
+  findFacteurs,
 } from '../models/emplacement.mjs';
 
 const UNIQUE_VIOLATION = '23505';
+const FOREIGN_KEY_VIOLATION = '23503';
+const MESSAGE_RESERVATIONS_ACTIVES =
+  'Impossible de supprimer : cet emplacement a des réservations en attente ou confirmées. Annulez-les d’abord.';
 
 function createError(message, status) {
   const erreur = new Error(message);
@@ -67,6 +72,10 @@ export async function getPlotById(id) {
   return emplacement;
 }
 
+export async function getFacteurs() {
+  return findFacteurs();
+}
+
 export async function getAllPlots() {
   return findAllPlots();
 }
@@ -96,6 +105,27 @@ export async function modifyPlot(id, donnees) {
   if (!emplacement) {
     throw createError('Emplacement introuvable', 404);
   }
-
   return emplacement;
+}
+
+export async function deleteAPlot(id) {
+  const idValide = validateId(id);
+
+  let resultat;
+  try {
+    resultat = await deletePlot(idValide);
+  } catch (erreur) {
+    if (erreur.code === FOREIGN_KEY_VIOLATION) {
+      throw createError(MESSAGE_RESERVATIONS_ACTIVES, 409);
+    }
+    throw erreur;
+  }
+
+  if (resultat.reservationsActives) {
+    throw createError(MESSAGE_RESERVATIONS_ACTIVES, 409);
+  }
+
+  if (!resultat.supprime) {
+    throw createError('Emplacement introuvable', 404);
+  }
 }

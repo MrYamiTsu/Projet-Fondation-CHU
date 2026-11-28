@@ -1,10 +1,5 @@
 <template>
     <div>
-        <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="authStore.logout">
-            <template #auth>
-                <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false" />
-            </template>
-        </Header>
 
         <!-- Message d'alerte si non connecté (harmonisé au thème du site) -->
         <div v-if="!authStore.isAuthenticated"
@@ -69,15 +64,12 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from '../components/Header.vue'
-import Auth from '../components/Auth.vue'
 import { useAuthStore } from '../stores/auth.js'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-const isAuthModalOpen = ref(false)
 const isSubmitting = ref(false)
 const feedbackMessage = ref('')
 const feedbackClass = ref('')

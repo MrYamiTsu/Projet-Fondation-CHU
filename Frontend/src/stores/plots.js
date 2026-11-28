@@ -153,7 +153,7 @@ export const usePlotsStore = defineStore('plots', () => {
           authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         },
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.erreur || data.message || 'Erreur lors de la suppression')
       plots.value = plots.value.filter((p) => Number(p.id) !== Number(id))
       return true

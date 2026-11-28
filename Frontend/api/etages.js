@@ -1,9 +1,3 @@
-// GET    /api/etages?nom=<hôpital>
-// GET    /api/etages/:id
-// PUT    /api/etages/:id/image   (multipart, champ "image", admin)
-// DELETE /api/etages/:id/image   (admin)
-// vercel.json réécrit /api/etages/<chemin> vers /api/etages?route=<chemin>.
-// Reprend Backend/src/models/etage.mjs et Backend/src/services/etage.services.mjs.
 import pool from './_db.js';
 import {
   HttpError,
@@ -76,12 +70,10 @@ async function envoyerImage(req, res, idBrut) {
     );
     maj = rows[0];
   } catch (err) {
-    // la BD a échoué : on retire la nouvelle image pour ne pas laisser d'orphelin
     await deleteImage(upload.public_id).catch(() => {});
     throw err;
   }
 
-  // l'ancienne image n'est plus utilisée : on la supprime
   if (etage.image_public_id) {
     await deleteImage(etage.image_public_id).catch((err) =>
       console.error("Suppression de l'ancienne image impossible :", err),

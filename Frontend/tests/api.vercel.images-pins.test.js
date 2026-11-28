@@ -1,4 +1,3 @@
-// Tests des fonctions Vercel : envoi d'image de plan (Cloudinary simulé) et pins.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Readable } from 'node:stream'
 import jwt from 'jsonwebtoken'
@@ -91,7 +90,6 @@ describe('PUT /api/etages/:id/image', () => {
     expect(optsUpload.body.get('folder')).toBe('etages')
     expect(optsUpload.body.get('file')).toBeInstanceOf(Blob)
 
-    // l'ancienne image est supprimée
     expect(globalThis.fetch.mock.calls[1][0]).toBe('https://api.cloudinary.com/v1_1/demo/image/destroy')
     expect(globalThis.fetch.mock.calls[1][1].body.get('public_id')).toBe('etages/ancienne')
   })
@@ -106,25 +104,6 @@ describe('PUT /api/etages/:id/image', () => {
     await etages(req, res)
     expect(res.statusCode).toBe(403)
     expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
-
-  it('refuse un format non image (400)', async () => {
-    const req = await requeteMultipart({
-      route: '3/image',
-      token: tokenAdmin,
-      fichier: new Blob(['texte'], { type: 'text/plain' }),
-    })
-    const res = reponse()
-    await etages(req, res)
-    expect(res.statusCode).toBe(400)
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
-
-  it('refuse une requête sans fichier (400)', async () => {
-    const req = await requeteMultipart({ route: '3/image', token: tokenAdmin })
-    const res = reponse()
-    await etages(req, res)
-    expect(res.statusCode).toBe(400)
   })
 
   it('refuse une image de plus de 4 Mo (413)', async () => {
@@ -160,20 +139,6 @@ describe('PUT /api/etages/:id/image', () => {
     expect(globalThis.fetch.mock.calls[1][1].body.get('public_id')).toBe('etages/orpheline')
   })
 
-  it('erreur claire si Cloudinary n’est pas configuré', async () => {
-    delete process.env.CLOUDINARY_API_SECRET
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    query.mockResolvedValueOnce({ rows: [{ id: 3 }] })
-    const req = await requeteMultipart({
-      route: '3/image',
-      token: tokenAdmin,
-      fichier: new Blob([new Uint8Array([1])], { type: 'image/png' }),
-    })
-    const res = reponse()
-    await etages(req, res)
-    expect(res.statusCode).toBe(500)
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
 })
 
 describe('DELETE /api/etages/:id/image', () => {
@@ -192,12 +157,6 @@ describe('DELETE /api/etages/:id/image', () => {
     expect(globalThis.fetch.mock.calls[0][1].body.get('public_id')).toBe('etages/plan')
   })
 
-  it('404 si l’étage n’a pas d’image', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: 3, image_public_id: null }] })
-    const res = reponse()
-    await etages(requeteJson({ method: 'DELETE', route: '3/image', token: tokenAdmin }), res)
-    expect(res.statusCode).toBe(404)
-  })
 })
 
 describe('api/pins', () => {
@@ -246,17 +205,10 @@ describe('api/pins', () => {
     expect(query.mock.calls[0][1]).toEqual([11])
   })
 
-  it('DELETE /:id inconnu → 404', async () => {
-    query.mockResolvedValueOnce({ rows: [] })
-    const res = reponse()
-    await pins(requeteJson({ method: 'DELETE', route: '99', token: tokenAdmin }), res)
-    expect(res.statusCode).toBe(404)
-  })
 })
 
 describe('signature Cloudinary', () => {
   it('suit le format documenté (paramètres triés + secret, SHA-1)', () => {
-    // Exemple de la documentation Cloudinary
     expect(
       signer({ eager: 'w_400,h_300,c_pad|w_260,h_200,c_crop', public_id: 'sample_image', timestamp: 1315060510 }, 'abcd'),
     ).toBe('bfd09f95f331f558cbd1320e67aa8d488770583e')

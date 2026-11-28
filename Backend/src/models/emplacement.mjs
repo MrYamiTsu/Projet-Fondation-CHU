@@ -202,3 +202,10 @@ export async function updatePlot(id, emplacement) {
 
   return result.rows[0];
 }
+export async function deletePlot(id){
+  const requete = `DELETE FROM emplacement WHERE id=$1`;
+  
+  const result = await pool.query(requete,[id]);
+
+  return result.rowCount>0;
+}

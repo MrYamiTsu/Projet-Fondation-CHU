@@ -544,6 +544,7 @@
       :consequences="[
         'L’emplacement disparaîtra du catalogue public et de l’administration.',
         'Son repère sur le plan d’étage sera retiré.',
+        'Ses réservations annulées seront effacées de l’historique.',
       ]"
       :on-confirm="deleteSelectedPlot"
       @deleted="onPlotDeleted"

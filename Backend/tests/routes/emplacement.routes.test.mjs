@@ -58,7 +58,7 @@ describe('DELETE /emplacements/:id', () => {
   });
 
   it('retourne 204 sans contenu quand un admin supprime un emplacement', async () => {
-    modele.deletePlot.mockResolvedValue(true);
+    modele.deletePlot.mockResolvedValue({ supprime: true, reservationsActives: false });
 
     const res = await request(app)
       .delete('/emplacements/5')
@@ -70,7 +70,7 @@ describe('DELETE /emplacements/:id', () => {
   });
 
   it('retourne 404 si l’emplacement n’existe pas', async () => {
-    modele.deletePlot.mockResolvedValue(false);
+    modele.deletePlot.mockResolvedValue({ supprime: false, reservationsActives: false });
 
     const res = await request(app)
       .delete('/emplacements/99')
@@ -80,7 +80,7 @@ describe('DELETE /emplacements/:id', () => {
   });
 
   it('est aussi disponible sous /api/emplacements/:id', async () => {
-    modele.deletePlot.mockResolvedValue(true);
+    modele.deletePlot.mockResolvedValue({ supprime: true, reservationsActives: false });
 
     const res = await request(app)
       .delete('/api/emplacements/5')

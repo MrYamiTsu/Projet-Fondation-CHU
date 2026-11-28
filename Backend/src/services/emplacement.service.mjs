@@ -11,6 +11,8 @@ import {
 
 const UNIQUE_VIOLATION = '23505';
 const FOREIGN_KEY_VIOLATION = '23503';
+const MESSAGE_RESERVATIONS_ACTIVES =
+  'Impossible de supprimer : cet emplacement a des réservations en attente ou confirmées. Annulez-les d’abord.';
 
 function createError(message, status) {
   const erreur = new Error(message);
@@ -104,17 +106,21 @@ export async function modifyPlot(id, donnees) {
 export async function deleteAPlot(id) {
   const idValide = validateId(id);
 
-  let supprime;
+  let resultat;
   try {
-    supprime = await deletePlot(idValide);
+    resultat = await deletePlot(idValide);
   } catch (erreur) {
     if (erreur.code === FOREIGN_KEY_VIOLATION) {
-      throw createError('Impossible de supprimer un emplacement qui a des réservations', 409);
+      throw createError(MESSAGE_RESERVATIONS_ACTIVES, 409);
     }
     throw erreur;
   }
 
-  if (!supprime) {
+  if (resultat.reservationsActives) {
+    throw createError(MESSAGE_RESERVATIONS_ACTIVES, 409);
+  }
+
+  if (!resultat.supprime) {
     throw createError('Emplacement introuvable', 404);
   }
 }

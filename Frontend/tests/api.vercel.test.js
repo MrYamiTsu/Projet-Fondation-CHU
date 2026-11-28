@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import jwt from 'jsonwebtoken'
 
 const query = vi.fn()
-vi.mock('../api/_db.js', () => ({ default: { query: (...args) => query(...args) } }))
+const release = vi.fn()
+vi.mock('../api/_db.js', () => ({
+  default: {
+    query: (...args) => query(...args),
+    connect: async () => ({ query: (...args) => query(...args), release }),
+  },
+}))
 
 const { default: reservations } = await import('../api/reservations.js')
 const { default: hopitaux } = await import('../api/hopitaux.js')
@@ -206,23 +212,62 @@ describe('api/emplacements (écritures protégées)', () => {
 })
 
 describe('DELETE /api/emplacements/:id', () => {
-  it('supprime l’emplacement (200)', async () => {
-    query.mockResolvedValueOnce({ rowCount: 1 })
+  const sql = () => query.mock.calls.map(([q]) => q.replace(/\s+/g, ' ').trim())
+
+  it('supprime l’emplacement et ses réservations annulées (200)', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({})
     const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+
     expect(res.statusCode).toBe(200)
-    expect(query.mock.calls[0][1]).toEqual(['5'])
+    expect(sql()).toEqual([
+      'BEGIN',
+      expect.stringContaining("IS DISTINCT FROM 'cancelled'"),
+      'DELETE FROM reservation WHERE emplacement_id = $1',
+      'DELETE FROM emplacement WHERE id = $1',
+      'COMMIT',
+    ])
+    expect(release).toHaveBeenCalled()
+  })
+
+  it('409 s’il reste une réservation en attente ou confirmée, sans rien supprimer', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+
+    expect(res.statusCode).toBe(409)
+    expect(res.body.erreur).toContain('Annulez-les')
+    expect(sql().at(-1)).toBe('ROLLBACK')
+    expect(sql().some((q) => q.startsWith('DELETE'))).toBe(false)
   })
 
   it('404 si l’emplacement n’existe pas', async () => {
-    query.mockResolvedValueOnce({ rowCount: 0 })
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({})
     const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '99' }, token: tokenAdmin })
     expect(res.statusCode).toBe(404)
   })
 
-  it('409 si l’emplacement a des réservations', async () => {
-    query.mockRejectedValueOnce(Object.assign(new Error('fk'), { code: '23503' }))
+  it('409 si une réservation est créée pendant la suppression (23503)', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockRejectedValueOnce(Object.assign(new Error('fk'), { code: '23503' }))
+      .mockResolvedValueOnce({})
     const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
     expect(res.statusCode).toBe(409)
+    expect(sql().at(-1)).toBe('ROLLBACK')
   })
 
   it('401 sans jeton', async () => {

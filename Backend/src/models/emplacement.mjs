@@ -202,10 +202,33 @@ export async function updatePlot(id, emplacement) {
 
   return result.rows[0];
 }
-export async function deletePlot(id){
-  const requete = `DELETE FROM emplacement WHERE id=$1`;
-  
-  const result = await pool.query(requete,[id]);
+export async function deletePlot(id) {
+  const client = await pool.connect();
 
-  return result.rowCount>0;
+  try {
+    await client.query('BEGIN');
+
+    const actives = await client.query(
+      `SELECT id FROM reservation
+        WHERE emplacement_id = $1 AND statut IS DISTINCT FROM 'cancelled'
+        FOR UPDATE`,
+      [id],
+    );
+
+    if (actives.rowCount > 0) {
+      await client.query('ROLLBACK');
+      return { supprime: false, reservationsActives: true };
+    }
+
+    await client.query('DELETE FROM reservation WHERE emplacement_id = $1', [id]);
+    const result = await client.query('DELETE FROM emplacement WHERE id = $1', [id]);
+
+    await client.query('COMMIT');
+    return { supprime: result.rowCount > 0, reservationsActives: false };
+  } catch (erreur) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw erreur;
+  } finally {
+    client.release();
+  }
 }

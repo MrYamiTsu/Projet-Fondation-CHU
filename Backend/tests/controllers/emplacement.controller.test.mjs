@@ -303,7 +303,7 @@ describe('emplacement.controller', () => {
     });
 
     it('retourne 204 et supprime l’emplacement (id converti en nombre)', async () => {
-      modele.deletePlot.mockResolvedValue(true);
+      modele.deletePlot.mockResolvedValue({ supprime: true, reservationsActives: false });
 
       await deletePlot({ params: { id: '5' } }, res, next);
 
@@ -313,7 +313,7 @@ describe('emplacement.controller', () => {
     });
 
     it('retourne 404 si l’emplacement n’existe pas', async () => {
-      modele.deletePlot.mockResolvedValue(false);
+      modele.deletePlot.mockResolvedValue({ supprime: false, reservationsActives: false });
 
       await deletePlot({ params: { id: '99' } }, res, next);
 
@@ -321,7 +321,18 @@ describe('emplacement.controller', () => {
       expect(res.status).not.toHaveBeenCalled();
     });
 
-    it('retourne 409 si l’emplacement a encore des réservations (code 23503)', async () => {
+    it('retourne 409 si l’emplacement a des réservations en attente ou confirmées', async () => {
+      modele.deletePlot.mockResolvedValue({ supprime: false, reservationsActives: true });
+
+      await deletePlot({ params: { id: '5' } }, res, next);
+
+      const erreur = next.mock.calls[0][0];
+      expect(erreur.status).toBe(409);
+      expect(erreur.message).toContain('Annulez-les');
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    it('retourne 409 si une réservation est créée pendant la suppression (code 23503)', async () => {
       const lie = Object.assign(new Error('foreign key violation'), { code: '23503' });
       modele.deletePlot.mockRejectedValue(lie);
 

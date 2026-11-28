@@ -7,6 +7,7 @@ import {
   createPlot,
   updatePlot,
   deletePlot,
+  findFacteurs,
 } from '../models/emplacement.mjs';
 
 const UNIQUE_VIOLATION = '23505';
@@ -69,6 +70,10 @@ export async function getPlotById(id) {
   }
 
   return emplacement;
+}
+
+export async function getFacteurs() {
+  return findFacteurs();
 }
 
 export async function getAllPlots() {

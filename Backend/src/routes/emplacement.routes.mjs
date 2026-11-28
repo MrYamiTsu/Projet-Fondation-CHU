@@ -6,6 +6,7 @@ import {
   addPlot,
   modifyPlot,
   deletePlot,
+  getFacteurs,
 } from "../controllers/emplacement.controller.mjs";
 import {
   validatePlot,
@@ -18,6 +19,8 @@ const router = express.Router();
 router.get("/", getAllPlots);
 
 router.get("/recherche", getPlotByLieu);
+
+router.get("/facteurs", verifyToken, requireAdmin, getFacteurs);
 
 router.get("/:id", validatePlotId, getPlotById);
 

@@ -21,6 +21,16 @@ export async function getPlotById(req, res, next) {
   }
 }
 
+export async function getFacteurs(req, res, next) {
+  try {
+    const facteurs = await plotService.getFacteurs();
+
+    return res.status(200).json(facteurs);
+  } catch (erreur) {
+    return next(erreur);
+  }
+}
+
 export async function getAllPlots(req, res, next) {
   try {
     const emplacements = await plotService.getAllPlots();

@@ -1,6 +1,6 @@
 const CHAMPS_ID = ["composante_id", "fl_id", "ff_id"];
-const CHAMPS_SUPERFICIE = ["superficie", "superficie_ajuste"];
-const CHAMPS_ENTIERS = ["poid_relatif", "valeur_toponymique", "valeur_toponymique_ancien"];
+const CHAMPS_SUPERFICIE = ["superficie"];
+const CHAMPS_ENTIERS = ["valeur_toponymique", "valeur_toponymique_ancien"];
 
 const LONGUEURS_MAX = {
   no_local_pavillon: 100,

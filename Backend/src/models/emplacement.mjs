@@ -1,12 +1,26 @@
 import pool from '../db.mjs';
 
+const SELECT_EMPLACEMENT = `
+  WITH ajuste AS (
+    SELECT e.id, fl.fl * ff.ff * e.superficie AS superficie_ajuste
+    FROM emplacement e
+    LEFT JOIN fl ON fl.id = e.fl_id
+    LEFT JOIN ff ON ff.id = e.ff_id
+  ),
+  calcul AS (
+    SELECT id,
+           superficie_ajuste,
+           superficie_ajuste / NULLIF(SUM(superficie_ajuste) OVER (), 0) AS poid_relatif
+    FROM ajuste
+  )
+  SELECT emplacement.*, hopital.acronyme, calcul.superficie_ajuste, calcul.poid_relatif
+  FROM emplacement
+  JOIN calcul ON calcul.id = emplacement.id
+  LEFT JOIN hopital ON emplacement.composante_id = hopital.id
+`;
+
 export async function findPlotByLieu(lieu) {
-  const requete = `
-    SELECT emplacement.*, hopital.acronyme
-    FROM emplacement
-    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
-    WHERE emplacement.lieu_specifique ILIKE $1
-  `;
+  const requete = `${SELECT_EMPLACEMENT} WHERE emplacement.lieu_specifique ILIKE $1`;
 
   const result = await pool.query(requete, ['%' + lieu + '%']);
 
@@ -14,12 +28,7 @@ export async function findPlotByLieu(lieu) {
 }
 
 export async function findPlotByDescription(mot) {
-  const requete = `
-    SELECT emplacement.*, hopital.acronyme
-    FROM emplacement
-    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
-    WHERE emplacement.description ILIKE $1
-  `;
+  const requete = `${SELECT_EMPLACEMENT} WHERE emplacement.description ILIKE $1`;
 
   const result = await pool.query(requete, ['%' + mot + '%']);
 
@@ -27,12 +36,7 @@ export async function findPlotByDescription(mot) {
 }
 
 export async function findPlotById(id) {
-  const requete = `
-    SELECT emplacement.*, hopital.acronyme
-    FROM emplacement
-    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
-    WHERE emplacement.id = $1
-  `;
+  const requete = `${SELECT_EMPLACEMENT} WHERE emplacement.id = $1`;
 
   const result = await pool.query(requete, [id]);
 
@@ -44,11 +48,7 @@ export async function findPlotById(id) {
 }
 
 export async function findAllPlots() {
-  const requete = `
-    SELECT emplacement.*, hopital.acronyme
-    FROM emplacement
-    LEFT JOIN hopital ON emplacement.composante_id = hopital.id
-  `;
+  const requete = `${SELECT_EMPLACEMENT} ORDER BY emplacement.id`;
 
   const result = await pool.query(requete);
 
@@ -85,8 +85,6 @@ export async function createPlot(emplacement) {
     superficie,
     fl_id,
     ff_id,
-    superficie_ajuste,
-    poid_relatif,
     valeur_toponymique,
     valeur_toponymique_ancien,
     commentaire,
@@ -104,8 +102,6 @@ export async function createPlot(emplacement) {
       superficie,
       fl_id,
       ff_id,
-      superficie_ajuste,
-      poid_relatif,
       valeur_toponymique,
       valeur_toponymique_ancien,
       commentaire,
@@ -114,9 +110,9 @@ export async function createPlot(emplacement) {
     VALUES (
       $1, $2, $3, $4, $5,
       $6, $7, $8, $9, $10,
-      $11, $12, $13, $14, $15
+      $11, $12, $13
     )
-    RETURNING *
+    RETURNING id
   `;
 
   const result = await pool.query(requete, [
@@ -129,15 +125,13 @@ export async function createPlot(emplacement) {
     superficie,
     fl_id,
     ff_id,
-    superficie_ajuste,
-    poid_relatif,
     valeur_toponymique,
     valeur_toponymique_ancien,
     commentaire,
     statut
   ]);
 
-  return result.rows[0];
+  return findPlotById(result.rows[0].id);
 }
 
 export async function updatePlot(id, emplacement) {
@@ -151,8 +145,6 @@ export async function updatePlot(id, emplacement) {
     superficie,
     fl_id,
     ff_id,
-    superficie_ajuste,
-    poid_relatif,
     valeur_toponymique,
     valeur_toponymique_ancien,
     commentaire,
@@ -171,14 +163,12 @@ export async function updatePlot(id, emplacement) {
       superficie = $7,
       fl_id = $8,
       ff_id = $9,
-      superficie_ajuste = $10,
-      poid_relatif = $11,
-      valeur_toponymique = $12,
-      valeur_toponymique_ancien = $13,
-      commentaire = $14,
-      statut = $15
-    WHERE id = $16
-    RETURNING *
+      valeur_toponymique = $10,
+      valeur_toponymique_ancien = $11,
+      commentaire = $12,
+      statut = $13
+    WHERE id = $14
+    RETURNING id
   `;
 
   const result = await pool.query(requete, [
@@ -191,8 +181,6 @@ export async function updatePlot(id, emplacement) {
     superficie,
     fl_id,
     ff_id,
-    superficie_ajuste,
-    poid_relatif,
     valeur_toponymique,
     valeur_toponymique_ancien,
     commentaire,
@@ -200,7 +188,26 @@ export async function updatePlot(id, emplacement) {
     id
   ]);
 
-  return result.rows[0];
+  return result.rows[0] ? findPlotById(result.rows[0].id) : undefined;
+}
+
+export async function findFacteurs() {
+  const [fl, ff, total] = await Promise.all([
+    pool.query('SELECT id, fl, type_lieu FROM fl ORDER BY fl, id'),
+    pool.query('SELECT id, ff, nbr_personnes FROM ff ORDER BY ff, id'),
+    pool.query(`
+      SELECT COALESCE(SUM(fl.fl * ff.ff * e.superficie), 0) AS total
+      FROM emplacement e
+      LEFT JOIN fl ON fl.id = e.fl_id
+      LEFT JOIN ff ON ff.id = e.ff_id
+    `),
+  ]);
+
+  return {
+    fl: fl.rows,
+    ff: ff.rows,
+    totalSuperficieAjustee: Number(total.rows[0].total),
+  };
 }
 export async function deletePlot(id) {
   const client = await pool.connect();

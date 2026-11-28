@@ -1,14 +1,20 @@
-// Tests des fonctions serverless Vercel (Frontend/api) avec une base simulée.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import jwt from 'jsonwebtoken'
 
 const query = vi.fn()
-vi.mock('../api/_db.js', () => ({ default: { query: (...args) => query(...args) } }))
+const release = vi.fn()
+vi.mock('../api/_db.js', () => ({
+  default: {
+    query: (...args) => query(...args),
+    connect: async () => ({ query: (...args) => query(...args), release }),
+  },
+}))
 
 const { default: reservations } = await import('../api/reservations.js')
 const { default: hopitaux } = await import('../api/hopitaux.js')
 const { default: etages } = await import('../api/etages.js')
 const { default: emplacements } = await import('../api/emplacements/index.js')
+const { default: emplacementParId } = await import('../api/emplacements/[id].js')
 
 const SECRET = 'fondation_chu_secret_jwt_key_2026_super_secure'
 const tokenUser = jwt.sign({ id: 7, role: 'user' }, SECRET)
@@ -202,5 +208,71 @@ describe('api/emplacements (écritures protégées)', () => {
     query.mockResolvedValueOnce({ rows: [] })
     const res = await appel(emplacements)
     expect(res.statusCode).toBe(200)
+  })
+})
+
+describe('DELETE /api/emplacements/:id', () => {
+  const sql = () => query.mock.calls.map(([q]) => q.replace(/\s+/g, ' ').trim())
+
+  it('supprime l’emplacement et ses réservations annulées (200)', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+
+    expect(res.statusCode).toBe(200)
+    expect(sql()).toEqual([
+      'BEGIN',
+      expect.stringContaining("IS DISTINCT FROM 'cancelled'"),
+      'DELETE FROM reservation WHERE emplacement_id = $1',
+      'DELETE FROM emplacement WHERE id = $1',
+      'COMMIT',
+    ])
+    expect(release).toHaveBeenCalled()
+  })
+
+  it('409 s’il reste une réservation en attente ou confirmée, sans rien supprimer', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 1 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+
+    expect(res.statusCode).toBe(409)
+    expect(res.body.erreur).toContain('Annulez-les')
+    expect(sql().at(-1)).toBe('ROLLBACK')
+    expect(sql().some((q) => q.startsWith('DELETE'))).toBe(false)
+  })
+
+  it('404 si l’emplacement n’existe pas', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '99' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('409 si une réservation est créée pendant la suppression (23503)', async () => {
+    query
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockResolvedValueOnce({ rowCount: 0 })
+      .mockRejectedValueOnce(Object.assign(new Error('fk'), { code: '23503' }))
+      .mockResolvedValueOnce({})
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(409)
+    expect(sql().at(-1)).toBe('ROLLBACK')
+  })
+
+  it('401 sans jeton', async () => {
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' } })
+    expect(res.statusCode).toBe(401)
+    expect(query).not.toHaveBeenCalled()
   })
 })

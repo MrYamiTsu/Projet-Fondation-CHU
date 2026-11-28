@@ -50,3 +50,13 @@ export async function modifyPlot(req, res, next) {
     return next(erreur);
   }
 }
+
+export async function deletePlot(req,res,next) {
+    try{
+        await plotService.deleteAPlot(req.params.id);
+        return envoyerSucces(req, res, 204, 'Emplacement supprimé avec succès');
+    }
+    catch(erreur){
+        next(erreur);
+    }
+}

@@ -1,7 +1,3 @@
-// POST   /api/pins       { etage_id, emplacement_id, x, y }  (admin)
-// DELETE /api/pins/:id                                       (admin)
-// vercel.json réécrit /api/pins/<chemin> vers /api/pins?route=<chemin>.
-// Reprend Backend/src/services/pin.service.mjs et Backend/src/models/pin.mjs.
 import pool from './_db.js';
 import { HttpError, setCors, sendError, parseId, routeSegments, requireAdmin } from './_http.js';
 

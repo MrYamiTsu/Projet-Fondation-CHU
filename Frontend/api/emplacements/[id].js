@@ -98,12 +98,38 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    const messageReservations =
+      'Impossible de supprimer : cet emplacement a des réservations en attente ou confirmées. Annulez-les d’abord.';
+    const client = await pool.connect();
     try {
-      await pool.query('DELETE FROM emplacement WHERE id = $1', [id]);
+      await client.query('BEGIN');
+      const actives = await client.query(
+        `SELECT id FROM reservation
+          WHERE emplacement_id = $1 AND statut IS DISTINCT FROM 'cancelled'
+          FOR UPDATE`,
+        [id],
+      );
+      if (actives.rowCount > 0) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ erreur: messageReservations });
+      }
+      await client.query('DELETE FROM reservation WHERE emplacement_id = $1', [id]);
+      const result = await client.query('DELETE FROM emplacement WHERE id = $1', [id]);
+      await client.query('COMMIT');
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({ erreur: 'Emplacement introuvable' });
+      }
       return res.status(200).json({ message: 'Emplacement supprimé' });
     } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      if (err.code === '23503') {
+        return res.status(409).json({ erreur: messageReservations });
+      }
       console.error('Error deleting plot:', err);
       return res.status(500).json({ erreur: 'Erreur suppression', details: err.message });
+    } finally {
+      client.release();
     }
   }
 

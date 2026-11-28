@@ -1,4 +1,3 @@
-// Tests des fonctions Vercel : envoi d'image de plan (Cloudinary simulé) et pins.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Readable } from 'node:stream'
 import jwt from 'jsonwebtoken'
@@ -91,7 +90,6 @@ describe('PUT /api/etages/:id/image', () => {
     expect(optsUpload.body.get('folder')).toBe('etages')
     expect(optsUpload.body.get('file')).toBeInstanceOf(Blob)
 
-    // l'ancienne image est supprimée
     expect(globalThis.fetch.mock.calls[1][0]).toBe('https://api.cloudinary.com/v1_1/demo/image/destroy')
     expect(globalThis.fetch.mock.calls[1][1].body.get('public_id')).toBe('etages/ancienne')
   })
@@ -256,7 +254,6 @@ describe('api/pins', () => {
 
 describe('signature Cloudinary', () => {
   it('suit le format documenté (paramètres triés + secret, SHA-1)', () => {
-    // Exemple de la documentation Cloudinary
     expect(
       signer({ eager: 'w_400,h_300,c_pad|w_260,h_200,c_crop', public_id: 'sample_image', timestamp: 1315060510 }, 'abcd'),
     ).toBe('bfd09f95f331f558cbd1320e67aa8d488770583e')

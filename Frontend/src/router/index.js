@@ -95,7 +95,6 @@ router.beforeEach((to) => {
 
   const requiresAuth = requiresAdmin || to.matched.some((route) => route.meta.requiresAuth)
 
-  // Jeton expiré : on ferme la session avant d'entrer sur une page protégée.
   if (authStore.hasExpiredSession()) {
     authStore.logout()
     if (requiresAuth) {

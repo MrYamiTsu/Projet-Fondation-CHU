@@ -1,5 +1,3 @@
-// Appels à l'API REST de Cloudinary (signés), sans dépendance npm.
-// Équivalent de Backend/src/utils/cloudinary.mjs pour les fonctions Vercel.
 import { createHash } from 'node:crypto';
 import { HttpError } from './_http.js';
 
@@ -15,7 +13,6 @@ function config() {
   return { cloudName, apiKey, apiSecret };
 }
 
-// Signature Cloudinary : paramètres triés "a=1&b=2" + secret, en SHA-1.
 export function signer(params, apiSecret) {
   const chaine = Object.keys(params)
     .sort()

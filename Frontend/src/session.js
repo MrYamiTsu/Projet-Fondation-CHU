@@ -1,7 +1,3 @@
-// Réaction à l'expiration du jeton de connexion (JWT, valable 24 h).
-// Quand le jeton expire — à l'heure prévue, ou parce qu'un appel authentifié
-// renvoie 401 — on déconnecte l'utilisateur, on le prévient, et s'il est sur
-// une page protégée on le renvoie à l'accueil avec la fenêtre de connexion ouverte.
 import { watch } from 'vue'
 import { useAuthStore } from './stores/auth.js'
 import { useToastStore } from './stores/toast.js'
@@ -60,20 +56,16 @@ export function installSessionExpiration(router, win = window) {
     timer = setTimeout(planifier, Math.min(delai, DELAI_MAX))
   }
 
-  // Session déjà expirée au chargement de la page.
   if (auth.hasExpiredSession()) {
     expire()
   }
 
   watch(() => auth.token, planifier, { immediate: true })
 
-  // Les minuteries sont ralenties quand l'onglet est en arrière-plan ou l'ordinateur en veille :
-  // on revérifie au retour sur la page.
   win.document?.addEventListener('visibilitychange', () => {
     if (!win.document.hidden && auth.hasExpiredSession()) expire()
   })
 
-  // Tout appel authentifié refusé (jeton expiré ou invalide) termine la session.
   const fetchOriginal = win.fetch.bind(win)
   win.fetch = async (input, init) => {
     const reponse = await fetchOriginal(input, init)

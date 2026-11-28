@@ -99,9 +99,15 @@ export default async function handler(req, res) {
 
   if (req.method === 'DELETE') {
     try {
-      await pool.query('DELETE FROM emplacement WHERE id = $1', [id]);
+      const result = await pool.query('DELETE FROM emplacement WHERE id = $1', [id]);
+      if (result.rowCount === 0) {
+        return res.status(404).json({ erreur: 'Emplacement introuvable' });
+      }
       return res.status(200).json({ message: 'Emplacement supprimé' });
     } catch (err) {
+      if (err.code === '23503') {
+        return res.status(409).json({ erreur: 'Impossible de supprimer un emplacement qui a des réservations' });
+      }
       console.error('Error deleting plot:', err);
       return res.status(500).json({ erreur: 'Erreur suppression', details: err.message });
     }

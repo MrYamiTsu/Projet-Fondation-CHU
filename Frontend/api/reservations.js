@@ -1,6 +1,3 @@
-// Fonction Vercel unique pour /api/reservations et toutes ses sous-routes.
-// vercel.json réécrit /api/reservations/<chemin> vers /api/reservations?route=<chemin>.
-// Reprend le comportement de Backend/src/routes/reservation.routes.mjs.
 import pool from './_db.js';
 import {
   HttpError,
@@ -67,8 +64,6 @@ function envoyerListe(req, res, message, reservations) {
 function envoyerUne(req, res, status, message, reservation) {
   return sendSuccess(req, res, status, message, { reservation });
 }
-
-// ---------- Handlers ----------
 
 async function listerToutes(req, res) {
   requireAdmin(req);
@@ -237,8 +232,6 @@ async function annulerCommeAdmin(req, res, id) {
   }
   return envoyerUne(req, res, 200, 'Réservation annulée avec succès', rows[0]);
 }
-
-// ---------- Routage ----------
 
 function router(method, seg) {
   const [a, b, c] = seg;

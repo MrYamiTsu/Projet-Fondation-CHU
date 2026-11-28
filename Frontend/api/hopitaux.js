@@ -1,4 +1,3 @@
-// GET /api/hopitaux et GET /api/hopitaux/:id (réécriture ?route=<id> dans vercel.json).
 import pool from './_db.js';
 import { HttpError, setCors, sendError, parseId, routeSegments } from './_http.js';
 

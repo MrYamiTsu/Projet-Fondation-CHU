@@ -8,8 +8,6 @@ const API_BASE = (rawApi && (!String(rawApi).includes('localhost') || isDev))
   : (isDev ? 'http://localhost:3000' : '')
 const API_URL = `${API_BASE}/api/auth`
 
-// Date d'expiration (ms) lue dans le jeton JWT, ou null si illisible.
-// Le décodage sert seulement à l'affichage : c'est le serveur qui vérifie la signature.
 export function getTokenExpiry(jwt) {
   if (typeof jwt !== 'string') return null
   const payload = jwt.split('.')[1]
@@ -121,7 +119,6 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('chu_current_user')
   }
 
-  // Vrai si une session existait mais que son jeton est expiré (ou absent).
   function hasExpiredSession(now = Date.now()) {
     if (!currentUser.value) return false
     return !token.value || isTokenExpired(token.value, now)

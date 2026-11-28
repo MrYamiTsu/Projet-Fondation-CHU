@@ -536,6 +536,20 @@
       </div>
     </main>
 
+    <ConfirmDeleteModal
+      :is-open="plotToDelete !== null"
+      title="Supprimer cet emplacement ?"
+      :item-name="plotToDelete?.name || ''"
+      :item-details="plotToDeleteDetails"
+      :consequences="[
+        'L’emplacement disparaîtra du catalogue public et de l’administration.',
+        'Son repère sur le plan d’étage sera retiré.',
+      ]"
+      :on-confirm="deleteSelectedPlot"
+      @deleted="onPlotDeleted"
+      @close="plotToDelete = null"
+    />
+
     <!-- MODAL AJOUT (TEMPLATE) / MODIFICATION D'EMPLACEMENT -->
     <div v-if="isPlotModalOpen"
       class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -767,6 +781,7 @@ import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
 import { useEtagesStore } from '../stores/etages.js'
 import EtageImageModal from '../components/EtageImageModal.vue'
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -858,11 +873,28 @@ function toggleAvailability(plot) {
 }
 
 // SUPPRESSION
+const plotToDelete = ref(null)
+const deletedPlotName = ref('')
+
+const plotToDeleteDetails = computed(() => {
+  const plot = plotToDelete.value
+  if (!plot) return ''
+  return [plot.no_local_pavillon && `Local ${plot.no_local_pavillon}`, plot.hospital, plot.sector]
+    .filter(Boolean)
+    .join(' · ')
+})
+
 function confirmDeletePlot(plot) {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer l'emplacement "${plot.name}" ?`)) {
-    plotsStore.deletePlot(plot.id)
-    showToast(`Emplacement "${plot.name}" supprimé avec succès.`, 'success')
-  }
+  plotToDelete.value = plot
+}
+
+async function deleteSelectedPlot() {
+  deletedPlotName.value = plotToDelete.value.name
+  await plotsStore.deletePlot(plotToDelete.value.id)
+}
+
+function onPlotDeleted() {
+  showToast(`Emplacement « ${deletedPlotName.value} » supprimé.`, 'success')
 }
 
 // MODAL GESTION EMPLACEMENT

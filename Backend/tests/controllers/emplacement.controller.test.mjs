@@ -6,6 +6,7 @@ import {
   getAllPlots,
   addPlot,
   modifyPlot,
+  deletePlot,
 } from '../../src/controllers/emplacement.controller.mjs';
 
 vi.mock('../../src/models/emplacement.mjs', () => ({
@@ -16,6 +17,7 @@ vi.mock('../../src/models/emplacement.mjs', () => ({
   findPlotByComposanteAndLieu: vi.fn(),
   createPlot: vi.fn(),
   updatePlot: vi.fn(),
+  deletePlot: vi.fn(),
 }));
 
 const createRes = () => {
@@ -283,6 +285,60 @@ describe('emplacement.controller', () => {
 
       expect(next).toHaveBeenCalledWith(erreur);
       expect(res.json).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deletePlot', () => {
+    it.each([
+      ['une lettre', 'abc'],
+      ['zéro', '0'],
+      ['négatif', '-5'],
+      ['décimal', '1.5'],
+    ])('retourne 400 si l’id est %s', async (_nom, id) => {
+      await deletePlot({ params: { id } }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(400);
+      expect(modele.deletePlot).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
+    it('retourne 204 et supprime l’emplacement (id converti en nombre)', async () => {
+      modele.deletePlot.mockResolvedValue(true);
+
+      await deletePlot({ params: { id: '5' } }, res, next);
+
+      expect(modele.deletePlot).toHaveBeenCalledWith(5);
+      expect(res.status).toHaveBeenCalledWith(204);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('retourne 404 si l’emplacement n’existe pas', async () => {
+      modele.deletePlot.mockResolvedValue(false);
+
+      await deletePlot({ params: { id: '99' } }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(404);
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    it('retourne 409 si l’emplacement a encore des réservations (code 23503)', async () => {
+      const lie = Object.assign(new Error('foreign key violation'), { code: '23503' });
+      modele.deletePlot.mockRejectedValue(lie);
+
+      await deletePlot({ params: { id: '5' } }, res, next);
+
+      expect(next.mock.calls[0][0].status).toBe(409);
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    it('transmet l’erreur à next si le modèle échoue', async () => {
+      const erreur = new Error('DB down');
+      modele.deletePlot.mockRejectedValue(erreur);
+
+      await deletePlot({ params: { id: '5' } }, res, next);
+
+      expect(next).toHaveBeenCalledWith(erreur);
+      expect(res.status).not.toHaveBeenCalled();
     });
   });
 });

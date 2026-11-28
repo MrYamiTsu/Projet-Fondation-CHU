@@ -1,4 +1,3 @@
-// Tests des fonctions serverless Vercel (Frontend/api) avec une base simulée.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import jwt from 'jsonwebtoken'
 
@@ -9,6 +8,7 @@ const { default: reservations } = await import('../api/reservations.js')
 const { default: hopitaux } = await import('../api/hopitaux.js')
 const { default: etages } = await import('../api/etages.js')
 const { default: emplacements } = await import('../api/emplacements/index.js')
+const { default: emplacementParId } = await import('../api/emplacements/[id].js')
 
 const SECRET = 'fondation_chu_secret_jwt_key_2026_super_secure'
 const tokenUser = jwt.sign({ id: 7, role: 'user' }, SECRET)
@@ -202,5 +202,32 @@ describe('api/emplacements (écritures protégées)', () => {
     query.mockResolvedValueOnce({ rows: [] })
     const res = await appel(emplacements)
     expect(res.statusCode).toBe(200)
+  })
+})
+
+describe('DELETE /api/emplacements/:id', () => {
+  it('supprime l’emplacement (200)', async () => {
+    query.mockResolvedValueOnce({ rowCount: 1 })
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(200)
+    expect(query.mock.calls[0][1]).toEqual(['5'])
+  })
+
+  it('404 si l’emplacement n’existe pas', async () => {
+    query.mockResolvedValueOnce({ rowCount: 0 })
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '99' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('409 si l’emplacement a des réservations', async () => {
+    query.mockRejectedValueOnce(Object.assign(new Error('fk'), { code: '23503' }))
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' }, token: tokenAdmin })
+    expect(res.statusCode).toBe(409)
+  })
+
+  it('401 sans jeton', async () => {
+    const res = await appel(emplacementParId, { method: 'DELETE', query: { id: '5' } })
+    expect(res.statusCode).toBe(401)
+    expect(query).not.toHaveBeenCalled()
   })
 })

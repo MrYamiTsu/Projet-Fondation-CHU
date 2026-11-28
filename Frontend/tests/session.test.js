@@ -12,7 +12,6 @@ import {
   SESSION_EXPIRED_QUERY,
 } from '../src/session.js'
 
-// Faux JWT : seule la partie « payload » compte pour le front.
 function fakeJwt(expSeconds) {
   const b64 = (o) => btoa(JSON.stringify(o)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
   return `${b64({ alg: 'HS256' })}.${b64({ id: 1, role: 'user', exp: expSeconds })}.signature`
@@ -150,7 +149,6 @@ describe('installSessionExpiration', () => {
     await router.push('/')
     installSessionExpiration(router, fakeWindow)
 
-    // L'ordinateur était en veille : l'heure a avancé sans que la minuterie se déclenche.
     vi.setSystemTime(new Date(Date.now() + 60_000))
     const [evenement, rappel] = fakeWindow.document.addEventListener.mock.calls[0]
     expect(evenement).toBe('visibilitychange')

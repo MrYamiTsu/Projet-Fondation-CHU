@@ -1,9 +1,14 @@
 <script setup>
-import { onMounted, onUnmounted, reactive } from 'vue'
+import { computed, onMounted, onUnmounted, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useEmplacementsStore } from '../stores/emplacements'
 import { useToastStore } from '../stores/toast'
+import {
+  calculerSuperficieAjustee,
+  calculerPoidsRelatif,
+  calculerValeurToponymique,
+} from '../utils/calculEmplacement'
 
 const sections = [
   {
@@ -21,26 +26,56 @@ const sections = [
   {
     titre: 'Superficie et évaluation',
     champs: [
-      { cle: 'superficie', libelle: 'Superficie', type: 'number' },
-      { cle: 'superficie_ajuste', libelle: 'Superficie ajustée', type: 'number' },
-      { cle: 'fl_id', libelle: 'Identifiant FL', type: 'number', entier: true, requis: true },
-      { cle: 'ff_id', libelle: 'Identifiant FF', type: 'number', entier: true, requis: true },
-      { cle: 'poid_relatif', libelle: 'Poids relatif', type: 'number' },
-      { cle: 'valeur_toponymique', libelle: 'Valeur toponymique', type: 'number' },
-      { cle: 'valeur_toponymique_ancien', libelle: 'Ancienne valeur toponymique', type: 'number' },
+      { cle: 'superficie', libelle: 'Superficie (m²)', type: 'number' },
+      { cle: 'fl_id', libelle: 'Facteur de localisation (FL)', type: 'fl', requis: true },
+      { cle: 'ff_id', libelle: 'Facteur de fréquentation (FF)', type: 'ff', requis: true },
+      { cle: 'superficie_ajuste', libelle: 'Superficie ajustée', type: 'calcule', formule: 'FL × FF × superficie' },
+      { cle: 'poid_relatif', libelle: 'Poids relatif', type: 'calcule', formule: 'Superficie ajustée ÷ total des superficies ajustées' },
+      { cle: 'valorisation_totale', libelle: 'Valorisation totale ($)', type: 'number', horsBd: true, aide: 'Sert uniquement au calcul, n’est pas enregistrée.' },
+      { cle: 'valeur_toponymique', libelle: 'Valeur toponymique', type: 'calcule', formule: 'Poids relatif × valorisation totale' },
+      { cle: 'valeur_toponymique_ancien', libelle: 'Ancienne valeur toponymique', type: 'number', facultatif: true },
       { cle: 'commentaire', libelle: 'Commentaire', type: 'textarea' },
     ],
   },
 ]
 
-const champs = sections.flatMap(section => section.champs)
+const champs = sections.flatMap(section => section.champs).filter(champ => champ.type !== 'calcule')
+const champsHorsBd = new Set(champs.filter(champ => champ.horsBd).map(champ => champ.cle))
 const emptyValues = () => Object.fromEntries(champs.map(({ cle }) => [cle, '']))
 
 const router = useRouter()
 const toast = useToastStore()
 const store = useEmplacementsStore()
-const { hopitaux, envoiEnCours, erreur } = storeToRefs(store)
+const { hopitaux, facteurs, envoiEnCours, erreur } = storeToRefs(store)
 const formulaire = reactive(emptyValues())
+
+const facteurChoisi = (liste, id, cle) => liste.find(item => String(item.id) === String(id))?.[cle]
+
+const superficieAjustee = computed(() =>
+  calculerSuperficieAjustee(
+    formulaire.superficie,
+    facteurChoisi(facteurs.value.fl, formulaire.fl_id, 'fl'),
+    facteurChoisi(facteurs.value.ff, formulaire.ff_id, 'ff'),
+  ),
+)
+
+const poidsRelatif = computed(() =>
+  calculerPoidsRelatif(superficieAjustee.value, facteurs.value.totalSuperficieAjustee),
+)
+
+const valeurToponymique = computed(() =>
+  calculerValeurToponymique(poidsRelatif.value, formulaire.valorisation_totale),
+)
+
+const formatNombre = new Intl.NumberFormat('fr-CA', { maximumFractionDigits: 2 })
+const formatMonetaire = new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })
+const formatPourcent = new Intl.NumberFormat('fr-CA', { style: 'percent', maximumFractionDigits: 2 })
+
+const valeursCalculees = computed(() => ({
+  superficie_ajuste: superficieAjustee.value === null ? null : `${formatNombre.format(superficieAjustee.value)} m²`,
+  poid_relatif: poidsRelatif.value === null ? null : formatPourcent.format(poidsRelatif.value),
+  valeur_toponymique: valeurToponymique.value === null ? null : formatMonetaire.format(valeurToponymique.value),
+}))
 
 function goBack() {
   if (window.history.state?.back) router.back()
@@ -49,8 +84,11 @@ function goBack() {
 
 async function submit() {
   const donnees = Object.fromEntries(
-    Object.entries(formulaire).map(([cle, valeur]) => [cle, valeur === '' ? null : valeur]),
+    Object.entries(formulaire)
+      .filter(([cle]) => !champsHorsBd.has(cle))
+      .map(([cle, valeur]) => [cle, valeur === '' ? null : valeur]),
   )
+  donnees.valeur_toponymique = valeurToponymique.value
 
   const reussi = await store.addPlot(donnees)
   if (!reussi) return
@@ -59,7 +97,10 @@ async function submit() {
   goBack()
 }
 
-onMounted(store.fetchHospitals)
+onMounted(() => {
+  store.fetchHospitals()
+  store.fetchFacteurs()
+})
 
 onUnmounted(store.clearMessages)
 </script>
@@ -87,6 +128,7 @@ onUnmounted(store.clearMessages)
           >
             <label :for="champ.cle" class="mb-1 block text-sm font-medium">
               {{ champ.libelle }}<span v-if="champ.requis"> *</span>
+              <span v-if="champ.facultatif" class="font-normal text-slate-500">(facultatif)</span>
             </label>
 
             <select
@@ -100,6 +142,30 @@ onUnmounted(store.clearMessages)
                 {{ hopital.nom }}
               </option>
             </select>
+            <select
+              v-else-if="champ.type === 'fl' || champ.type === 'ff'"
+              :id="champ.cle"
+              v-model="formulaire[champ.cle]"
+              :required="champ.requis"
+            >
+              <option value="" disabled>Choisir un facteur</option>
+              <option v-for="facteur in facteurs[champ.type]" :key="facteur.id" :value="facteur.id">
+                {{ formatNombre.format(facteur[champ.type]) }} —
+                {{ champ.type === 'fl' ? facteur.type_lieu : `${formatNombre.format(facteur.nbr_personnes)} personnes` }}
+              </option>
+            </select>
+            <div v-else-if="champ.type === 'calcule'">
+              <output
+                :id="champ.cle"
+                for="superficie fl_id ff_id"
+                aria-live="polite"
+                class="calcule"
+                :class="{ 'calcule--vide': valeursCalculees[champ.cle] === null }"
+              >
+                {{ valeursCalculees[champ.cle] ?? 'Calculé automatiquement' }}
+              </output>
+              <p class="mt-1 text-xs text-slate-500">{{ champ.formule }}</p>
+            </div>
             <textarea
               v-else-if="champ.type === 'textarea'"
               :id="champ.cle"
@@ -114,7 +180,9 @@ onUnmounted(store.clearMessages)
               :min="champ.entier ? 1 : undefined"
               :step="champ.entier ? 1 : 'any'"
               :required="champ.requis"
+              :aria-describedby="champ.aide ? `${champ.cle}-aide` : undefined"
             >
+            <p v-if="champ.aide" :id="`${champ.cle}-aide`" class="mt-1 text-xs text-slate-500">{{ champ.aide }}</p>
           </div>
         </div>
       </fieldset>
@@ -140,6 +208,27 @@ textarea {
   padding: 0.55rem 0.75rem;
   border: 1px solid #94a3b8;
   border-radius: 0.4rem;
+}
+
+.calcule {
+  display: flex;
+  align-items: center;
+  min-height: 2.45rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.4rem;
+  background: #f8fafc;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  cursor: default;
+  user-select: text;
+}
+
+.calcule--vide {
+  font-weight: 400;
+  font-style: italic;
+  color: #94a3b8;
 }
 
 input:focus-visible,

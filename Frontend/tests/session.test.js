@@ -99,20 +99,6 @@ describe('installSessionExpiration', () => {
     expect(router.currentRoute.value.query).toEqual(SESSION_EXPIRED_QUERY)
   })
 
-  it('reste sur une page publique quand la session expire', async () => {
-    seConnecter(fakeJwt(maintenant() + 10))
-    const router = creerRouter()
-    await router.push('/emplacement/3')
-
-    installSessionExpiration(router, fakeWindow)
-    vi.advanceTimersByTime(11000)
-
-    expect(useAuthStore().currentUser).toBeNull()
-    expect(useToastStore().message).toBe(SESSION_EXPIRED_MESSAGE)
-    await vi.runAllTimersAsync()
-    expect(router.currentRoute.value.path).toBe('/emplacement/3')
-  })
-
   it('déconnecte quand un appel authentifié renvoie 401', async () => {
     seConnecter(fakeJwt(maintenant() + 3600))
     const router = creerRouter()

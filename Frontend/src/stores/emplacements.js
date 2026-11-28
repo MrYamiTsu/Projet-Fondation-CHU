@@ -19,6 +19,7 @@ function getErrorMessage(cause) {
 
 export const useEmplacementsStore = defineStore('emplacements', () => {
   const hopitaux = ref([])
+  const facteurs = ref({ fl: [], ff: [], totalSuperficieAjustee: 0 })
   const envoiEnCours = ref(false)
   const erreur = ref('')
   const succes = ref('')
@@ -45,6 +46,30 @@ export const useEmplacementsStore = defineStore('emplacements', () => {
       }
 
       hopitaux.value = resultat.map(hopital => ({ id: hopital.id, nom: hopital.nom }))
+    } catch (cause) {
+      erreur.value = getErrorMessage(cause)
+    }
+  }
+
+  async function fetchFacteurs() {
+    try {
+      const reponse = await fetch(`${API_URL}/emplacements/facteurs`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      const resultat = await reponse.json().catch(() => null)
+
+      if (!reponse.ok) {
+        throw new Error(resultat?.message || resultat?.erreur || `Impossible de charger les facteurs FL et FF (HTTP ${reponse.status}).`)
+      }
+      if (!Array.isArray(resultat?.fl) || !Array.isArray(resultat?.ff)) {
+        throw new Error('Réponse inattendue du serveur pour les facteurs FL et FF.')
+      }
+
+      facteurs.value = {
+        fl: resultat.fl,
+        ff: resultat.ff,
+        totalSuperficieAjustee: Number(resultat.totalSuperficieAjustee) || 0,
+      }
     } catch (cause) {
       erreur.value = getErrorMessage(cause)
     }
@@ -85,5 +110,16 @@ export const useEmplacementsStore = defineStore('emplacements', () => {
     }
   }
 
-  return { hopitaux, envoiEnCours, erreur, succes, nouvelId, clearMessages, fetchHospitals, addPlot }
+  return {
+    hopitaux,
+    facteurs,
+    envoiEnCours,
+    erreur,
+    succes,
+    nouvelId,
+    clearMessages,
+    fetchHospitals,
+    fetchFacteurs,
+    addPlot,
+  }
 })

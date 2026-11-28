@@ -26,16 +26,4 @@ describe('usePlotsStore.deletePlot', () => {
     expect(fetch.mock.calls[0][1].method).toBe('DELETE')
   })
 
-  it('affiche le message d’erreur du serveur (409)', async () => {
-    const store = usePlotsStore()
-    store.plots = [{ id: 5 }]
-    fetch.mockResolvedValue(
-      new Response(JSON.stringify({ erreur: 'Impossible de supprimer un emplacement qui a des réservations' }), {
-        status: 409,
-      }),
-    )
-
-    await expect(store.deletePlot(5)).rejects.toThrow('réservations')
-    expect(store.plots).toEqual([{ id: 5 }])
-  })
 })

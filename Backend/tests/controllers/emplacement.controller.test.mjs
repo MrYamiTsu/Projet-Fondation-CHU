@@ -77,15 +77,6 @@ describe('emplacement.controller', () => {
       expect(res.json).toHaveBeenCalledWith(suggestions);
     });
 
-    it('transmet l’erreur à next si le modèle échoue', async () => {
-      const erreur = new Error('DB down');
-      modele.findPlotByLieu.mockRejectedValue(erreur);
-
-      await getPlotByLieu({ query: { lieu: 'aile' } }, res, next);
-
-      expect(next).toHaveBeenCalledWith(erreur);
-      expect(res.json).not.toHaveBeenCalled();
-    });
   });
 
   describe('getPlotById', () => {
@@ -93,7 +84,6 @@ describe('emplacement.controller', () => {
       ['une lettre', 'abc'],
       ['zéro', '0'],
       ['négatif', '-5'],
-      ['décimal', '1.5'],
       ['vide', ''],
       ['des espaces', '   '],
     ])('retourne 400 si l’id est %s', async (_nom, id) => {

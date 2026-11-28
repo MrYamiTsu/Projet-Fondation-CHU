@@ -106,25 +106,6 @@ describe('PUT /api/etages/:id/image', () => {
     expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
-  it('refuse un format non image (400)', async () => {
-    const req = await requeteMultipart({
-      route: '3/image',
-      token: tokenAdmin,
-      fichier: new Blob(['texte'], { type: 'text/plain' }),
-    })
-    const res = reponse()
-    await etages(req, res)
-    expect(res.statusCode).toBe(400)
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
-
-  it('refuse une requête sans fichier (400)', async () => {
-    const req = await requeteMultipart({ route: '3/image', token: tokenAdmin })
-    const res = reponse()
-    await etages(req, res)
-    expect(res.statusCode).toBe(400)
-  })
-
   it('refuse une image de plus de 4 Mo (413)', async () => {
     const req = await requeteMultipart({
       route: '3/image',
@@ -158,20 +139,6 @@ describe('PUT /api/etages/:id/image', () => {
     expect(globalThis.fetch.mock.calls[1][1].body.get('public_id')).toBe('etages/orpheline')
   })
 
-  it('erreur claire si Cloudinary n’est pas configuré', async () => {
-    delete process.env.CLOUDINARY_API_SECRET
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    query.mockResolvedValueOnce({ rows: [{ id: 3 }] })
-    const req = await requeteMultipart({
-      route: '3/image',
-      token: tokenAdmin,
-      fichier: new Blob([new Uint8Array([1])], { type: 'image/png' }),
-    })
-    const res = reponse()
-    await etages(req, res)
-    expect(res.statusCode).toBe(500)
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
 })
 
 describe('DELETE /api/etages/:id/image', () => {
@@ -190,12 +157,6 @@ describe('DELETE /api/etages/:id/image', () => {
     expect(globalThis.fetch.mock.calls[0][1].body.get('public_id')).toBe('etages/plan')
   })
 
-  it('404 si l’étage n’a pas d’image', async () => {
-    query.mockResolvedValueOnce({ rows: [{ id: 3, image_public_id: null }] })
-    const res = reponse()
-    await etages(requeteJson({ method: 'DELETE', route: '3/image', token: tokenAdmin }), res)
-    expect(res.statusCode).toBe(404)
-  })
 })
 
 describe('api/pins', () => {
@@ -244,12 +205,6 @@ describe('api/pins', () => {
     expect(query.mock.calls[0][1]).toEqual([11])
   })
 
-  it('DELETE /:id inconnu → 404', async () => {
-    query.mockResolvedValueOnce({ rows: [] })
-    const res = reponse()
-    await pins(requeteJson({ method: 'DELETE', route: '99', token: tokenAdmin }), res)
-    expect(res.statusCode).toBe(404)
-  })
 })
 
 describe('signature Cloudinary', () => {

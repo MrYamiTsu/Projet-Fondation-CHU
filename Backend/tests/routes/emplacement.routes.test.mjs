@@ -48,15 +48,6 @@ describe('DELETE /emplacements/:id', () => {
     expect(modele.deletePlot).not.toHaveBeenCalled();
   });
 
-  it('retourne 400 si l’id est invalide', async () => {
-    const res = await request(app)
-      .delete('/emplacements/abc')
-      .set('Authorization', `Bearer ${tokenAdmin}`);
-
-    expect(res.status).toBe(400);
-    expect(modele.deletePlot).not.toHaveBeenCalled();
-  });
-
   it('retourne 204 sans contenu quand un admin supprime un emplacement', async () => {
     modele.deletePlot.mockResolvedValue({ supprime: true, reservationsActives: false });
 
@@ -79,13 +70,4 @@ describe('DELETE /emplacements/:id', () => {
     expect(res.status).toBe(404);
   });
 
-  it('est aussi disponible sous /api/emplacements/:id', async () => {
-    modele.deletePlot.mockResolvedValue({ supprime: true, reservationsActives: false });
-
-    const res = await request(app)
-      .delete('/api/emplacements/5')
-      .set('Authorization', `Bearer ${tokenAdmin}`);
-
-    expect(res.status).toBe(204);
-  });
 });

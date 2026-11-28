@@ -1,12 +1,4 @@
 <template>
-  <div>
-    <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="authStore.logout">
-      <template #auth>
-        <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false" />
-      </template>
-    </Header>
-  </div>
-
   <main class="bg-white min-h-screen max-w-7xl mx-auto px-4 md:px-8 py-8">
     <div class="max-w-6xl mx-auto mb-6">
       <button @click="router.push(detailsRoute)"
@@ -141,8 +133,6 @@
 <script setup>
 import { reactive, ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from '../components/Header.vue'
-import Auth from '../components/Auth.vue'
 import { useAuthStore } from '../stores/auth.js'
 import { usePlotsStore } from '../stores/plots.js'
 import { useReservationStore } from '../stores/reservations.js'
@@ -153,7 +143,6 @@ import '@vuepic/vue-datepicker/dist/main.css'
 const authStore = useAuthStore()
 const plotsStore = usePlotsStore()
 const reservationStore = useReservationStore()
-const isAuthModalOpen = ref(false)
 
 const route = useRoute()
 const router = useRouter()
@@ -270,7 +259,7 @@ async function onSubmit() {
   }
 
   if (!authStore.currentUser) {
-    isAuthModalOpen.value = true
+    authStore.openLogin()
     return
   }
 

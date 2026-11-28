@@ -1,12 +1,4 @@
 <template>
-  <div>
-    <Header :current-user="authStore.currentUser" @open-auth="isAuthModalOpen = true" @logout="authStore.logout">
-      <template #auth>
-        <Auth :is-open="isAuthModalOpen" :users="authStore.users" @close="isAuthModalOpen = false" />
-      </template>
-    </Header>
-  </div>
-
   <div v-if="plotsStore.isLoading && !plot"
     class="min-h-screen flex flex-col items-center justify-center text-slate-500 gap-3">
     <i class="fa-solid fa-circle-notch fa-spin text-3xl text-teal-600"></i>
@@ -247,8 +239,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from '../components/Header.vue'
-import Auth from '../components/Auth.vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { usePlotsStore } from '../stores/plots.js'
@@ -261,7 +251,6 @@ const plotsStore = usePlotsStore()
 const authStore = useAuthStore()
 const reservationStore = useReservationStore()
 
-const isAuthModalOpen = ref(false)
 const selectedRange = ref(null)
 const today = new Date()
 

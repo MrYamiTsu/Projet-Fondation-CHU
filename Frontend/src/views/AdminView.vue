@@ -1,66 +1,5 @@
 <template>
   <div class="min-h-screen bg-slate-100/90 text-slate-800 flex flex-col font-sans">
-    <!-- Barre de navigation Institutionnelle Admin -->
-    <header
-      class="bg-white border-b border-slate-200/90 sticky top-0 z-40 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-md bg-white/95">
-      <!-- Fine ligne de signature institutionnelle en tête (sarcelle officiel du CHU) -->
-      <div class="h-[2px] bg-teal-700 w-full"></div>
-
-      <div class="max-w-[1700px] mx-auto px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-        <!-- Logo & Titre Admin -->
-        <router-link to="/" class="flex items-center gap-3.5 group shrink-0">
-          <div
-            class="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-sm group-hover:bg-slate-800 transition-colors border border-slate-800">
-            CHU
-          </div>
-
-          <div class="flex flex-col">
-            <div class="flex items-center gap-2">
-              <span class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">
-                CHU de Québec
-              </span>
-              <span
-                class="inline-flex items-center text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200/80 px-2 py-0.5 rounded tracking-wide">
-                Administration
-              </span>
-            </div>
-            <span class="text-xs text-slate-500 font-medium leading-none mt-1">
-              Université Laval &bull; <span class="text-slate-400">Panneau de gestion</span>
-            </span>
-          </div>
-        </router-link>
-
-        <!-- Actions de navigation & Utilisateur connecté -->
-        <div class="flex items-center gap-3 shrink-0">
-          <router-link to="/"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/80 rounded-lg border border-slate-200 transition-colors">
-            <i class="fa-solid fa-arrow-left text-xs text-slate-500"></i>
-            <span class="hidden sm:inline">Portail public</span>
-          </router-link>
-
-          <div v-if="authStore.currentUser" class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-            <div
-              class="w-8 h-8 rounded-full bg-slate-900 text-teal-300 border border-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
-              {{ authStore.currentUser.name.charAt(0).toUpperCase() }}
-            </div>
-            <div class="text-left leading-tight hidden md:block">
-              <span class="block text-xs font-bold text-slate-900">
-                {{ authStore.currentUser.name }}
-              </span>
-              <span class="block text-[10px] text-slate-500 mt-0.5">
-                {{ authStore.currentUser.email }}
-              </span>
-            </div>
-            <button @click="handleLogout"
-              class="text-xs text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors cursor-pointer"
-              title="Déconnexion" aria-label="Déconnexion">
-              <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-
     <!-- Notification Toast -->
     <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-2"
       enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in"
@@ -926,11 +865,6 @@ const filteredPlots = computed(() => {
     return true
   })
 })
-
-function handleLogout() {
-  authStore.logout()
-  router.push('/')
-}
 
 // TOGGLE DISPONIBILITÉ
 function toggleAvailability(plot) {

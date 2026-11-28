@@ -31,6 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref(savedUser ? JSON.parse(savedUser) : null)
   const token = ref(localStorage.getItem('token') || null)
   const isLoading = ref(false)
+  const isLoginOpen = ref(false)
 
   const users = ref(JSON.parse(localStorage.getItem('chu_users') || '[]'))
 
@@ -112,6 +113,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function openLogin() {
+    isLoginOpen.value = true
+  }
+
+  function closeLogin() {
+    isLoginOpen.value = false
+  }
+
   function logout() {
     currentUser.value = null
     token.value = null
@@ -153,11 +162,14 @@ export const useAuthStore = defineStore('auth', () => {
     tokenExpiry,
     users,
     isLoading,
+    isLoginOpen,
     isAuthenticated,
     isAdmin,
     login,
     signup,
     logout,
+    openLogin,
+    closeLogin,
     hasExpiredSession,
     toggleUserAdmin,
     deleteUser,
